@@ -24,16 +24,8 @@ export function LandingNav() {
   return (
     <div className="flex items-center gap-3">
       <Link href="/auth/login">
-        <Button
-          variant="ghost"
-          className="text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-        >
-          Sign In
-        </Button>
-      </Link>
-      <Link href="/auth/sign-up">
         <Button className="text-sm font-medium bg-[#009A6B] hover:bg-[#00b87d] text-white transition-all duration-200 shadow-lg shadow-[#009A6B]/20 hover:shadow-[#009A6B]/40">
-          Get Started
+          Sign In
         </Button>
       </Link>
     </div>

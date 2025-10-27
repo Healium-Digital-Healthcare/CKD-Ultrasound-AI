@@ -33,7 +33,6 @@ export default function LandingPage() {
             <Link href="#workflow" className="text-sm text-gray-400 hover:text-white transition-colors">
               How it Works
             </Link>
-            
             <LandingNav />
           </div>
         </div>
