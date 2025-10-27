@@ -27,6 +27,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const handleSearch = (text: string) => {
     setSearchText(text)
+    console.log(searchText)
     // You can add search logic here or pass it to children via context
   }
 

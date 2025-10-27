@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Bell, LogOut, Menu, Plus, Search, Settings, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Input } from "../ui/input"
 import { useUser } from "@/lib/contexts/UserContext"
 import { createClient } from "@/lib/supabase/client"
@@ -25,21 +25,17 @@ interface DashboardHeaderProps {
   onMobileMenuToggle?: () => void
 }
 
-export default function DashboardHeader({ headerTitle, onSearch, onMobileMenuToggle }: DashboardHeaderProps) {
+export default function DashboardHeader({ onSearch, onMobileMenuToggle }: DashboardHeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { user } = useUser()
-  const searchParams = useSearchParams()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const supabase = createClient()
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) params.set("search", value)
-    else params.delete("search")
-    router.push(`${pathname}?${params.toString()}`)
+    router.push(`${pathname}`)
     if (onSearch) onSearch(value)
   }
 
@@ -98,7 +94,6 @@ export default function DashboardHeader({ headerTitle, onSearch, onMobileMenuTog
                 <Input
                   placeholder={isPatientPage ? "Search patients..." : "Search cases..."}
                   onChange={handleSearch}
-                  defaultValue={searchParams.get("search") || ""}
                   className="pl-10 text-white"
                 />
               </div>

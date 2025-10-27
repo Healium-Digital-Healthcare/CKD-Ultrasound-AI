@@ -1,14 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { User, Lock, Server, Save, TestTube, ArrowLeft } from "lucide-react"
+import { User, Lock, Server, Save, TestTube } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
-  const router = useRouter()
 
   // Profile state
   const [profile, setProfile] = useState({

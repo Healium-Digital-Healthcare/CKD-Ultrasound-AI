@@ -5,13 +5,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
 import { mockCases } from "@/lib/mock-data"
 
 export default function CasesPage() {
-  const searchParams = useSearchParams()
-  const searchQuery = searchParams.get("search") || ""
+  const searchQuery: string = ""
 
   const filteredCases = useMemo(() => {
     if (!searchQuery) return mockCases
@@ -41,10 +39,6 @@ export default function CasesPage() {
 
   const getSeverityLabel = (severity: string) =>
     severity.charAt(0).toUpperCase() + severity.slice(1)
-
-  const handleAddCase = () => {
-    window.location.href = "/cases/new"
-  }
 
   return (
     <div className="p-2 rounded-lg border border-white/10 overflow-hidden bg-black text-white flex flex-col h-full">
