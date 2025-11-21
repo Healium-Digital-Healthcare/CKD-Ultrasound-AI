@@ -16,12 +16,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient()
-    const body = await request.json()
+    const body = await _request.json()
+    
+    const { id } = await params
 
-    const { data, error } = await supabase.from("patients").update(body).eq("id", params.id).select().single()
+    const { data, error } = await supabase.from("patients").update(body).eq("id", id).select().single()
 
     if (error) throw error
     return NextResponse.json(data)
