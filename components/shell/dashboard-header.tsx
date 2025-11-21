@@ -141,7 +141,7 @@ export default function DashboardHeader({ onSearch, onMobileMenuToggle }: Dashbo
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-semibold">Confirm Logout</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to sign out from your account? You'll need to log in again to access the dashboard.
+              Are you sure you want to sign out from your account? You&apos;ll need to log in again to access the dashboard.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
