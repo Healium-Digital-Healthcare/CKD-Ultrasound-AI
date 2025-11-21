@@ -1,162 +1,121 @@
 "use client"
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Input } from "@/components/ui/input"
+import { Plus, Search, RefreshCw } from 'lucide-react'
 import Link from "next/link"
-import { useMemo } from "react"
-import { mockCases } from "@/lib/mock-data"
+import { cn } from "@/lib/utils"
+import { useGetCasesQuery } from "@/store/services/cases"
+import { useEffect } from "react"
+import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
+import { CaseListTable } from "@/components/cases/Case-list"
+import { CreateCaseSheet } from "@/components/cases/create-case-sheet"
 
 export default function CasesPage() {
-  const searchQuery: string = ""
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 
-  const filteredCases = useMemo(() => {
-    if (!searchQuery) return mockCases
-    const query = searchQuery.toLowerCase()
-    return mockCases.filter(
-      (caseItem) =>
-        caseItem.caseNumber.toLowerCase().includes(query) ||
-        caseItem.patientName.toLowerCase().includes(query) ||
-        caseItem.mrn.toLowerCase().includes(query) ||
-        caseItem.patientId.toLowerCase().includes(query),
-    )
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setCurrentPage(1)
+    }, 300)
+    return () => clearTimeout(timer)
   }, [searchQuery])
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-      case "severe":
-        return "bg-red-600 text-white"
-      case "moderate":
-        return "bg-[#009A6B] text-white"
-      case "mild":
-        return "bg-yellow-400 text-black"
-      default:
-        return "bg-green-500 text-black"
+  const { data, isLoading, isError, error, refetch, isFetching } = useGetCasesQuery({
+    params: {
+      page: currentPage,
+      limit: pageSize,
+      search: debouncedSearch,
     }
+  })
+
+  // ensure `cases` is always an array (if the API returns a single case object, wrap it)
+  const cases = Array.isArray(data?.data) ? data.data : data?.data ? [data.data] : []
+  const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
+
+  const handleRefresh = () => {
+    refetch()
   }
 
-  const getSeverityLabel = (severity: string) =>
-    severity.charAt(0).toUpperCase() + severity.slice(1)
+  const handleCreate = () => {
+    setIsCreateDialogOpen(true)
+  }
 
   return (
-    <div className="p-2 rounded-lg border border-white/10 overflow-hidden bg-black text-white flex flex-col h-full">
-
-      <div className="flex-1 overflow-auto rounded border border-white/20">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-white/10">
-              <TableHead className="font-semibold text-white">Case #</TableHead>
-              <TableHead className="font-semibold text-white">Patient Name</TableHead>
-              <TableHead className="font-semibold text-white">Patient ID</TableHead>
-              <TableHead className="font-semibold text-white">Age/Sex</TableHead>
-              <TableHead className="font-semibold text-white">Severity</TableHead>
-              <TableHead className="font-semibold text-white">Scanned On</TableHead>
-              <TableHead className="font-semibold text-right text-white">Detail</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCases.map((caseItem) => (
-              <TableRow key={caseItem.id} className="hover:bg-white/10 transition-colors">
-                <TableCell className="font-medium text-white">{caseItem.caseNumber}</TableCell>
-                <TableCell className="text-white">
-                  <Link
-                    href={`/patients/${caseItem.patientId}`}
-                    className="hover:text-[#009A6B] transition-colors"
-                  >
-                    {caseItem.patientName}
-                  </Link>
-                </TableCell>
-                <TableCell className="text-white">{caseItem.patientId}</TableCell>
-                <TableCell className="text-white">
-                  {caseItem.age} / {caseItem.gender}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={cn("capitalize font-medium px-3 py-1 text-sm", getSeverityColor(caseItem.severity))}
-                  >
-                    {getSeverityLabel(caseItem.severity)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-sm text-gray-300">
-                  {new Date(caseItem.studyDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/analysis/${caseItem.id}`}>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="h-8 px-3 text-xs bg-[#009A6B] hover:bg-[#008059] text-white"
-                    >
-                      Detail
-                    </Button>
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="border-t border-white/10 px-6 py-4 flex items-center justify-between bg-black/80">
-        <div className="text-sm text-gray-400">
-          Showing <span className="font-medium text-white">{filteredCases.length}</span> cases
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-gray-900">Case List</h1>
+          <Button 
+          className="gap-2"
+          onClick={() => handleCreate()}
+          >
+            <Plus className="h-4 w-4" />
+            New Case
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled
-            className="text-white/50 hover:bg-white/10 border border-white/20"
-          >
-            First
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled
-            className="text-white/50 hover:bg-white/10 border border-white/20"
-          >
-            Prev
-          </Button>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((page) => (
-              <Button
-                key={page}
-                size="sm"
-                className={cn(
-                  "w-8 h-8 p-0 text-xs",
-                  page === 1
-                    ? "bg-[#009A6B] hover:bg-[#008059] text-white"
-                    : "bg-black border border-white/20 text-white/70 hover:bg-white/10",
-                )}
-              >
-                {page}
-              </Button>
-            ))}
+
+        <div className="flex items-center gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search by Case #, Patient Name, or Patient ID"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
           <Button
-            variant="ghost"
-            size="sm"
-            className="text-white/70 hover:bg-white/10 border border-white/20"
+            variant="outline"
+            size="icon"
+            className="h-10 w-10"
+            onClick={handleRefresh}
+            disabled={isFetching}
           >
-            Next
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-white/70 hover:bg-white/10 border border-white/20"
-          >
-            Last
+            <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
           </Button>
         </div>
+
+        {isError && (
+          <div className="p-6 flex items-center justify-center min-h-[400px] bg-white rounded-lg border">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error loading cases: {error?.toString()}</p>
+              <Button onClick={handleRefresh} className="bg-blue-600 hover:bg-blue-700">
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {(isLoading || isFetching) && <CaseListTableSkeleton />}
+
+        {!isError && !isLoading && !isFetching && (
+          <CaseListTable
+            cases={cases}
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            pageSize={pagination.limit}
+            totalEntries={pagination.total}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+            onRefresh={handleRefresh}
+          />
+        )}
       </div>
+      {
+        isCreateDialogOpen && (
+          <CreateCaseSheet open={isCreateDialogOpen} onOpenChange={(value) => setIsCreateDialogOpen(value)}/>
+        )
+      }
     </div>
   )
 }

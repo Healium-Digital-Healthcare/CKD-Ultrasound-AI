@@ -1,99 +1,65 @@
-export interface Patient {
-  id: string
-  name: string
-  patientId: string
-  age: number
-  sex: "M" | "F"
-  severity: "normal" | "mild" | "moderate" | "severe" | "critical"
-  scannedOn: string
-  lastUpdated: string
-  ckdStage?: number
-  eGFR?: number
-}
-
-export interface UltrasoundScan {
-  id: string
-  patientId: string
-  scanDate: string
-  dicomImages: string[]
-  thumbnails: string[]
-  metadata: {
-    hospital: string
-    device: string
-    technician?: string
-  }
-}
-
-export interface FunctionalAssessment {
-  eGFR: number // 0-150 ml/min/1.73m²
-  ckdStage: number // 1-5
-  confidence: number // 0-1
-}
-
-export interface StructuralFindings {
-  hydronephrosis: number // 0-1 probability
-  calculi: number // 0-1 probability
-  cysts: number // 0-1 probability
-  increasedEchogenicity: number // 0-1 probability
-  corticalThinning: number // 0-1 probability
-  masses: number // 0-1 probability
-}
-
-export interface EtiologyClassification {
-  diabeticNephropathy: number // 0-1 probability
-  hypertensiveNephrosclerosis: number // 0-1 probability
-  glomerulonephritis: number // 0-1 probability
-  polycysticKidneyDisease: number // 0-1 probability
-  hydronephrosisObstruction: number // 0-1 probability
-  unknownOther: number // 0-1 probability
-}
-
 export interface AIAnalysisResult {
-  scanId: string
-  functional: FunctionalAssessment
-  structural: StructuralFindings
-  etiology: EtiologyClassification
-  detectedAbnormalities: Array<{
-    type: string
-    location: { x: number; y: number }
-    confidence: number
-  }>
-  analysisDate: string
-  processingTime: number // milliseconds
-}
-
-export interface ProgressionData {
-  patientId: string
-  scans: Array<{
-    date: string
-    eGFR: number
-    stage: number
-    scanId: string
-  }>
+  egfr: number
+  findings: {
+    hydronephrosis: number
+    calculi: number
+    cysts: number
+    increased_echogenicity: number
+    cortical_thinning: number
+    masses: number
+  }
+  disease: {
+    diabetic_nephropathy: number
+    hypertensive_nephrosclerosis: number
+    glomerulonephritis: number
+    polycystic_kidney_disease: number
+    hydronephrosis_obstruction: number
+    unknown_other: number
+  },
+  disease_predicted: string
 }
 
 export interface Case {
   id: string
-  patientId: string
-  patientName: string
-  age: number
-  gender: "M" | "F"
-  mrn: string // Medical Record Number
-  caseNumber: string
-  studyDescription: string
-  accessionNumber: string
-  studyDate: string
-  location: string
-  caseTAT: string // Case Turn Around Time
-  readType: string
-  clientName: string
-  dueIn: string
-  instructions: string
-  totalImages: number
-  selectedImages: number
-  status: "new" | "expedited" | "stat" | "addendum" | "processing" | "completed" | "reviewed"
-  severity: "normal" | "mild" | "moderate" | "severe" | "critical"
-  ckdStage?: number
-  eGFR?: number
-  analysisResult?: AIAnalysisResult
+  patient_id: string
+  case_number: string
+  study_description: string
+  study_date: string
+  total_images: number
+  selected_images: number
+  images: ImageAIAnalysis[]
+  patient: {
+    name: string
+    age: string,
+    sex: string
+  }
+}
+
+export interface ImageAIAnalysis {
+  id: string,
+  image_path: string,
+  ai_analysis_status: string,
+  ai_analysis_result: AIAnalysisResult | null,
+  signed_url: string | null
+}
+
+export interface CreateCaseType {
+  patient_id?: string,
+  study_description: string,
+  study_date: string,
+  images: string[],
+  patient_type: string,
+  patient_age: string,
+  patient_name: string,
+  patient_gender: string
+}
+
+export interface CaseListResponse {
+  data: Case,
+  pagination: {
+    total: number,
+    page: number,
+    limit: number,
+    totalPages: number
+  }
 }

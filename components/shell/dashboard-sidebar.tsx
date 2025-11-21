@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Users, Scan, Calculator, X } from "lucide-react"
+import { LayoutDashboard, Users, Scan, Calculator, FileText, Menu, Settings, UserIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 
 interface DashboardSidebarProps {
   isMobileMenuOpen?: boolean
@@ -35,23 +34,31 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
       href: "/cases",
       icon: Scan,
     },
-    // {
-    //   id: 4,
-    //   name: "Ultrasound Video",
-    //   href: "/upload",
-    //   icon: Video,
-    // },
     {
-      id: 5,
+      id: 4,
       name: "eGFR Calculator",
       href: "/egfr",
       icon: Calculator,
     },
   ]
 
+  const bottomNavigation = [
+    {
+      id: 6,
+      name: "Profile",
+      href: "/profile",
+      icon: UserIcon,
+    },
+    {
+      id: 7,
+      name: "Settings",
+      href: "/settings",
+      icon: Settings,
+    },
+  ]
+
   useEffect(() => {
-    // Set active tab based on current pathname
-    const currentNav = navigation.find((item) => {
+    const currentNav = [...navigation, ...bottomNavigation].find((item) => {
       if (item.href === "/") {
         return pathname === "/"
       }
@@ -72,62 +79,57 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden md:block min-h-screen">
-        <div className="w-64 fixed inset-y-0 border-r border-[#1f2937] bg-black">
-          <div className="flex flex-col h-full pt-20">
-            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-              {navigation.map((item) => {
-                const Icon = item.icon
-                const isActive = item.id === activeTab
-
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    onClick={() => handleMenuClick(item.id)}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                      isActive
-                        ? "bg-primary text-white shadow-lg shadow-primary/20"
-                        : "text-gray-400 hover:text-primary hover:bg-primary/20",
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                )
-              })}
-            </nav>
+      <div className="hidden md:block">
+        <div className="w-16 fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col">
+          {/* Logo Section */}
+          <div className="h-20 flex items-center justify-center border-b border-gray-200">
+            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <img src='/logo/logo.svg' className="h-6 w-6 text-gray-600" />
+            </button>
           </div>
+
+          {/* Main Navigation */}
+          <nav className="flex-1 py-4 space-y-1 overflow-y-auto">
+            {navigation.map((item) => {
+              const Icon = item.icon
+              const isActive = item.id === activeTab
+
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => handleMenuClick(item.id)}
+                  className={cn(
+                    "flex items-center justify-center h-12 mx-2 rounded-lg transition-all group relative",
+                    isActive ? "bg-green-50 text-primary" : "text-gray-400 hover:text-primary hover:bg-gray-50",
+                  )}
+                  title={item.name}
+                >
+                  <Icon className="h-5 w-5" />
+                  {/* <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                    {item.name}
+                  </span> */}
+                </Link>
+              )
+            })}
+          </nav>
+
         </div>
       </div>
 
       {/* Mobile Sidebar */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/80" onClick={onMobileMenuClose}>
+        <div className="md:hidden fixed inset-0 z-50 bg-black/50" onClick={onMobileMenuClose}>
           <div
-            className="fixed inset-y-0 left-0 w-64 bg-black border-r border-[#1f2937] shadow-xl"
+            className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-[#1f2937]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#009A6B] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">K</span>
-                </div>
-                <span className="text-white font-semibold text-lg">KidneyAI</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onMobileMenuClose}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <span className="text-gray-900 font-semibold text-lg">Menu</span>
             </div>
 
             <nav className="px-4 py-6 space-y-2">
-              {navigation.map((item) => {
+              {[...navigation, ...bottomNavigation].map((item) => {
                 const Icon = item.icon
                 const isActive = item.id === activeTab
 
@@ -138,9 +140,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
                     onClick={() => handleMenuClick(item.id)}
                     className={cn(
                       "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                      isActive
-                        ? "bg-[#009A6B] text-white shadow-lg shadow-[#009A6B]/20"
-                        : "text-gray-400 hover:text-white hover:bg-[#1f2937]",
+                      isActive ? "bg-blue-50 text-[#687FE5]" : "text-gray-600 hover:text-[#687FE5] hover:bg-gray-50",
                     )}
                   >
                     <Icon className="h-5 w-5" />

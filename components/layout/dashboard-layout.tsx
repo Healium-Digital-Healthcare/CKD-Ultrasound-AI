@@ -5,6 +5,8 @@ import { useState } from "react"
 import { usePathname } from "next/navigation"
 import DashboardSidebar from "../shell/dashboard-sidebar"
 import DashboardHeader from "../shell/dashboard-header"
+import { Provider } from "react-redux"
+import { store } from "@/store/app-store"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard" },
@@ -28,7 +30,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const handleSearch = (text: string) => {
     setSearchText(text)
     console.log(searchText)
-    // You can add search logic here or pass it to children via context
   }
 
   const handleMobileMenuToggle = () => {
@@ -40,22 +41,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-black">
-      {/* Sidebar */}
-      <DashboardSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={handleMobileMenuClose} />
+    <Provider store={store}>
+      <div className="flex h-screen overflow-hidden bg-gray-50">
+        {/* Sidebar */}
+        <DashboardSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={handleMobileMenuClose} />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <DashboardHeader
-          headerTitle={getPageTitle()}
-          onSearch={handleSearch}
-          onMobileMenuToggle={handleMobileMenuToggle}
-        />
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
+          <DashboardHeader
+            headerTitle={getPageTitle()}
+            onSearch={handleSearch}
+            onMobileMenuToggle={handleMobileMenuToggle}
+          />
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto bg-black pt-20 ml-64">{children}</main>
+          {/* Page Content */}
+          <main className="flex-1 overflow-auto ml-16 bg-gray-50">{children}</main>
+        </div>
       </div>
-    </div>
+    </Provider>
   )
 }

@@ -75,20 +75,20 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="bg-black h-full">
+    <div className="h-full">
 
       <div className="h-full">
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-6">
             {/* Vertical Tab List */}
-            <div className="w-64 flex-shrink-0 bg-[#1a1a1a] ">
+            <div className="w-64 flex-shrink-0 bg-white">
               <div className="p-2 space-y-1">
                 <button
                   onClick={() => setActiveTab("profile")}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeTab === "profile"
-                      ? "bg-[#009A6B] text-white"
-                      : "text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                      ? "bg-primary text-white"
+                      : "text-gray-400 hover:text-primary hover:bg-primary/20"
                   }`}
                 >
                   <User className="w-5 h-5" />
@@ -99,8 +99,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab("security")}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeTab === "security"
-                      ? "bg-[#009A6B] text-white"
-                      : "text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                      ? "bg-primary text-white"
+                      : "text-gray-400 hover:text-primary hover:bg-primary/20"
                   }`}
                 >
                   <Lock className="w-5 h-5" />
@@ -111,8 +111,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab("pacs")}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                     activeTab === "pacs"
-                      ? "bg-[#009A6B] text-white"
-                      : "text-gray-400 hover:text-white hover:bg-[#2a2a2a]"
+                      ? "bg-primary text-white"
+                      : "text-gray-400 hover:text-primary hover:bg-primary/20"
                   }`}
                 >
                   <Server className="w-5 h-5" />
@@ -125,7 +125,7 @@ export default function SettingsPage() {
             <div className="flex-1">
               {/* Profile Tab */}
               {activeTab === "profile" && (
-                <div className="bg-white rounded-lg p-8 shadow-lg">
+                <div className="rounded-lg p-8 shadow-lg">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-6">Profile Information</h2>
 
                   <div className="space-y-6">
@@ -204,7 +204,7 @@ export default function SettingsPage() {
 
               {/* Security Tab */}
               {activeTab === "security" && (
-                <div className="bg-white rounded-lg p-8 shadow-lg">
+                <div className="rounded-lg p-8 shadow-lg">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-6">Change Password</h2>
 
                   <div className="space-y-6 max-w-md">
@@ -260,7 +260,7 @@ export default function SettingsPage() {
 
               {/* PACS Integration Tab */}
               {activeTab === "pacs" && (
-                <div className="bg-white rounded-lg p-8 shadow-lg">
+                <div className="rounded-lg p-8 shadow-lg">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-semibold text-gray-900">PACS Integration</h2>

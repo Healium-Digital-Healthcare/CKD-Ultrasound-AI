@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Bell, LogOut, Menu, Plus, Search, Settings, User } from "lucide-react"
+import { ArrowLeft, Bell, LogOut, Menu, Plus, Search, Settings, Grid3x3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,10 +14,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Input } from "../ui/input"
 import { useUser } from "@/lib/contexts/UserContext"
 import { createClient } from "@/lib/supabase/client"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface DashboardHeaderProps {
   headerTitle: string
@@ -55,74 +65,20 @@ export default function DashboardHeader({ onSearch, onMobileMenuToggle }: Dashbo
   const isNewPatientPage = pathname === "/patients/new"
 
   return (
-    <>
+    <div>
       {/* Desktop Header */}
-      <nav className="hidden md:flex items-center bg-black fixed w-full z-10 border-b border-[#1f2937] h-20">
-        {/* Logo Section */}
-        <div className="flex-shrink-0 w-64 border-r border-[#1f2937] h-full flex items-center px-6 gap-2">
-          <Link href="/">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-              <img src="/logo/logo.svg" className="w-8 h-8" />
-            </div>
-          </Link>
-          <div className="flex flex-col items-start">
-            <Link href="/">
-              <span className="font-semibold text-lg text-[#687FE5]">Healium CKD AI</span>
-            </Link>
-            <Link href="https://www.healiumintelliscan.com" target="_blank" className="text-[#687FE5]">
-              <span className="text-sm">by Healium Intelliscan</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Header Content */}
+      <nav className="hidden md:flex items-center z-10 border-b border-gray-200 h-20 ml-16 bg-white">
         <div className="flex-1 flex items-center justify-between px-6">
-          <div className="flex-1 max-w-md">
-            {(isNewCasePage || isNewPatientPage) && (
-              <Button
-                onClick={() => router.back()}
-                variant="ghost"
-                className="text-gray-400 hover:text-white hover:bg-[#1f2937]"
-              >
-                <ArrowLeft className="h-5 w-5" />
-                Back
-              </Button>
-            )}
-            {(isPatientPage || isCasesPage) && (
-              <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={isPatientPage ? "Search patients..." : "Search cases..."}
-                  onChange={handleSearch}
-                  className="pl-10 text-white"
-                />
-              </div>
-            )}
+          {/* Left Section - Title and Back/Search */}
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-medium text-gray-900">CKD Ultrasound AI</h1>
           </div>
 
-          {/* Right Section */}
-          <div className="flex items-center gap-4">
-            {isPatientPage && (
-              <Button
-                onClick={handleAddPatient}
-                className="bg-[#009A6B] hover:bg-[#008059] text-white px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap"
-              >
-                <Plus className="h-4 w-4" />
-                Add Patient
-              </Button>
-            )}
-            {(isCasesPage || isDashboardPage) && (
-              <Button
-                onClick={handleAddCase}
-                className="bg-[#009A6B] hover:bg-[#008059] text-white px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap"
-              >
-                <Plus className="h-4 w-4" />
-                New Case
-              </Button>
-            )}
-
+          {/* Right Section - Actions and User */}
+          <div className="flex items-center gap-3">
+            
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-[#1f2937]">
+            <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
               <Bell className="h-5 w-5" />
             </Button>
 
@@ -130,37 +86,43 @@ export default function DashboardHeader({ onSearch, onMobileMenuToggle }: Dashbo
             <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-9 h-9 bg-[#009A6B] rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src="/placeholder-user.jpg" alt="User" />
+                    <AvatarFallback className="bg-primary text-white">
+                      {user?.email?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-[#0a0e1a] border-[#1f2937]">
+              <DropdownMenuContent align="end" className="">
                 <DropdownMenuLabel className="pb-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#009A6B] rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-white" />
-                    </div>
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src="/placeholder-user.jpg" alt="User" />
+                      <AvatarFallback className="bg-primary text-white">
+                        {user?.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex flex-col">
-                      <span className="text-white text-sm font-medium">{user?.email}</span>
+                      <span className="text-sm font-medium">{user?.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
 
-                <DropdownMenuSeparator className="bg-[#1f2937]" />
+                <DropdownMenuSeparator />
 
-                <DropdownMenuItem asChild className="text-white hover:bg-[#1f2937] cursor-pointer py-2.5">
+                <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                   <Link href="/settings" className="flex items-center gap-3">
-                    <Settings className="h-4 w-4 text-gray-400" />
+                    <Settings className="h-4 w-4 text-gray-500" />
                     <span>Settings</span>
                   </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="bg-[#1f2937]" />
+                <DropdownMenuSeparator />
 
                 <DropdownMenuItem
                   onClick={() => setShowLogoutDialog(true)}
-                  className="text-red-400 hover:bg-[#1f2937] hover:text-red-300 cursor-pointer py-2.5"
+                  className="text-red-600 hover:text-red-700 cursor-pointer py-2.5"
                 >
                   <div className="flex items-center gap-3">
                     <LogOut className="h-4 w-4" />
@@ -178,18 +140,13 @@ export default function DashboardHeader({ onSearch, onMobileMenuToggle }: Dashbo
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-semibold">Confirm Logout</AlertDialogTitle>
-            <AlertDialogDescription className="">
-              Are you sure you want to sign out from your account? You’ll need to log in again to access the dashboard.
+            <AlertDialogDescription>
+              Are you sure you want to sign out from your account? You'll need to log in again to access the dashboard.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
-            <AlertDialogCancel className="rounded-lg text-primary">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleSignOut}
-              className="text-white rounded-lg"
-            >
+            <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSignOut} className="rounded-lg bg-red-600 hover:bg-red-700">
               Yes, Sign Out
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -197,18 +154,18 @@ export default function DashboardHeader({ onSearch, onMobileMenuToggle }: Dashbo
       </AlertDialog>
 
       {/* Mobile Header */}
-      <div className="md:hidden bg-black h-20 flex items-center justify-between px-4 border-b border-[#1f2937]">
-        <Button variant="ghost" size="icon" onClick={onMobileMenuToggle} className="text-white">
+      <div className="md:hidden h-20 flex items-center justify-between px-4 border-b border-gray-200 bg-white">
+        <Button variant="ghost" size="icon" onClick={onMobileMenuToggle} className="text-gray-900">
           <Menu className="h-6 w-6" />
         </Button>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#009A6B] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">K</span>
-          </div>
-          <span className="text-white font-semibold text-lg">KidneyAI</span>
-        </div>
-        <div className="w-10" />
+        <h1 className="text-lg font-medium text-gray-900">CCM System</h1>
+        <Avatar className="h-9 w-9">
+          <AvatarImage src="/placeholder-user.jpg" alt="User" />
+          <AvatarFallback className="bg-[#687FE5] text-white">
+            {user?.email?.charAt(0).toUpperCase() || "U"}
+          </AvatarFallback>
+        </Avatar>
       </div>
-    </>
+    </div>
   )
 }
