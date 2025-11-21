@@ -1,14 +1,12 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { analysisId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ analysisId: string }> }) {
+
   try {
     const supabase = await createClient()
-    const { analysisId } = params
-
+    const { analysisId } = await params
+    
     // Update status to pending/processing
     const { error } = await supabase
       .from("image_analysis")
