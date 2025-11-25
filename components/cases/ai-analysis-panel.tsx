@@ -164,12 +164,12 @@ export function AIAnalysisPanel({ imageId, caseData }: AIAnalysisPanelProps) {
                     )
                   })}
               </div>
-              <div className="rounded-lg border border-border/40 bg-card/80 backdrop-blur-sm p-4">
+              {/* <div className="rounded-lg border border-border/40 bg-card/80 backdrop-blur-sm p-4">
                 <div className="text-xs text-muted-foreground mb-1">Predicted</div>
                 <div className="text-sm font-semibold capitalize">
                   {imageAnalysisData.ai_analysis_result.disease_predicted.replace(/_/g, " ")}
                 </div>
-              </div>
+              </div> */}
             </div>
           </>
         ) : (
