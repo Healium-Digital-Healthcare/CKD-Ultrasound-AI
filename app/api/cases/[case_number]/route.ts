@@ -5,8 +5,18 @@ import { supabase as serviceSupabase } from "@/lib/supabase"
 export async function GET(_request: Request, { params }: { params: Promise<{ case_number: string }> }) {
   try {
     const { case_number } = await params
+    if(!case_number) {
+      return NextResponse.json({ error: "Case number is required" }, { status: 400 })
+    }
+
     const supabase = await createClient()
-        // Join patients table to get name and age
+
+    const { data: { user }} = await supabase.auth.getUser()
+    if(!user) {
+      return NextResponse.json({ error: "Unauthorized user" }, { status: 401 })
+    }
+    
+    // Join patients table to get name and age
     const { data, error } = await supabase
       .from("cases")
       .select(`
@@ -24,6 +34,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cas
         )
       `)
       .eq("case_number", case_number)
+      .eq('user_id', user.id)
       .single()
 
 

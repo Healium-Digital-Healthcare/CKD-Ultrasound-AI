@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ files: signedFiles })
   } catch (error) {
-    console.error('Upload URL generation error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to generate upload URLs' },
       { status: 500 }

@@ -39,7 +39,7 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema) as unknown as Resolver<PatientFormValues>,
     defaultValues: {
-      patientId: `PID${Math.floor(100000 + Math.random() * 900000)}`,
+      patientId: `${new Date().toISOString().slice(0, 10).replace(/-/g, "")}` + `${Math.floor(1000 + Math.random() * 9000)}`,
       name: "",
       age: 0,
       sex: "M",
@@ -276,7 +276,7 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
             </Button>
             <Button
               onClick={form.handleSubmit(onSubmit)}
-              className="px-6 bg-[#687FE5] hover:bg-[#5568d3] text-white"
+              className="px-6"
               disabled={isLoading}
             >
               {isLoading ? "Creating..." : "Create Patient"}

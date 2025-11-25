@@ -169,7 +169,7 @@ export function PatientListTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                        className="h-8 w-8 text-gray-400 hover:primary"
                         onClick={() => onEdit(patient)}
                       >
                         <Pencil className="h-4 w-4" />

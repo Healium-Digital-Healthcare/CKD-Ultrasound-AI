@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
       .from("patients")
       .select("*")
       .eq("patient_id", patientId)
+      .eq("user_id", user.id)
       .maybeSingle();
 
     if (error) {

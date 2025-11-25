@@ -85,7 +85,7 @@ export function AIAnalysisPanel({ imageId, caseData }: AIAnalysisPanelProps) {
           {status === "pending" && <Clock className="w-3.5 h-3.5 text-amber-500" />}
         </div>
         {showReanalysis && (
-          <Button onClick={handleReanalysis} disabled={isReanalyzing} variant="ghost" size="sm" className="h-8">
+          <Button onClick={handleReanalysis} disabled variant="ghost" size="sm" className="h-8">
             {isReanalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
           </Button>
         )}

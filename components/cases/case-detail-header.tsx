@@ -1,15 +1,16 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Download, Share2 } from 'lucide-react'
+import { ArrowLeft, Upload } from "lucide-react"
 import Link from "next/link"
 
 interface CaseDetailHeaderProps {
   caseNumber: string
   patientName: string
+  onUploadClick: () => void
 }
 
-export function CaseDetailHeader({ caseNumber, patientName }: CaseDetailHeaderProps) {
+export function CaseDetailHeader({ caseNumber, patientName, onUploadClick }: CaseDetailHeaderProps) {
   return (
     <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 flex-shrink-0">
       <div className="flex items-center gap-4">
@@ -27,11 +28,9 @@ export function CaseDetailHeader({ caseNumber, patientName }: CaseDetailHeaderPr
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-          <Share2 className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-          <Download className="h-4 w-4" />
+        <Button disabled variant="outline" size="sm" onClick={onUploadClick} className="gap-2 bg-transparent">
+          <Upload className="h-4 w-4" />
+          Upload Images
         </Button>
       </div>
     </div>

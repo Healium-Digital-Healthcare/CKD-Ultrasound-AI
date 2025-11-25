@@ -5,13 +5,22 @@ import type { Patient } from "@/types/patient"
 export async function GET() {
   try {
     const supabase = await createClient()
-    const { data, error } = await supabase.from("patients").select("*").order("created_at", { ascending: false })
+    const { data: { user }} = await supabase.auth.getUser()
+    
+    if(!user) {
+      return NextResponse.json({ error: "Unauthorized user" }, { status: 401 })
+    }
+
+    const { data, error } = await supabase
+    .from("patients")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
 
     if (error) throw error
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error("[v0] Error fetching patients:", error)
     return NextResponse.json({ error: "Failed to fetch patients" }, { status: 500 })
   }
 }
@@ -19,6 +28,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
+    const { data: { user }} = await supabase.auth.getUser()
+
+    if(!user) {
+      return NextResponse.json({ error: "Unauthorized user" }, { status: 401 })
+    }
+
     const body = (await request.json()) as Partial<Patient>
 
     const { data, error } = await supabase
@@ -33,6 +48,7 @@ export async function POST(request: Request) {
         last_updated: new Date().toISOString(),
         ckd_stage: body.ckd_stage,
         egfr: body.egfr,
+        user_id: user.id,
       })
       .select()
       .single()
@@ -41,7 +57,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error("[v0] Error creating patient:", error)
     return NextResponse.json({ error: "Failed to create patient" }, { status: 500 })
   }
 }

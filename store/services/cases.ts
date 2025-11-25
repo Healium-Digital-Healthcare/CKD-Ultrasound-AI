@@ -67,6 +67,21 @@ export const casesApi = createApi({
       }),
       invalidatesTags: (result, error, imageId) => [{ type: "ImageAnalysis", id: imageId }],
     }),
+    deleteImage: builder.mutation<void, string>({
+      query: (imageId) => ({
+        url: `/image-analysis/${imageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, imageId) => [{ type: "ImageAnalysis", id: imageId }, "Case"],
+    }),
+    addImagesToCase: builder.mutation<void, { caseId: string; images: { image_path: string; case_id: string }[] }>({
+      query: ({ caseId, images }) => ({
+        url: `/cases/${caseId}/images`,
+        method: "POST",
+        body: { images },
+      }),
+      invalidatesTags: (result, error, { caseId }) => [{ type: "Case", id: caseId }],
+    }),
   }),
 })
 
@@ -79,4 +94,6 @@ export const {
   usePredictCaseMutation,
   useLazyGetImageAnalysisQuery,
   useTriggerReanalysisMutation,
+  useDeleteImageMutation,
+  useAddImagesToCaseMutation
 } = casesApi

@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 import type { CaseFormValues } from "@/lib/schemas/case"
 import { useLazyGetPatientByPatientIdQuery } from "@/store/services/patients";
@@ -77,35 +78,35 @@ export function CaseFormPatientInfo({ form }: CaseFormPatientInfoProps) {
             control={form.control}
             name="patientType"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-3">
                 <FormControl>
-                  <div className="flex items-center gap-8">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={field.value === "new"}
-                        onChange={() => {
-                          field.onChange("new")
-                          setShowDetails(false)
-                        }}
-                        className="w-4 h-4"
-                      />
-                      <span>New Patient</span>
-                    </label>
+                  <RadioGroup
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setShowDetails(false);
+                    }}
+                    defaultValue={field.value}
+                    value={field.value}
+                    className="flex items-center gap-8"
+                  >
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <RadioGroupItem value="new" />
+                      </FormControl>
+                      <FormLabel className="font-normal cursor-pointer">
+                        New Patient
+                      </FormLabel>
+                    </FormItem>
 
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={field.value === "existing"}
-                        onChange={() => {
-                          field.onChange("existing")
-                          setShowDetails(false)
-                        }}
-                        className="w-4 h-4"
-                      />
-                      <span>Existing Patient</span>
-                    </label>
-                  </div>
+                    <FormItem className="flex items-center space-x-2">
+                      <FormControl>
+                        <RadioGroupItem value="existing" />
+                      </FormControl>
+                      <FormLabel className="font-normal cursor-pointer">
+                        Existing Patient
+                      </FormLabel>
+                    </FormItem>
+                  </RadioGroup>
                 </FormControl>
                 <FormMessage />
               </FormItem>

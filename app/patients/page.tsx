@@ -61,7 +61,7 @@ export default function PatientsPage() {
             <h1 className="text-3xl font-semibold text-gray-900">Patients</h1>
             <p className="text-sm text-gray-600 mt-1">Manage your patient records</p>
           </div>
-          <Button onClick={handleCreate} className="bg-[#687FE5] hover:bg-[#5568d3]">
+          <Button onClick={handleCreate} className="">
             <Plus className="h-4 w-4 mr-2" />
             Add Patient
           </Button>

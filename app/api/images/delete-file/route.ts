@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized user' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { files, folderName } = body
 
@@ -29,7 +37,6 @@ export async function POST(request: NextRequest) {
         const { data, error } = await supabase.storage
           .from(bucket)
           .createSignedUploadUrl(filePath)
-
         if (error) {
           throw new Error(`Failed to create signed URL: ${error.message}`)
         }
@@ -45,7 +52,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ files: signedFiles })
   } catch (error) {
-    console.error('Upload URL generation error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to generate upload URLs' },
       { status: 500 }

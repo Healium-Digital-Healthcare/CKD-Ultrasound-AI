@@ -24,8 +24,8 @@ const patientFormSchema = z.object({
   severity: z.enum(["normal", "mild", "moderate", "severe", "critical"] as const, {
     message: "Please select a severity level",
   }),
-  ckdStage: z.number().optional(),
-  eGFR: z.number().optional(),
+  ckdStage: z.coerce.number().optional(),
+  eGFR: z.coerce.number().optional()
 })
 
 type PatientFormValues = z.infer<typeof patientFormSchema>
@@ -273,7 +273,7 @@ export function EditPatientSheet({ patient, open, onOpenChange }: EditPatientShe
                 </Button>
                 <Button
                     onClick={form.handleSubmit(onSubmit)}
-                    className="px-6 bg-[#687FE5] hover:bg-[#5568d3] text-white"
+                    className="px-6"
                     disabled={isLoading}
                 >
                     {isLoading ? "Updating..." : "Update Patient"}
