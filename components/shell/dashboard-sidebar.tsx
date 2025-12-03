@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Users, Scan, Calculator, UserIcon, Settings } from "lucide-react"
+import { LayoutDashboard, Users, Scan, Calculator, UserIcon, Settings, FileTextIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DashboardSidebarProps {
@@ -37,19 +37,13 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
     },
     {
       id: 4,
-      name: "eGFR Calculator",
+      name: "Report",
       href: "/egfr",
-      icon: Calculator,
+      icon: FileTextIcon,
     },
   ]
 
   const bottomNavigation = [
-    {
-      id: 6,
-      name: "Profile",
-      href: "/profile",
-      icon: UserIcon,
-    },
     {
       id: 7,
       name: "Organization Settings",
@@ -99,7 +93,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
           <div className="flex-1 py-6 overflow-y-auto">
             <div className="px-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-                Main Menu
+                CLINICAL
               </p>
               <nav className="space-y-1">
                 {navigation.map((item) => {
@@ -133,6 +127,10 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
 
             {/* Bottom Navigation */}
             <div className="mt-auto px-4 pt-6 border-t border-sidebar-border">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
+                ADMINISTRATION
+              </p>
+              
               <nav className="space-y-1">
                 {bottomNavigation.map((item) => {
                   const Icon = item.icon
