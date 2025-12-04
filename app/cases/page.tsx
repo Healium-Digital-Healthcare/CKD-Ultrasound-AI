@@ -69,10 +69,10 @@ export default function CasesPage() {
     <div className="bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-foreground">Scan List</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Study List</h1>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            New Scan
+            New Study
           </Button>
         </div>
 
@@ -97,7 +97,7 @@ export default function CasesPage() {
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Scan List</h2>
+            <h2 className="text-lg font-semibold text-foreground">Study List</h2>
             <div className="flex items-center gap-2">
               <div className="relative w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
