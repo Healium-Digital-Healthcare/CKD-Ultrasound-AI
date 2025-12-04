@@ -49,7 +49,7 @@ export function PatientStudies({ cases, isLoading, onCaseClick }: PatientStudies
         <div className="bg-white rounded-lg border border-gray-200 p-16 text-center">
           <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No studies found</h3>
-          <p className="text-sm text-gray-600">This patient doesn't have any studies yet.</p>
+          <p className="text-sm text-gray-600">This patient doesn&apos;t have any studies yet.</p>
         </div>
       </div>
     )

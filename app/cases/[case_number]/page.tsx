@@ -94,7 +94,6 @@ export default function CaseDetailPage({ params }: { params: Promise<{ case_numb
         <div style={{ width: rightWidth }}>
           <AIAnalysisPanel
             imageId={selectedImage?.id || null}
-            caseData={caseData}
           />
         </div>
       </div>

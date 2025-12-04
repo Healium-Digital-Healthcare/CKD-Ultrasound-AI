@@ -14,7 +14,7 @@ export default function ReportsPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-3">Advanced Reports Coming Soon</h1>
 
         <p className="text-gray-600 mb-8 max-w-md mx-auto">
-          We're working on powerful reporting features including custom report builders, scheduled exports, and advanced
+          We&apos;re working on powerful reporting features including custom report builders, scheduled exports, and advanced
           data analytics to help you make better decisions.
         </p>
 
