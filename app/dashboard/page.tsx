@@ -95,7 +95,7 @@ export default function DashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Total Cases</p>
+              <p className="text-sm text-gray-500 mb-1">Total Studies</p>
               <p className="text-3xl font-bold text-gray-900">336</p>
               <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
