@@ -39,11 +39,7 @@ export default function DashboardHeader({ onSearch, onMobileMenuToggle }: Dashbo
     <div>
       {/* Desktop Header */}
       <nav className="hidden md:flex items-center z-10 border-b border-border/50 h-20 ml-64 bg-card/95 backdrop-blur-xl shadow-premium">
-        <div className="flex-1 flex items-center justify-between px-6">
-          {/* Left Section - Title and Back/Search */}
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold text-foreground tracking-tight">CKD Ultrasound AI</h1>
-          </div>
+        <div className="flex-1 flex items-center justify-end px-6">
 
           {/* Right Section - Actions and User */}
           <div className="flex items-center gap-2">

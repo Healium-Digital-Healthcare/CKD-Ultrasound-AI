@@ -22,9 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cas
       .select(`
         *,
         patient: patients (
-          name,
-          age,
-          sex
+          *
         ),
         images: image_analysis (
           id,

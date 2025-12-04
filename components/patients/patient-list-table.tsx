@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye, MoreVertical } from "lucide-react"
 import type { Patient } from "@/types/patient"
 import { cn } from "@/lib/utils"
 import {
@@ -19,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useDeletePatientMutation } from "@/store/services/patients"
 
 interface PatientListTableProps {
@@ -26,35 +26,38 @@ interface PatientListTableProps {
   currentPage?: number
   totalPages?: number
   pageSize?: number
+  totalEntries?: number
   onPageChange?: (page: number) => void
   onPageSizeChange?: (size: number) => void
   onRefresh?: () => void
   onEdit: (patient: Patient) => void
 }
 
-const getSeverityColor = (severity: Patient["severity"]) => {
+const getStatusColor = (severity: Patient["severity"]) => {
   switch (severity) {
     case "normal":
-      return "bg-green-50 text-green-700 hover:bg-green-50"
     case "mild":
-      return "bg-blue-50 text-blue-700 hover:bg-blue-50"
+      return "bg-green-50 text-green-700 border-green-200"
     case "moderate":
-      return "bg-yellow-50 text-yellow-700 hover:bg-yellow-50"
     case "severe":
-      return "bg-orange-50 text-orange-700 hover:bg-orange-50"
+      return "bg-orange-50 text-orange-700 border-orange-200"
     case "critical":
-      return "bg-red-50 text-red-700 hover:bg-red-50"
+      return "bg-red-50 text-red-700 border-red-200"
     default:
-      return "bg-gray-100 text-gray-600 hover:bg-gray-100"
+      return "bg-gray-50 text-gray-600 border-gray-200"
   }
 }
 
-const getCkdStageColor = (stage?: number) => {
-  if (!stage) return "bg-gray-100 text-gray-600"
-  if (stage <= 2) return "bg-green-100 text-green-700"
-  if (stage === 3) return "bg-yellow-100 text-yellow-700"
-  if (stage === 4) return "bg-orange-100 text-orange-700"
-  return "bg-red-100 text-red-700"
+const getStatusLabel = (severity: Patient["severity"]) => {
+  if (severity === "normal" || severity === "mild") return "stable"
+  if (severity === "moderate" || severity === "severe") return "recovering"
+  if (severity === "critical") return "critical"
+  return "unknown"
+}
+
+const getCkdStageLabel = (stage?: number) => {
+  if (!stage) return "-"
+  return `CKD ${stage}`
 }
 
 export function PatientListTable({
@@ -62,20 +65,19 @@ export function PatientListTable({
   currentPage = 1,
   totalPages = 1,
   pageSize = 10,
+  totalEntries = 0,
   onPageChange,
   onPageSizeChange,
   onRefresh,
-  onEdit
+  onEdit,
 }: PatientListTableProps) {
-  const [selectedPatients, setSelectedPatients] = useState<string[]>([])
+  const router = useRouter()
   const [deletePatient, { isLoading: isDeleting }] = useDeletePatientMutation()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [patientToDelete, setPatientToDelete] = useState<string | null>(null)
 
-
   const startEntry = (currentPage - 1) * pageSize + 1
-  const endEntry = Math.min(currentPage * pageSize, patients.length)
-  const totalEntries = patients.length
+  const endEntry = Math.min(currentPage * pageSize, totalEntries)
 
   const handleDeleteClick = (patientId: string) => {
     setPatientToDelete(patientId)
@@ -92,152 +94,122 @@ export function PatientListTable({
       onRefresh?.()
     } catch (error) {
       console.error("Failed to delete patient:", error)
-      alert("Failed to delete patient. Please try again.")
     }
+  }
+
+  const handleRowClick = (patientId: string) => {
+    router.push(`/patients/${patientId}`)
   }
 
   return (
     <>
       <div className="space-y-4">
-        <div className="bg-white rounded-lg border border-gray-200">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b border-gray-200 hover:bg-transparent">
-                <TableHead className="font-semibold text-gray-700">Patient</TableHead>
-                <TableHead className="font-semibold text-gray-700">Age</TableHead>
-                <TableHead className="font-semibold text-gray-700">Sex</TableHead>
-                <TableHead className="font-semibold text-gray-700">Severity</TableHead>
-                <TableHead className="font-semibold text-gray-700">CKD Stage</TableHead>
-                <TableHead className="font-semibold text-gray-700">eGFR</TableHead>
-                <TableHead className="font-semibold text-gray-700 text-center">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {patients.map((patient) => (
-                <TableRow key={patient.id} className="border-b border-gray-100 hover:bg-gray-50/50">
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={patient.avatar || "/placeholder.svg"} alt={patient.name} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-                          {patient.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{patient.name}</span>
-                        <span className="text-[12px] font-normal">{patient.patient_id}</span>
-                      </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b border-gray-200 hover:bg-transparent">
+              <TableHead className="font-medium text-gray-600 text-sm w-1/6">Patient</TableHead>
+              <TableHead className="font-medium text-gray-600 text-sm w-1/6">Stage</TableHead>
+              <TableHead className="font-medium text-gray-600 text-sm w-1/6">Condition</TableHead>
+              <TableHead className="font-medium text-gray-600 text-sm w-1/6">Status</TableHead>
+              <TableHead className="font-medium text-gray-600 text-sm w-1/6">Last Scan</TableHead>
+              <TableHead className="font-medium text-gray-600 text-sm w-1/6">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {patients.map((patient) => (
+              <TableRow
+                key={patient.id}
+                className="border-b border-gray-100 hover:bg-gray-50/50 cursor-pointer"
+                onClick={() => handleRowClick(patient.id)}
+              >
+                <TableCell className="w-1/6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600 font-medium text-sm">
+                      {patient.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{patient.age}</TableCell>
-                  <TableCell className="text-sm">
-                    <Badge variant="outline" className="font-normal">
-                      {patient.sex}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={cn("font-normal capitalize", getSeverityColor(patient.severity))}
-                    >
-                      {patient.severity}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {patient.ckd_stage ? (
-                      <Badge variant="secondary" className={cn("font-normal", getCkdStageColor(patient.ckd_stage))}>
-                        Stage {patient.ckd_stage}
-                      </Badge>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm font-medium">
-                    {patient.egfr ? (
-                      <span className={cn(patient.egfr < 60 ? "text-orange-600" : "text-green-600")}>
-                        {patient.egfr} mL/min
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-900">{patient.name}</span>
+                      <span className="text-xs text-gray-500">
+                        {patient.patient_id} • {patient.age}y • {patient.sex === "M" ? "Male" : "Female"}
                       </span>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-400 hover:primary"
-                        onClick={() => onEdit(patient)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => patient.id && handleDeleteClick(patient.id)}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-sm text-gray-900 w-1/6">{getCkdStageLabel(patient.ckd_stage)}</TableCell>
+                <TableCell className="text-sm text-gray-900 capitalize w-1/6">{patient.severity || "-"}</TableCell>
+                <TableCell className="w-1/6">
+                  <Badge variant="outline" className={cn("font-normal capitalize", getStatusColor(patient.severity))}>
+                    {getStatusLabel(patient.severity)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm text-gray-600 w-1/6">
+                  {patient.scanned_on ? new Date(patient.scanned_on).toISOString().split("T")[0] : "-"}
+                </TableCell>
+                <TableCell className="w-1/6 flex items-center" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="sm"
+                    className="gap-1.5 h-8"
+                    onClick={() => handleRowClick(patient.id)}
+                  >
+                    Detail
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(patient)}>Edit</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteClick(patient.id)}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between pt-4">
           <div className="text-sm text-gray-600">
             Showing <span className="font-medium text-gray-900">{startEntry}</span> to{" "}
             <span className="font-medium text-gray-900">{endEntry}</span> of{" "}
-            <span className="font-medium text-gray-900">{totalEntries}</span> entries
+            <span className="font-medium text-gray-900">{totalEntries}</span> results
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Rows per page:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-                className="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 bg-transparent"
+              onClick={() => onPageChange?.(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
             </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 bg-transparent"
-                  onClick={() => onPageChange?.(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 bg-transparent"
-                  onClick={() => onPageChange?.(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 bg-transparent"
+              onClick={() => onPageChange?.(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>

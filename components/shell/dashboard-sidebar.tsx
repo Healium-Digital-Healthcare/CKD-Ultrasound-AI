@@ -31,14 +31,14 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
     },
     {
       id: 3,
-      name: "Scan List",
+      name: "Study List",
       href: "/cases",
       icon: Scan,
     },
     {
       id: 4,
       name: "Report",
-      href: "/egfr",
+      href: "/reports",
       icon: FileTextIcon,
     },
   ]
@@ -47,7 +47,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
     {
       id: 7,
       name: "Organization Settings",
-      href: "/settings",
+      href: "/settings/organization",
       icon: Settings,
     },
   ]
@@ -126,7 +126,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
             </div>
 
             {/* Bottom Navigation */}
-            <div className="mt-auto px-4 pt-6 border-t border-sidebar-border">
+            <div className="mt-auto px-4 mt-6 pt-6 border-t border-sidebar-border">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
                 ADMINISTRATION
               </p>

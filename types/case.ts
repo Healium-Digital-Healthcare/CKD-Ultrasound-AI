@@ -1,3 +1,5 @@
+import { Patient } from "./patient"
+
 export interface AIAnalysisResult {
   egfr: number
   findings: {
@@ -28,11 +30,7 @@ export interface Case {
   total_images: number
   selected_images: number
   images: ImageAIAnalysis[]
-  patient: {
-    name: string
-    age: string,
-    sex: string
-  }
+  patient: Patient
 }
 
 export interface ImageAIAnalysis {

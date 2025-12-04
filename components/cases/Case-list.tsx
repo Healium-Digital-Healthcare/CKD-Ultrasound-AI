@@ -2,9 +2,9 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Eye } from "lucide-react"
 import type { Case } from "@/types/case"
-import Link from "next/link"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 interface CaseListTableProps {
   cases: Case[]
@@ -15,6 +15,7 @@ interface CaseListTableProps {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onRefresh: () => void
+  onCaseClick?: (caseNumber: string) => void
 }
 
 export function CaseListTable({
@@ -25,57 +26,81 @@ export function CaseListTable({
   totalEntries,
   onPageChange,
   onPageSizeChange,
+  onCaseClick,
 }: CaseListTableProps) {
   const startEntry = totalEntries === 0 ? 0 : (currentPage - 1) * pageSize + 1
   const endEntry = Math.min(currentPage * pageSize, totalEntries)
 
+  const getInitials = (name: string) => {
+    const parts = name.split(" ")
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
+
   return (
     <div className="space-y-4">
-      <div className="border rounded-lg overflow-hidden bg-white">
+      <div className="rounded-lg overflow-hidden bg-card">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50">
-              <TableHead className="font-semibold">Case #</TableHead>
-              <TableHead className="font-semibold">Patient Name</TableHead>
-              <TableHead className="font-semibold">Age/Sex</TableHead>
-              <TableHead className="font-semibold">Study Date</TableHead>
-              <TableHead className="font-semibold">Images</TableHead>
+            <TableRow className="hover:bg-transparent border-b">
+              <TableHead className="font-medium text-muted-foreground w-1/3">Patient</TableHead>
+              <TableHead className="font-medium text-muted-foreground w-1/3">Scan Date</TableHead>
+              <TableHead className="font-medium text-muted-foreground w-1/3">AI Analysis Result</TableHead>
+              <TableHead className="font-medium text-muted-foreground w-1/3">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {cases.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                   No cases found
                 </TableCell>
               </TableRow>
             ) : (
               cases.map((caseItem) => (
-                <TableRow key={caseItem.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium text-blue-600">
-                    <Link href={`/cases/${caseItem.case_number}`} className="hover:underline">
-                      {caseItem.case_number}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Link href={`/patients/${caseItem.patient_id}`} className="hover:text-blue-600">
-                      {caseItem.patient.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    {caseItem.patient.age} / {caseItem.patient.sex}
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      {new Date(caseItem.study_date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                <TableRow key={caseItem.id} className="hover:bg-muted/50">
+                  <TableCell className="w-1/3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 bg-muted">
+                        <AvatarFallback className="bg-muted text-foreground font-medium">
+                          {getInitials(caseItem.patient.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium text-foreground">{caseItem.patient.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {caseItem.patient.patient_id} • {caseItem.patient.age}y • {caseItem.patient.sex}
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-600">{caseItem.images?.length || 0}</TableCell>
+                  <TableCell className="text-foreground w-1/3">
+                    {new Date(caseItem.study_date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
+                  </TableCell>
+                  <TableCell className="w-1/3">
+                    <Button variant="link" className="h-auto p-0 text-primary font-normal" asChild>
+                      <a href="#" className="flex items-center gap-1">
+                        <Download className="h-3.5 w-3.5" />
+                        Download
+                      </a>
+                    </Button>
+                  </TableCell>
+                  <TableCell className="w-1/3">
+                    <Button
+                      size="sm"
+                      className="gap-1.5 h-8"
+                      onClick={() => onCaseClick?.(caseItem.case_number)}
+                    >
+                      Viewer
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -83,20 +108,20 @@ export function CaseListTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between px-2">
-        <div className="text-sm text-gray-600">
-          Showing <span className="font-medium text-gray-900">{startEntry}</span> to{" "}
-          <span className="font-medium text-gray-900">{endEntry}</span> of{" "}
-          <span className="font-medium text-gray-900">{totalEntries}</span> entries
+      <div className="flex items-center justify-between text-sm">
+        <div className="text-muted-foreground">
+          Showing <span className="font-medium text-foreground">{startEntry}</span> to{" "}
+          <span className="font-medium text-foreground">{endEntry}</span> of{" "}
+          <span className="font-medium text-foreground">{totalEntries}</span> results
         </div>
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Rows per page:</span>
+            <span className="text-muted-foreground">Rows per page:</span>
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="h-8 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -106,14 +131,14 @@ export function CaseListTable({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-muted-foreground">
               Page {currentPage} of {totalPages}
             </span>
             <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 bg-transparent"
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
               >
@@ -122,7 +147,7 @@ export function CaseListTable({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 bg-transparent"
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
               >

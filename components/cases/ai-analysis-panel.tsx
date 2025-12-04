@@ -1,16 +1,14 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { useLazyGetImageAnalysisQuery, useTriggerReanalysisMutation } from "@/store/services/cases"
-import { Case } from "@/types/case"
 import { Loader2, RefreshCw, CheckCircle2, Clock, XCircle } from "lucide-react"
 import { useEffect } from "react"
 
 interface AIAnalysisPanelProps {
   imageId: string | null
-  caseData: Case
 }
 
-export function AIAnalysisPanel({ imageId, caseData }: AIAnalysisPanelProps) {
+export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
   const [fetchAnalysis, { data: imageAnalysisData, isLoading, isFetching }] = useLazyGetImageAnalysisQuery()
   const [triggerReanalysis, { isLoading: isReanalyzing }] = useTriggerReanalysisMutation()
 
@@ -92,25 +90,6 @@ export function AIAnalysisPanel({ imageId, caseData }: AIAnalysisPanelProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Patient Info */}
-        <div className="space-y-3">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Patient</p>
-          <div className="rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm p-4 space-y-2.5">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Name</span>
-              <span className="font-medium">{caseData.patient.name}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Age</span>
-              <span className="font-medium">{caseData.patient.age}y</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Sex</span>
-              <span className="font-medium">{caseData.patient.sex}</span>
-            </div>
-          </div>
-        </div>
-
         {imageAnalysisData.ai_analysis_result ? (
           <>
             {/* eGFR */}

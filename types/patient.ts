@@ -9,7 +9,10 @@ export interface Patient {
   last_updated?: string
   ckd_stage?: number
   egfr?: number,
-  avatar?: string
+  avatar?: string,
+  email?: string,
+  phone?: string,
+  date_of_birth?: string 
 }
 
 export interface FetchPatientByPatienIdResponse {
