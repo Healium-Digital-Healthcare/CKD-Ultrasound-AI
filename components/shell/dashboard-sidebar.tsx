@@ -91,7 +91,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
 
           {/* Main Navigation */}
           <div className="flex-1 py-6 overflow-y-auto">
-            <div className="px-4">
+            <div className="px-4 mb-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
                 CLINICAL
               </p>
@@ -126,7 +126,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
             </div>
 
             {/* Bottom Navigation */}
-            <div className="mt-auto px-4 mt-6 pt-6 border-t border-sidebar-border">
+            <div className="mt-auto px-4 pt-6 border-t border-sidebar-border">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
                 ADMINISTRATION
               </p>
