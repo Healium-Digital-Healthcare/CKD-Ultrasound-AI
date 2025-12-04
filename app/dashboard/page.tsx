@@ -36,11 +36,9 @@ export default function DashboardPage() {
   ]
 
   const severityData = [
-    { name: "Normal", value: 145, color: "#22c55e" },
-    { name: "Mild", value: 89, color: "#eab308" },
-    { name: "Moderate", value: 56, color: "#f97316" },
-    { name: "Severe", value: 34, color: "#ef4444" },
-    { name: "Critical", value: 12, color: "#991b1b" },
+    { name: "Stable", value: 145, color: "#22c55e" },
+    { name: "Recovering", value: 89, color: "#eab308" },
+    { name: "Critical", value: 34, color: "#ef4444" },
   ]
 
   const diseaseDistribution = [
@@ -197,7 +195,7 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </Card>
 
-        {/* Severity Distribution */}
+         {/* Severity Distribution */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Severity Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -207,7 +205,7 @@ export default function DashboardPage() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }: any) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
