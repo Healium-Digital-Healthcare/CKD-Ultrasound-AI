@@ -118,7 +118,7 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
             </div>
           ) : filteredPatients.length === 0 && searchQuery ? (
             <div className="text-center py-12 bg-background rounded-lg border-2 border-dashed">
-              <p className="text-muted-foreground mb-4">No patients found matching "{searchQuery}"</p>
+              <p className="text-muted-foreground mb-4">No patients found matching &ldquo;{searchQuery}&rdquo;</p>
               <Button variant="default" onClick={() => setShowCreateDialog(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 Create New Patient

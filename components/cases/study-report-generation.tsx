@@ -41,7 +41,7 @@ export function StudyReportGeneration({ caseId, onGoBack }: StudyReportGeneratio
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">Analysis Required</h3>
           <p className="text-sm text-muted-foreground mb-6">
-            This case hasn't been analyzed yet. Please go back to Step 3 and complete the AI analysis before generating
+            This case hasn&poas;t been analyzed yet. Please go back to Step 3 and complete the AI analysis before generating
             reports.
           </p>
           {onGoBack && (
