@@ -10,6 +10,7 @@ import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
 import { CaseListTable } from "@/components/cases/Case-list"
 import { CreateCaseSheet } from "@/components/cases/create-case-sheet"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
+import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 
 export default function CasesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -66,11 +67,11 @@ export default function CasesPage() {
   }
 
   return (
-    <div className="bg-background p-6">
+    <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-foreground">Study List</h1>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => handleCreate()}>
             <Plus className="h-4 w-4" />
             New Study
           </Button>
@@ -145,8 +146,9 @@ export default function CasesPage() {
         </div>
       </div>
       {isCreateDialogOpen && (
-        <CreateCaseSheet open={isCreateDialogOpen} onOpenChange={(value) => setIsCreateDialogOpen(value)} />
+        <CreateStudySheet open={isCreateDialogOpen} onOpenChange={(value) => setIsCreateDialogOpen(value)} />
       )}
+      
       <CaseDetailDrawer caseNumber={selectedCaseNumber} open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   )

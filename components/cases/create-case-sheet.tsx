@@ -102,16 +102,16 @@ export function CreateCaseSheet({ open, onOpenChange }: CreateCaseSheetProps) {
   }
 
   const onSubmit = async (data: CaseFormValues) => {
-    await createCase({
-        patient_id: data.patientType === "existing" ? data.patientId : undefined,
-        study_description: data.studyDescription,
-        study_date: data.studyDate,
-        images: data.images.map((img) => img.path),
-        patient_type: data.patientType,
-        patient_age: data.age,
-        patient_name: data.patientName,
-        patient_gender: data.gender
-    })
+    // await createCase({
+    //     patient_id: data.patientType === "existing" ? data.patientId : undefined,
+    //     study_description: data.studyDescription,
+    //     study_date: data.studyDate,
+    //     images: data.images.map((img) => img.path),
+    //     patient_type: data.patientType,
+    //     patient_age: data.age,
+    //     patient_name: data.patientName,
+    //     patient_gender: data.gender
+    // })
   }
 
   const handleTrackCase = () => {

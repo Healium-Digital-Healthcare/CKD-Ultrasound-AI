@@ -3,7 +3,7 @@
 import { use, useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useGetCaseQuery } from "@/store/services/cases"
-import type { ImageAIAnalysis } from "@/types/case"
+import type { ImageAnalysis } from "@/types/case"
 import { CaseDetailHeader } from "@/components/cases/case-detail-header"
 import { ImageList } from "@/components/cases/image-list"
 import { ImageViewer } from "@/components/cases/image-viewer"
@@ -16,7 +16,7 @@ export default function CaseDetailPage({ params }: { params: Promise<{ case_numb
   const { case_number } = use(params)
   const router = useRouter()
 
-  const [selectedImage, setSelectedImage] = useState<ImageAIAnalysis | null>(null)
+  const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
   const [zoom, setZoom] = useState(100)
   const [rightWidth, setRightWidth] = useState(384) // 24rem = 384px
   const [isResizingRight, setIsResizingRight] = useState(false)

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useGetCaseQuery } from "@/store/services/cases"
-import type { ImageAIAnalysis } from "@/types/case"
+import type { ImageAnalysis } from "@/types/case"
 import { ImageList } from "@/components/cases/image-list"
 import { ImageViewer } from "@/components/cases/image-viewer"
 import { AIAnalysisPanel } from "@/components/cases/ai-analysis-panel"
@@ -20,7 +20,7 @@ interface CaseDetailDrawerProps {
 }
 
 export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailDrawerProps) {
-  const [selectedImage, setSelectedImage] = useState<ImageAIAnalysis | null>(null)
+  const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
   const [zoom, setZoom] = useState(100)
   const [rightWidth, setRightWidth] = useState(384) // 24rem = 384px
   const [isResizingRight, setIsResizingRight] = useState(false)
@@ -139,7 +139,7 @@ export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailD
 
                 <ResizeHandle onMouseDown={() => setIsResizingRight(true)} />
 
-                <div style={{ width: rightWidth }}>
+                <div style={{ width: rightWidth }} className="overflow-y-auto overflow-x-hidden">
                   <AIAnalysisPanel imageId={selectedImage?.id || null} />
                 </div>
               </div>

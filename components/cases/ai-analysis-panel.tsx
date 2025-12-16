@@ -1,8 +1,12 @@
 "use client"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { useLazyGetImageAnalysisQuery, useTriggerReanalysisMutation } from "@/store/services/cases"
-import { Loader2, RefreshCw, CheckCircle2, Clock, XCircle } from "lucide-react"
-import { useEffect } from "react"
+import { Loader2, AlertCircle, Edit2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Badge } from "../ui/badge"
+import { EditFindingsDialog } from "./edit-finding-dialog"
+import { AIAnalysisSkeleton } from "./ai-analysis-skeleton"
 
 interface AIAnalysisPanelProps {
   imageId: string | null
@@ -11,6 +15,7 @@ interface AIAnalysisPanelProps {
 export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
   const [fetchAnalysis, { data: imageAnalysisData, isLoading, isFetching }] = useLazyGetImageAnalysisQuery()
   const [triggerReanalysis, { isLoading: isReanalyzing }] = useTriggerReanalysisMutation()
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
   useEffect(() => {
     if (imageId) {
@@ -28,6 +33,11 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
     }
   }
 
+  const handleOpenEditDialog = () => {
+    if (!imageAnalysisData?.ai_analysis_result) return
+    setEditDialogOpen(true)
+  }
+
   if (!imageId) {
     return (
       <div className="border-l border-border/40 flex flex-col flex-shrink-0 h-full backdrop-blur-xl bg-background/60">
@@ -41,20 +51,13 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
     )
   }
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
-      <div className="border-l border-border/40 flex flex-col flex-shrink-0 h-full backdrop-blur-xl bg-background/60">
-        <div className="h-14 border-b border-border/40 flex items-center px-6 flex-shrink-0">
-          <h2 className="text-sm font-medium text-muted-foreground">Analysis</h2>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-        </div>
-      </div>
+      <AIAnalysisSkeleton/>
     )
   }
 
-  if (!imageAnalysisData) {
+  if (!imageAnalysisData?.ai_analysis_result) {
     return (
       <div className="border-l border-border/40 flex flex-col flex-shrink-0 h-full backdrop-blur-xl bg-background/60">
         <div className="h-14 border-b border-border/40 flex items-center justify-between px-6 flex-shrink-0">
@@ -70,110 +73,145 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
   }
 
   const status = imageAnalysisData.ai_analysis_status
-  const showReanalysis = status === "failed" || status === "completed"
 
   return (
-    <div className="border-l border-border/40 flex flex-col flex-shrink-0 h-full backdrop-blur-xl bg-background/60">
-      <div className="h-14 border-b border-border/40 flex items-center justify-between px-6 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <h2 className="text-sm font-medium text-foreground">Analysis</h2>
-          {status === "processing" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
-          {status === "completed" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-          {status === "failed" && <XCircle className="w-3.5 h-3.5 text-destructive" />}
-          {status === "pending" && <Clock className="w-3.5 h-3.5 text-amber-500" />}
+    <div className="w-[380px] border-l border-border overflow-y-auto bg-background">
+      <div className="p-4 border-b border-border flex items-center justify-between sticky top-0 bg-background z-10">
+        <div>
+          <h3 className="text-sm font-bold text-foreground">AI Assessment</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Analysis Results</p>
         </div>
-        {showReanalysis && (
-          <Button onClick={handleReanalysis} disabled variant="ghost" size="sm" className="h-8">
-            {isReanalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-          </Button>
-        )}
+        <Button variant="outline" size="sm" onClick={handleOpenEditDialog} className="h-8 bg-transparent">
+          <Edit2 className="h-3.5 w-3.5 mr-1.5" />
+          Edit
+        </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {imageAnalysisData.ai_analysis_result ? (
-          <>
-            {/* eGFR */}
-            <div className="space-y-3">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">eGFR</p>
-              <div className="rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm p-6 text-center">
-                <div className="text-4xl font-bold tabular-nums mb-1">
-                  {imageAnalysisData.ai_analysis_result.egfr.toFixed(1)}
-                </div>
-                <div className="text-xs text-muted-foreground">ml/min/1.73m²</div>
-              </div>
-            </div>
+      <div className="p-4 space-y-5">
+        {/* CKD Risk - Primary Card */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">CKD Risk Level</p>
+          <div
+            className={cn(
+              "rounded-lg border-2 p-5 text-center",
+              imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH"
+                ? "border-red-500/30 bg-red-500/5"
+                : "border-yellow-500/30 bg-yellow-500/5",
+            )}
+          >
+            <p
+              className={cn(
+                "text-3xl font-bold tracking-tight",
+                imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH" ? "text-red-600" : "text-yellow-600",
+              )}
+            >
+              {imageAnalysisData.ai_analysis_result.ckdRisk}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1.5">{imageAnalysisData.ai_analysis_result.ckdStage}</p>
+          </div>
+        </div>
 
-            {/* Findings */}
-            <div className="space-y-3">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Findings</p>
-              <div className="space-y-2">
-                {Object.entries(imageAnalysisData.ai_analysis_result.findings).map(([key, value]) => {
-                  const percentage = (value as number) * 100
-                  return (
-                    <div key={key} className="rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm p-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-medium capitalize">{key.replace(/_/g, " ")}</span>
-                        <span className="text-xs font-mono tabular-nums">{percentage.toFixed(0)}%</span>
-                      </div>
-                      <div className="h-1 bg-muted/50 rounded-full overflow-hidden">
-                        <div className="h-full bg-foreground/80 rounded-full" style={{ width: `${percentage}%` }} />
-                      </div>
-                    </div>
-                  )
-                })}
+        {/* eGFR - Most Important Metric */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">eGFR Prediction</p>
+          <div className="rounded-lg border border-border bg-background p-5">
+            <div className="flex items-end gap-2 mb-3">
+              <p className="text-4xl font-bold text-foreground leading-none">
+                {imageAnalysisData.ai_analysis_result.egfr}
+              </p>
+              <p className="text-sm text-muted-foreground pb-0.5">mL/min/1.73m²</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Confidence</p>
+                <p className="text-base font-semibold text-foreground">
+                  {imageAnalysisData.ai_analysis_result.confidence}%
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Range</p>
+                <p className="text-base font-semibold text-foreground">{imageAnalysisData.ai_analysis_result.range}</p>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Disease */}
-            <div className="space-y-3">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Classification</p>
-              <div className="space-y-2">
-                {Object.entries(imageAnalysisData.ai_analysis_result.disease)
-                  .sort(([, a], [, b]) => (b as number) - (a as number))
-                  .map(([key, value]) => {
-                    const percentage = (value as number) * 100
-                    return (
-                      <div
-                        key={key}
-                        className="rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm p-3 flex justify-between items-center"
-                      >
-                        <span className="text-xs font-medium capitalize">{key.replace(/_/g, " ")}</span>
-                        <span className="text-xs font-mono tabular-nums">{percentage.toFixed(0)}%</span>
-                      </div>
-                    )
-                  })}
-              </div>
-              {/* <div className="rounded-lg border border-border/40 bg-card/80 backdrop-blur-sm p-4">
-                <div className="text-xs text-muted-foreground mb-1">Predicted</div>
-                <div className="text-sm font-semibold capitalize">
-                  {imageAnalysisData.ai_analysis_result.disease_predicted.replace(/_/g, " ")}
+        {/* Structural Findings - Clean List */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Structural Findings
+          </p>
+          <div className="rounded-lg border border-border bg-background divide-y divide-border">
+            {imageAnalysisData.ai_analysis_result.findings.map((finding: any, idx: number) => (
+              <div key={idx} className="flex items-center justify-between px-3.5 py-3">
+                <div className="flex items-center gap-2.5">
+                  {finding.hasIssue ? (
+                    <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                  ) : (
+                    <div className="h-4 w-4 rounded-full border border-border flex-shrink-0" />
+                  )}
+                  <span className="text-sm text-foreground">{finding.name}</span>
                 </div>
-              </div> */}
+                <Badge
+                  variant={finding.hasIssue ? "default" : "secondary"}
+                  className={cn(
+                    "font-medium",
+                    !finding.hasIssue && "bg-muted text-muted-foreground hover:bg-muted",
+                    finding.hasIssue && finding.severity === "Mild" && "bg-yellow-500 hover:bg-yellow-600 text-white",
+                    finding.hasIssue &&
+                      finding.severity === "Moderate" &&
+                      "bg-orange-500 hover:bg-orange-600 text-white",
+                  )}
+                >
+                  {finding.severity}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Probable Etiology - Progress Bars */}
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Probable Etiology</p>
+          <div className="rounded-lg border border-border bg-background p-3 space-y-3">
+            {imageAnalysisData.ai_analysis_result.etiology.map((item: any, idx: number) => (
+              <div key={idx} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">{item.name}</span>
+                  <span className="text-sm font-semibold text-foreground">{item.percentage}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all rounded-full"
+                    style={{ width: `${item.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {imageAnalysisData.ai_analysis_result.notes && (
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Clinical Notes</p>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-sm text-foreground whitespace-pre-wrap">
+                {imageAnalysisData.ai_analysis_result.notes}
+              </p>
             </div>
-          </>
-        ) : (
-          <div className="flex items-center justify-center py-12">
-            {status === "processing" && (
-              <div className="text-center space-y-3">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Processing...</p>
-              </div>
-            )}
-            {status === "failed" && (
-              <div className="text-center space-y-3">
-                <XCircle className="w-6 h-6 mx-auto text-destructive" />
-                <p className="text-xs text-muted-foreground">Analysis failed</p>
-              </div>
-            )}
-            {status === "pending" && (
-              <div className="text-center space-y-3">
-                <Clock className="w-6 h-6 mx-auto text-amber-500" />
-                <p className="text-xs text-muted-foreground">Pending</p>
-              </div>
-            )}
           </div>
         )}
       </div>
+
+      {editDialogOpen && imageAnalysisData.ai_analysis_result && imageAnalysisData.id && (
+        <EditFindingsDialog
+          data={imageAnalysisData.ai_analysis_result}
+          onOpenChange={(value: boolean) => setEditDialogOpen(value)}
+          imageAnalysisId={imageAnalysisData.id}
+          open={editDialogOpen}
+          onSuccess={() => fetchAnalysis(imageId)}
+        />
+      )}
     </div>
   )
 }

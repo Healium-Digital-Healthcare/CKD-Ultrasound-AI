@@ -42,7 +42,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <Provider store={store}>
-      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="flex h-screen overflow-hidden bg-neutral-50">
         {/* Sidebar */}
         <DashboardSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={handleMobileMenuClose} />
 
@@ -56,8 +56,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           />
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto ml-64 bg-gradient-to-br from-background via-background to-muted/20">
-            {children}
+          <main className="flex-1 overflow-auto ml-64 bg-[#fafafa] relative">
+            {/* Subtle texture overlay for depth */}
+            <div className="absolute inset-0 opacity-[0.015] pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent_50%)] bg-[length:32px_32px]" />
+            <div className="relative">{children}</div>
           </main>
         </div>
       </div>

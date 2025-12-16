@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import { CaseListResponse, ImageAIAnalysis, type Case, type CreateCaseType } from "@/types/case"
+import { CaseListResponse, ImageAnalysis, type Case, type CreateCaseType } from "@/types/case"
 import { QueryRequest } from "@/types/query";
 
 export const casesApi = createApi({
@@ -15,10 +15,9 @@ export const casesApi = createApi({
       }),
       providesTags: ["Case"],
     }),
-    
     getCase: builder.query<Case, string>({
-      query: (id) => `/cases/${id}`,
-      providesTags: (_result, _error, id) => [{ type: "Case", id }],
+      query: (case_number) => `/cases/${case_number}`,
+      providesTags: ["Case"],
     }),
     createCase: builder.mutation<Case, CreateCaseType>({
       query: (caseData) => ({
@@ -54,11 +53,12 @@ export const casesApi = createApi({
         return [{ type: "Case", id: caseId }, "Case"]
       },
     }),
-    getImageAnalysis: builder.query<ImageAIAnalysis, string>({
+    getImageAnalysis: builder.query<ImageAnalysis, string>({
       query: (analyisiId) => ({
         url: `/image-analysis/${analyisiId}/analysis`,
         method: "GET",
       }),
+      providesTags: ['ImageAnalysis']
     }),
     triggerReanalysis: builder.mutation<void, string>({
       query: (imageId) => ({
@@ -82,6 +82,31 @@ export const casesApi = createApi({
       }),
       invalidatesTags: (result, error, { caseId }) => [{ type: "Case", id: caseId }],
     }),
+    runAnalysis: builder.mutation<void, string>({
+      query: (case_id) => ({
+        url: `/image-analysis/analysis/${case_id}`,
+        method: "POST",
+      }),
+      invalidatesTags: ['Case']
+    }),
+    getCaseImages: builder.query<ImageAnalysis[], string>({
+      query: (case_id) => `/image-analysis/analysis/${case_id}`,
+    }),
+    updateImageAnalysis: builder.mutation<ImageAnalysis, { imageId: string; ai_analysis_result: any }>({
+      query: ({ imageId, ai_analysis_result }) => ({
+        url: `/image-analysis/${imageId}`,
+        method: "PUT",
+        body: { ai_analysis_result },
+      }),
+      invalidatesTags: ['ImageAnalysis']
+    }),
+    getCaseByCaseId: builder.query<Case, string>({
+      query: (id) => ({
+        url: `/cases/case/${id}`,
+        method: 'GET'
+      }),
+      providesTags: ['Case']
+    })
   }),
 })
 
@@ -95,5 +120,10 @@ export const {
   useLazyGetImageAnalysisQuery,
   useTriggerReanalysisMutation,
   useDeleteImageMutation,
-  useAddImagesToCaseMutation
+  useAddImagesToCaseMutation,
+  useGetImageAnalysisQuery,
+  useRunAnalysisMutation,
+  useLazyGetCaseImagesQuery,
+  useUpdateImageAnalysisMutation,
+  useGetCaseByCaseIdQuery
 } = casesApi

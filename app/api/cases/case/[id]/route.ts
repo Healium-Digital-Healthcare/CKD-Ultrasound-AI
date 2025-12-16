@@ -2,10 +2,10 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { supabase as serviceSupabase } from "@/lib/supabase"
 
-export async function GET(_request: Request, { params }: { params: Promise<{ case_number: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { case_number } = await params
-    if(!case_number) {
+    const { id } = await params
+    if(!id) {
       return NextResponse.json({ error: "Case number is required" }, { status: 400 })
     }
 
@@ -32,7 +32,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cas
           ai_analysis_result
         )
       `)
-      .eq("case_number", case_number)
+      .eq("id", id)
       .eq('user_id', user.id)
       .single()
 
@@ -60,7 +60,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cas
     return NextResponse.json(data)
 
   } catch (error) {
-    console.error("[v0] Error fetching case:", error)
+    console.error("Error fetching case:", error)
     return NextResponse.json({ error: "Failed to fetch case" }, { status: 500 })
   }
 }

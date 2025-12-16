@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import type { ImageAIAnalysis } from "@/types/case"
-import { MoreHorizontal, Trash2 } from "lucide-react"
+import type { ImageAnalysis } from "@/types/case"
+import { Check, MoreHorizontal, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { useDeleteImageMutation } from "@/store/services/cases"
@@ -18,11 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { cn } from "@/lib/utils"
 
 interface ImageListProps {
-  images: ImageAIAnalysis[]
-  selectedImage: ImageAIAnalysis | null
-  onSelectImage: (image: ImageAIAnalysis) => void
+  images: ImageAnalysis[]
+  selectedImage: ImageAnalysis | null
+  onSelectImage: (image: ImageAnalysis) => void
 }
 
 export function ImageList({ images, selectedImage, onSelectImage }: ImageListProps) {
@@ -75,7 +76,7 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="p-2 space-y-2">
-            {images.map((image) => (
+            {images.map((image, idx) => (
               <div
                 key={image.id}
                 className={`rounded-lg border transition-all ${
@@ -103,7 +104,7 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
                   </DropdownMenu>
                 </div>
 
-                <button onClick={() => onSelectImage(image)} className="w-full px-2 pb-2 text-left">
+                {/* <button onClick={() => onSelectImage(image)} className="w-full px-2 pb-2 text-left">
                   <img
                     src={image.signed_url || "/placeholder.svg"}
                     alt="Case Image"
@@ -112,7 +113,31 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
                     onDragStart={handleDragStart}
                     draggable={false}
                   />
-                </button>
+                </button> */}
+                <button
+                                  key={image.id}
+                                  onClick={() => onSelectImage(image)}
+                                  className="flex items-center gap-2.5 px-2 pb-2"
+                                >
+                                  <div
+                                    className={cn(
+                                      "w-12 h-12 rounded border overflow-hidden flex-shrink-0",
+                                    )}
+                                  >
+                                    <img
+                                      src={image.signed_url || "/placeholder.svg"}
+                                      alt={`${image.kidney_type} ${image.id}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0 text-left">
+                                    <p className="text-xs font-medium text-foreground capitalize">{image.kidney_type} Kidney</p>
+                                    <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
+                                  </div>
+                                  {image.ai_analysis_status === "completed" && (
+                                    <Check className={cn("h-4 w-4", selectedImage?.id === image.id ? "text-primary" : "text-green-600")} />
+                                  )}
+                                </button>
               </div>
             ))}
           </div>
