@@ -74,9 +74,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           { name: "Cortical thin.", severity: "Mild", hasIssue: true },
         ],
         etiology: [
-          { name: "Diabetic nephropathy", percentage: 68 },
-          { name: "Hypertensive", percentage: 24 },
-          { name: "Other", percentage: 8 },
+          { name: "Medical_CKD", percentage: 68 },
+          { name: "Hydronephrosis", percentage: 24 },
+          { name: "Polycystic", percentage: 8 },
         ],
         notes: "",
       }

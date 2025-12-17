@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import { CaseListResponse, ImageAnalysis, type Case, type CreateCaseType } from "@/types/case"
+import { CaseListResponse, ImageAnalysis, Measurement, type Case, type CreateCaseType } from "@/types/case"
 import { QueryRequest } from "@/types/query";
 
 export const casesApi = createApi({
@@ -106,7 +106,18 @@ export const casesApi = createApi({
         method: 'GET'
       }),
       providesTags: ['Case']
-    })
+    }),
+    saveMeasurements: builder.mutation<ImageAnalysis, { imageId: string; measurements: Measurement[] }>({
+      query: ({ imageId, measurements }) => ({
+        url: `/image-analysis/${imageId}/measurements`,
+        method: "PUT",
+        body: { measurements },
+      }),
+      invalidatesTags: (_result, _error, { imageId }) => [
+        { type: "ImageAnalysis", id: imageId },
+        { type: "ImageAnalysis" },
+      ],
+    }),
   }),
 })
 
@@ -125,5 +136,6 @@ export const {
   useRunAnalysisMutation,
   useLazyGetCaseImagesQuery,
   useUpdateImageAnalysisMutation,
-  useGetCaseByCaseIdQuery
+  useGetCaseByCaseIdQuery,
+  useSaveMeasurementsMutation
 } = casesApi

@@ -22,12 +22,9 @@ interface EditFindingsDialogProps {
 }
 
 const ETIOLOGY_OPTIONS = [
-  "Diabetic Nephropathy",
-  "Hypertensive Nephrosclerosis",
-  "Glomerulonephritis",
-  "Polycystic Kidney Disease",
-  "Hydronephrosis/Obstruction",
-  "Unknown/Other",
+  "Medical_CKD",
+  "Hydronephrosis",
+  "Polycystic",
 ]
 
 export function EditFindingsDialog({ open, onOpenChange, data, imageAnalysisId, onSuccess }: EditFindingsDialogProps) {
@@ -52,7 +49,6 @@ export function EditFindingsDialog({ open, onOpenChange, data, imageAnalysisId, 
       onSuccess?.()
       onOpenChange(false)
     } catch (error) {
-      console.error("[v0] Failed to update analysis:", error)
       // Optionally show error toast
     }
   }

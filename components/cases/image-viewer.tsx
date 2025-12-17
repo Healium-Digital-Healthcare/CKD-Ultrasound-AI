@@ -1,19 +1,23 @@
 "use client"
 
+import type React from "react"
+import {
+  ZoomIn,
+  ZoomOut,
+  Ruler,
+  Square,
+  Triangle,
+  Circle,
+  PenTool,
+  MousePointer,
+  Trash2,
+  Save,
+  Eraser,
+} from "lucide-react"
+import type { ImageAnalysis, Measurement } from "@/types/case"
+import { useState, useRef, useEffect } from "react"
+import { useSaveMeasurementsMutation } from "@/store/services/cases"
 import { Button } from "@/components/ui/button"
-import { ImageAnalysis } from "@/types/case"
-import { ChevronLeft, ChevronRight, Circle, MousePointer, PenTool, Ruler, Square, Triangle } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
-
-
-type Point = { x: number; y: number }
-
-interface MeasurementDrawing {
-  tool: "linear" | "area" | "ellipse" | "angle"
-  points: Point[]
-  color: string
-}
-
 
 interface ImageViewerProps {
   selectedImage: ImageAnalysis | null
@@ -21,26 +25,24 @@ interface ImageViewerProps {
   onZoomChange: (zoom: number) => void
 }
 
+type Point = { x: number; y: number }
+
 export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerProps) {
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [activeTool, setActiveTool] = useState<"none" | "linear" | "area" | "angle" | "ellipse" | "freehand">("none")
+  const [activeTool, setActiveTool] = useState<
+    "none" | "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser"
+  >("none")
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentDrawing, setCurrentDrawing] = useState<Point[]>([])
-  const [measurements, setMeasurements] = useState<MeasurementDrawing[]>([])
-  const [freehandPath, setFreehandPath] = useState<Point[]>([])
+  const [measurements, setMeasurements] = useState<Measurement[]>([])
+  const [hoveredMeasurementId, setHoveredMeasurementId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDragStart = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
+  const [saveMeasurements, { isLoading: isSaving }] = useSaveMeasurementsMutation()
+  
   useEffect(() => {
     if (canvasRef.current && containerRef.current) {
       const canvas = canvasRef.current
@@ -50,6 +52,14 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       drawMeasurements()
     }
   }, [measurements, zoom, pan, selectedImage])
+
+  useEffect(() => {
+    if (selectedImage?.measurements) {
+      setMeasurements(selectedImage.measurements)
+    } else {
+      setMeasurements([])
+    }
+  }, [selectedImage?.id])
 
   const drawMeasurements = () => {
     const canvas = canvasRef.current
@@ -65,8 +75,9 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
     ctx.translate(pan.x / (zoom / 100), pan.y / (zoom / 100))
 
     measurements.forEach((measurement) => {
-      ctx.strokeStyle = measurement.color
-      ctx.lineWidth = 2
+      const isHovered = activeTool === "eraser" && hoveredMeasurementId === measurement.id
+      ctx.strokeStyle = isHovered ? "#ef4444" : measurement.color
+      ctx.lineWidth = isHovered ? 3 : 2
       ctx.lineCap = "round"
       ctx.lineJoin = "round"
 
@@ -96,52 +107,6 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       }
     })
 
-    if (isDrawing && currentDrawing.length > 0) {
-      ctx.strokeStyle = "#22c55e"
-      ctx.lineWidth = 2
-      ctx.lineCap = "round"
-      ctx.lineJoin = "round"
-
-      if (activeTool === "linear" && currentDrawing.length === 2) {
-        ctx.beginPath()
-        ctx.moveTo(currentDrawing[0].x, currentDrawing[0].y)
-        ctx.lineTo(currentDrawing[1].x, currentDrawing[1].y)
-        ctx.stroke()
-      } else if (activeTool === "area" && currentDrawing.length === 2) {
-        const width = currentDrawing[1].x - currentDrawing[0].x
-        const height = currentDrawing[1].y - currentDrawing[0].y
-        ctx.strokeRect(currentDrawing[0].x, currentDrawing[0].y, width, height)
-      } else if (activeTool === "ellipse" && currentDrawing.length === 2) {
-        const centerX = (currentDrawing[0].x + currentDrawing[1].x) / 2
-        const centerY = (currentDrawing[0].y + currentDrawing[1].y) / 2
-        const radiusX = Math.abs(currentDrawing[1].x - currentDrawing[0].x) / 2
-        const radiusY = Math.abs(currentDrawing[1].y - currentDrawing[0].y) / 2
-        ctx.beginPath()
-        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI)
-        ctx.stroke()
-      } else if (activeTool === "angle") {
-        ctx.beginPath()
-        ctx.moveTo(currentDrawing[0].x, currentDrawing[0].y)
-        for (let i = 1; i < currentDrawing.length; i++) {
-          ctx.lineTo(currentDrawing[i].x, currentDrawing[i].y)
-        }
-        ctx.stroke()
-      }
-    }
-
-    if (activeTool === "freehand" && freehandPath.length > 1) {
-      ctx.strokeStyle = "#22c55e"
-      ctx.lineWidth = 2
-      ctx.lineCap = "round"
-      ctx.lineJoin = "round"
-      ctx.beginPath()
-      ctx.moveTo(freehandPath[0].x, freehandPath[0].y)
-      for (let i = 1; i < freehandPath.length; i++) {
-        ctx.lineTo(freehandPath[i].x, freehandPath[i].y)
-      }
-      ctx.stroke()
-    }
-
     ctx.restore()
   }
 
@@ -160,14 +125,19 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (activeTool === "eraser") {
+      const point = getCanvasCoordinates(e)
+      const measurementId = findMeasurementAtPoint(point)
+      if (measurementId) {
+        setMeasurements((prev) => prev.filter((m) => m.id !== measurementId))
+        setHoveredMeasurementId(null)
+      }
+      return
+    }
+
     if (activeTool === "none" || activeTool === "freehand") {
       setIsDragging(true)
       setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
-      
-      if (activeTool === "freehand") {
-        const point = getCanvasCoordinates(e)
-        setFreehandPath([point])
-      }
     } else {
       setIsDrawing(true)
       const point = getCanvasCoordinates(e)
@@ -176,51 +146,54 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (activeTool === "eraser") {
+      const point = getCanvasCoordinates(e)
+      const measurementId = findMeasurementAtPoint(point)
+      setHoveredMeasurementId(measurementId)
+      return
+    }
+
     if (activeTool === "none" || activeTool === "freehand") {
       if (isDragging) {
-        if (activeTool === "freehand") {
-          const point = getCanvasCoordinates(e)
-          setFreehandPath(prev => [...prev, point])
-          drawMeasurements()
-        } else {
-          setPan({
-            x: e.clientX - dragStart.x,
-            y: e.clientY - dragStart.y,
-          })
-        }
+        setPan({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y,
+        })
       }
     } else if (isDrawing) {
       const point = getCanvasCoordinates(e)
       if (activeTool === "angle" && currentDrawing.length < 3) {
-        setCurrentDrawing(prev => [...prev.slice(0, prev.length), point])
+        setCurrentDrawing((prev) => [...prev.slice(0, prev.length), point])
       } else {
-        setCurrentDrawing(prev => [prev[0], point])
+        setCurrentDrawing((prev) => [prev[0], point])
       }
-      drawMeasurements()
     }
   }
 
   const handleMouseUp = () => {
-    if (activeTool === "freehand" && isDragging) {
-      setFreehandPath([])
-      setIsDragging(false)
-    } else if (isDrawing && currentDrawing.length > 0) {
+    if (isDrawing && currentDrawing.length > 0) {
       if (activeTool === "angle") {
         if (currentDrawing.length === 3) {
-          setMeasurements(prev => [...prev, {
+          const newMeasurement: Measurement = {
+            id: `${Date.now()}-${Math.random()}`,
             tool: activeTool,
             points: currentDrawing,
-            color: "#22c55e"
-          }])
+            color: "#22c55e",
+            createdAt: new Date().toISOString(),
+          }
+          setMeasurements((prev) => [...prev, newMeasurement])
           setCurrentDrawing([])
           setIsDrawing(false)
         }
       } else if (currentDrawing.length === 2) {
-        setMeasurements(prev => [...prev, {
+        const newMeasurement: Measurement = {
+          id: `${Date.now()}-${Math.random()}`,
           tool: activeTool as "linear" | "area" | "ellipse",
           points: currentDrawing,
-          color: "#22c55e"
-        }])
+          color: "#22c55e",
+          createdAt: new Date().toISOString(),
+        }
+        setMeasurements((prev) => [...prev, newMeasurement])
         setCurrentDrawing([])
         setIsDrawing(false)
       }
@@ -232,7 +205,6 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   const handleMouseLeave = () => {
     setIsDragging(false)
     setIsDrawing(false)
-    setFreehandPath([])
   }
 
   const handleZoomChange = (newZoom: number) => {
@@ -242,38 +214,113 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
     }
   }
 
-  const handleToolSelect = (tool: "linear" | "area" | "angle" | "ellipse" | "freehand") => {
+  const handleToolSelect = (tool: "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser") => {
     setActiveTool(activeTool === tool ? "none" : tool)
     setIsDrawing(false)
     setCurrentDrawing([])
-    setFreehandPath([])
+    setHoveredMeasurementId(null)
   }
 
   const getCursor = () => {
     if (isDragging) return "grabbing"
+    if (activeTool === "eraser") return "crosshair"
     if (activeTool === "none") return "grab"
-    if (activeTool === "freehand") return "crosshair"
     return "crosshair"
   }
 
+  const handleSaveMeasurements = async () => {
+    if (!selectedImage?.id) return
+
+    try {
+      await saveMeasurements({
+        imageId: selectedImage.id,
+        measurements,
+      }).unwrap()
+
+    } catch (error) {
+      console.error("Error saving measurements:", error)
+      
+    }
+  }
+
+  const handleClearMeasurements = () => {
+    setMeasurements([])
+  }
+
+  const findMeasurementAtPoint = (point: Point): string | null => {
+    const threshold = 10 / (zoom / 100)
+
+    for (const measurement of measurements) {
+      if (measurement.tool === "linear" && measurement.points.length === 2) {
+        const [p1, p2] = measurement.points
+        const distance = distanceToLine(point, p1, p2)
+        if (distance < threshold) return measurement.id
+      } else if ((measurement.tool === "area" || measurement.tool === "ellipse") && measurement.points.length === 2) {
+        const [p1, p2] = measurement.points
+        if (
+          point.x >= Math.min(p1.x, p2.x) - threshold &&
+          point.x <= Math.max(p1.x, p2.x) + threshold &&
+          point.y >= Math.min(p1.y, p2.y) - threshold &&
+          point.y <= Math.max(p1.y, p2.y) + threshold
+        ) {
+          return measurement.id
+        }
+      } else if (measurement.tool === "angle" && measurement.points.length === 3) {
+        for (let i = 0; i < measurement.points.length - 1; i++) {
+          const distance = distanceToLine(point, measurement.points[i], measurement.points[i + 1])
+          if (distance < threshold) return measurement.id
+        }
+      }
+    }
+    return null
+  }
+
+  const distanceToLine = (point: Point, lineStart: Point, lineEnd: Point): number => {
+    const A = point.x - lineStart.x
+    const B = point.y - lineStart.y
+    const C = lineEnd.x - lineStart.x
+    const D = lineEnd.y - lineStart.y
+
+    const dot = A * C + B * D
+    const lenSq = C * C + D * D
+    let param = -1
+
+    if (lenSq !== 0) param = dot / lenSq
+
+    let xx, yy
+
+    if (param < 0) {
+      xx = lineStart.x
+      yy = lineStart.y
+    } else if (param > 1) {
+      xx = lineEnd.x
+      yy = lineEnd.y
+    } else {
+      xx = lineStart.x + param * C
+      yy = lineStart.y + param * D
+    }
+
+    const dx = point.x - xx
+    const dy = point.y - yy
+    return Math.sqrt(dx * dx + dy * dy)
+  }
 
   return (
     <div className="flex-1 bg-gray-50 flex flex-col min-w-0 overflow-hidden">
-      {/* Viewer Controls */}
       <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between gap-2 px-4 flex-shrink-0">
-        <div className="flex items-center gap-1">
+        
+        <div className="flex items-center">
           <Button
             variant={'ghost'}
             onClick={() => setActiveTool("none")}
             className={`p-1.5 rounded transition-colors ${
-              activeTool === "none" ? "bg-green-600 text-white" : "text-gray-600"
+              activeTool === "none" ? "bg-primary text-white" : "text-gray-600"
             }`}
             title="Selection Tool"
           >
             <MousePointer className="h-4 w-4" />
           </Button>
           <Button
-            
             variant={'ghost'}
             onClick={() => handleToolSelect("linear")}
             className={`p-1.5 rounded transition-colors ${
@@ -284,7 +331,6 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
             <Ruler className="h-4 w-4" />
           </Button>
           <Button
-            
             variant={'ghost'}
             onClick={() => handleToolSelect("area")}
             className={`p-1.5 rounded transition-colors ${
@@ -324,15 +370,44 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
           >
             <PenTool className="h-4 w-4" />
           </Button>
-        </div>
-        <div className="flex items-center">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleZoomChange(Math.max(50, zoom - 25))}
-            className="text-gray-600 text-lg"
+            variant={'ghost'}
+            onClick={() => handleToolSelect("eraser")}
+            className={`p-1.5 rounded transition-colors ${
+              activeTool === "eraser" ? "bg-red-600 text-white" : "text-gray-600"
+            }`}
+            title="Eraser - Click measurements to delete"
           >
-            -
+            <Eraser className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-1">
+          {/* {measurements.length > 0 && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleClearMeasurements}
+                className="h-8 text-white hover:bg-gray-700"
+              >
+                <Trash2 className="h-4 w-4 mr-1.5" />
+                Clear ({measurements.length})
+              </Button>
+              <Button size="sm" onClick={handleSaveMeasurements} disabled={isSaving} className="h-8">
+                <Save className="h-4 w-4 mr-1.5" />
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </>
+          )} */}
+        </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => handleZoomChange(Math.max(50, zoom - 25))}
+        className="text-gray-600 text-lg"
+      >
+        -
           </Button>
           <span className="text-sm text-gray-600 w-16 text-center">{zoom}%</span>
           <Button
@@ -345,9 +420,10 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
           </Button>
         </div>
       </div>
-      <div 
+
+      <div
         ref={containerRef}
-        className="flex-1 flex items-center justify-center p-4 overflow-hidden"
+        className="flex-1 flex items-center justify-center p-4 overflow-hidden relative"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -356,23 +432,20 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       >
         <div
           className="flex items-center justify-center transition-transform"
-          style={{ 
+          style={{
             transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
-            transition: isDragging ? 'none' : 'transform 0.2s'
+            transition: isDragging || isDrawing ? "none" : "transform 0.2s",
           }}
         >
           <img
             src={selectedImage?.signed_url || "/placeholder.svg"}
             alt="Case Image"
             className="max-w-full max-h-full object-contain select-none pointer-events-none"
-            onContextMenu={handleContextMenu}
-            onDragStart={handleDragStart}
             draggable={false}
-            style={{ userSelect: 'none' }}
+            style={{ userSelect: "none" }}
           />
         </div>
-        
-        
+
         <canvas
           ref={canvasRef}
           className="absolute inset-0 pointer-events-none"

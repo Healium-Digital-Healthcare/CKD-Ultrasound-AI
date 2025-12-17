@@ -81,9 +81,20 @@ export type ImageAnalysis = {
   width: number | null,
   thinkness: number | null,
   area: number | null,
-  report: Report | null
+  report: Report | null,
+  measurements: Measurement[]
 };
 
+export interface Measurement {
+  id: string
+  tool: "linear" | "area" | "ellipse" | "angle" | "freehand"
+  points: Array<{ x: number; y: number }>
+  value?: number
+  unit?: string
+  label?: string
+  color: string
+  createdAt: string
+}
 
 export interface CreateImageAnalysis {
   path: string,
