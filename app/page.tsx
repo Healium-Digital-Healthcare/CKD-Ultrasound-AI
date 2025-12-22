@@ -6,6 +6,8 @@ export default function Page() {
       <div className="w-full">
         <LoginForm />
       </div>
+
+      
     </div>
   );
 }

@@ -49,7 +49,7 @@ export default function DashboardSidebar({ isMobileMenuOpen = false, onMobileMen
     {
       id: 7,
       name: "Settings",
-      href: "/settings/organization",
+      href: "/settings",
       icon: Settings,
     },
   ]

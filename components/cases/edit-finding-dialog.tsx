@@ -22,8 +22,10 @@ interface EditFindingsDialogProps {
 }
 
 const ETIOLOGY_OPTIONS = [
-  "Medical_CKD",
+  "Diabetes",
+  "Glomerulonephritis",
   "Hydronephrosis",
+  "Hypertension",
   "Polycystic",
 ]
 

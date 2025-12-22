@@ -18,6 +18,7 @@ import type { ImageAnalysis, Measurement } from "@/types/case"
 import { useState, useRef, useEffect } from "react"
 import { useSaveMeasurementsMutation } from "@/store/services/cases"
 import { Button } from "@/components/ui/button"
+import { loadDicomFile, isDicomFile, type DicomImageData } from "@/lib/dicom-loader"
 
 interface ImageViewerProps {
   selectedImage: ImageAnalysis | null
@@ -31,18 +32,72 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [activeTool, setActiveTool] = useState<
-    "none" | "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser"
-  >("none")
+  const [activeTool, setActiveTool] = useState<"none" | "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser">("none")
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentDrawing, setCurrentDrawing] = useState<Point[]>([])
   const [measurements, setMeasurements] = useState<Measurement[]>([])
   const [hoveredMeasurementId, setHoveredMeasurementId] = useState<string | null>(null)
+  const [dicomData, setDicomData] = useState<DicomImageData | null>(null)
+  const [isLoadingDicom, setIsLoadingDicom] = useState(false)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
+  const dicomCanvasRef = useRef<HTMLCanvasElement>(null)
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
+
 
   const [saveMeasurements, { isLoading: isSaving }] = useSaveMeasurementsMutation()
   
+    useEffect(() => {
+    if (selectedImage?.signed_url && selectedImage?.image_path && isDicomFile(selectedImage.image_path)) {
+      setIsLoadingDicom(true)
+      setDicomData(null)
+
+      fetch(selectedImage.signed_url)
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) => loadDicomFile(arrayBuffer))
+        .then((data) => {
+          if (data) {
+            setDicomData(data)
+          }
+          setIsLoadingDicom(false)
+        })
+        .catch((error) => {
+          console.error("[v0] Error loading DICOM file:", error)
+          setIsLoadingDicom(false)
+        })
+    } else {
+      setDicomData(null)
+      setIsLoadingDicom(false)
+    }
+  }, [selectedImage?.id, selectedImage?.signed_url, selectedImage?.image_path])
+
+  useEffect(() => {
+    if (!dicomData || !dicomCanvasRef.current) return
+
+    const canvas = dicomCanvasRef.current
+    canvas.width = dicomData.width
+    canvas.height = dicomData.height
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    const imageData = ctx.createImageData(dicomData.width, dicomData.height)
+    imageData.data.set(dicomData.imageData)
+    ctx.putImageData(imageData, 0, 0)
+  }, [dicomData])
+
+  useEffect(() => {
+    if (!overlayCanvasRef.current || !dicomData) return
+
+    const canvas = overlayCanvasRef.current
+    canvas.width = dicomData.width
+    canvas.height = dicomData.height
+
+    drawMeasurements()
+  }, [dicomData, measurements])
+
   useEffect(() => {
     if (canvasRef.current && containerRef.current) {
       const canvas = canvasRef.current
@@ -76,7 +131,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
 
     measurements.forEach((measurement) => {
       const isHovered = activeTool === "eraser" && hoveredMeasurementId === measurement.id
-      ctx.strokeStyle = isHovered ? "#ef4444" : measurement.color
+      ctx.strokeStyle = isHovered ? "#ef4444" : measurement.color || "#22c55e"
       ctx.lineWidth = isHovered ? 3 : 2
       ctx.lineCap = "round"
       ctx.lineJoin = "round"
@@ -238,8 +293,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       }).unwrap()
 
     } catch (error) {
-      console.error("Error saving measurements:", error)
-      
+      console.error("[v0] Error saving measurements:", error)
     }
   }
 
@@ -430,20 +484,47 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
         onMouseLeave={handleMouseLeave}
         style={{ cursor: getCursor() }}
       >
+        {/* className="flex items-center justify-center transition-transform"
+          style={{
+            transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
+            transition: isDragging || isDrawing ? "none" : "transform 0.2s",
+          }} */}
         <div
           className="flex items-center justify-center transition-transform"
           style={{
+            width: dicomData?.width ?? imageRef.current?.naturalWidth,
+            height: dicomData?.height ?? imageRef.current?.naturalHeight,
+            // transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`,
+            // transformOrigin: "top left",
             transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
             transition: isDragging || isDrawing ? "none" : "transform 0.2s",
           }}
         >
-          <img
-            src={selectedImage?.signed_url || "/placeholder.svg"}
-            alt="Case Image"
-            className="max-w-full max-h-full object-contain select-none pointer-events-none"
-            draggable={false}
-            style={{ userSelect: "none" }}
-          />
+          {isLoadingDicom ? (
+            <div className="text-sm">Loading DICOM...</div>
+          ) : dicomData ? (
+           <div
+            className="relative"
+            style={{
+              width: dicomData.width,
+              height: dicomData.height,
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`,
+              transformOrigin: "top left",
+            }}
+          >
+            <canvas ref={dicomCanvasRef} />
+            <canvas ref={overlayCanvasRef} className="absolute inset-0" />
+          </div>
+          ) : (
+            <img
+              ref={imageRef}
+              src={selectedImage?.signed_url || "/placeholder.svg"}
+              alt="Case Image"
+              className="max-w-full max-h-full object-contain select-none pointer-events-none"
+              draggable={false}
+              style={{ userSelect: "none" }}
+            />
+          )}
         </div>
 
         <canvas

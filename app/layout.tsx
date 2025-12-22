@@ -11,8 +11,11 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Healium CKD AI",
+  title: "Healium Intelliscan - Ultrasound Imaging Platform",
   description: "AI-Powered Chronic Kidney Disease Detection from Ultrasound Videos",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 const geistSans = Geist({

@@ -97,19 +97,6 @@ export default function UserMenu() {
 
           <DropdownMenuSeparator />
 
-          {/* Profile Link */}
-          <DropdownMenuItem asChild className="cursor-pointer py-2.5 focus:bg-gray-50">
-            <Link href="/profile" className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50">
-                <User className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">My Profile</span>
-                <span className="text-xs text-gray-500">View and edit profile</span>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-
           {/* Settings Link */}
           <DropdownMenuItem asChild className="cursor-pointer py-2.5 focus:bg-gray-50">
             <Link href="/settings" className="flex items-center gap-3">
