@@ -62,7 +62,7 @@ export default function HelpPage() {
                 How do I create a new study?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-gray-600 pb-4">
-                Click "Create Study" from the Cases page. Select a patient, upload kidney images, run AI analysis, and
+                Click &ldquo;Create Study&rdquo; from the Cases page. Select a patient, upload kidney images, run AI analysis, and
                 generate the report.
               </AccordionContent>
             </AccordionItem>
@@ -92,7 +92,7 @@ export default function HelpPage() {
                 Can I edit AI results?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-gray-600 pb-4">
-                Yes. Click "Edit" in the analysis panel to modify CKD risk, eGFR values, findings, and add clinical
+                Yes. Click &ldquo;Edit&rdquo; in the analysis panel to modify CKD risk, eGFR values, findings, and add clinical
                 notes.
               </AccordionContent>
             </AccordionItem>
@@ -102,7 +102,7 @@ export default function HelpPage() {
                 Is the platform HIPAA compliant?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-gray-600 pb-4">
-                Yes. All data is encrypted, access is controlled, and we maintain comprehensive audit logs. See our{" "}
+                Yes. All data is encrypted, access is controlled, and we maintain comprehensive audit logs. See our 
                 <Link href="/privacy" className="text-primary hover:underline">
                   Privacy & Security
                 </Link>{" "}

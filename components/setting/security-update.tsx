@@ -148,7 +148,7 @@ export function SecurityTab() {
             <div className="space-y-4">
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <p className="text-sm text-blue-900">
-                  When enabled, you'll receive a verification code via email each time you sign in.
+                  When enabled, you&apos;ll receive a verification code via email each time you sign in.
                 </p>
               </div>
 
