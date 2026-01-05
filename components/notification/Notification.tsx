@@ -22,46 +22,7 @@ interface Notification {
 
 // Sample notifications - in production, this would come from an API/database
 const sampleNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "scan",
-    title: "Scan Analysis Complete",
-    message: "Ultrasound scan for patient John Doe has been analyzed successfully.",
-    timestamp: "2 min ago",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "patient",
-    title: "New Patient Added",
-    message: "Sarah Johnson has been added to your patient list.",
-    timestamp: "15 min ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "warning",
-    title: "Follow-up Required",
-    message: "Patient Michael Smith requires follow-up appointment within 7 days.",
-    timestamp: "1 hour ago",
-    read: false,
-  },
-  {
-    id: "4",
-    type: "success",
-    title: "Report Generated",
-    message: "Monthly kidney function report has been generated successfully.",
-    timestamp: "2 hours ago",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "info",
-    title: "System Update",
-    message: "New AI analysis features are now available in the ultrasound module.",
-    timestamp: "1 day ago",
-    read: true,
-  },
+  
 ]
 
 const getNotificationIcon = (type: NotificationType) => {
@@ -162,12 +123,6 @@ export default function Notifications() {
         </ScrollArea>
 
         <Separator />
-
-        <div className="p-2">
-          <Button variant="ghost" className="w-full justify-center text-sm h-9" onClick={() => setOpen(false)}>
-            View all notifications
-          </Button>
-        </div>
       </PopoverContent>
     </Popover>
   )
