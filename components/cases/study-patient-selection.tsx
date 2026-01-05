@@ -1,16 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Search, UserPlus, Check } from "lucide-react"
-import { useGetPatientsQuery } from "@/store/services/patients"
+import { useCreatePatientMutation, useGetPatientsQuery } from "@/store/services/patients"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Patient } from "@/types/patient"
 
 interface StudyPatientSelectionProps {
   defaultPatientId?: string
@@ -19,7 +20,7 @@ interface StudyPatientSelectionProps {
 
 export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPatientSelectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedPatient, setSelectedPatient] = useState<any>(null)
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   // New patient form
@@ -27,45 +28,50 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
   const [newPatientAge, setNewPatientAge] = useState("")
   const [newPatientGender, setNewPatientGender] = useState<"M" | "F">("M")
 
-  const { data: patientsData, isLoading } = useGetPatientsQuery()
-  
-
-  const patients = patientsData || []
-
-  // Filter patients based on search query
-  const filteredPatients = patients.filter((patient: any) => {
-    const query = searchQuery.toLowerCase()
-    return (
-      patient.name.toLowerCase().includes(query) ||
-      patient.patient_id.toLowerCase().includes(query) ||
-      patient.id.toString().includes(query)
-    )
+  const { data: patientsData, isLoading } = useGetPatientsQuery({
+    params: {
+      search: searchQuery
+    }
   })
+  
+  const [createPatient, { data: createdPatient, isLoading: createPatientLoading, isSuccess: createPatientSuccess, isError: createPatientError }] = useCreatePatientMutation()
 
-  const handleSelectPatient = (patient: any) => {
+  const patients = patientsData?.data || []
+
+  const handleSelectPatient = (patient: Patient) => {
     setSelectedPatient(patient)
-    onComplete({
-      patientType: "existing",
-      patientId: patient.id,
-      patientName: patient.name,
-      age: patient.age,
-      gender: patient.sex,
-    })
+    onComplete(patient)
   }
 
-  const handleCreateNewPatient = () => {
-    if (!newPatientName || !newPatientAge) return
+  const handleCreateNewPatient = async() => {
+    if (!newPatientName || !newPatientAge || !newPatientGender) return
 
     const newPatient = {
-      patientType: "new",
-      patientName: newPatientName,
+      patient_id: `${new Date().toISOString().slice(0, 10).replace(/-/g, "")}` + `${Math.floor(1000 + Math.random() * 9000)}`,
+      name: newPatientName,
       age: Number.parseInt(newPatientAge),
-      gender: newPatientGender,
+      sex: newPatientGender,
     }
 
-    setShowCreateDialog(false)
-    onComplete(newPatient)
+    await createPatient(newPatient)
   }
+
+  useEffect(() => {
+    if(defaultPatientId && patients.length > 0) {
+      const selected = patients.find(p => p.id === defaultPatientId)
+      if(selected) {
+        setSelectedPatient(selected)
+      }
+    }
+  }, [defaultPatientId])
+
+  useEffect(() => {
+    if(createPatientSuccess && createdPatient) {
+      setSelectedPatient(createdPatient)
+      setShowCreateDialog(false)
+      onComplete(createdPatient)
+    }
+  }, [createPatientSuccess])
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -100,10 +106,6 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
 
         {/* Patient List - Clean and scannable */}
         <div>
-          <div className="text-sm font-medium text-muted-foreground mb-3">
-            {searchQuery ? `${filteredPatients.length} results found` : `${patients.length} patients`}
-          </div>
-
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -116,7 +118,7 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
                 </div>
               ))}
             </div>
-          ) : filteredPatients.length === 0 && searchQuery ? (
+          ) : patients.length === 0 && searchQuery ? (
             <div className="text-center py-12 bg-background rounded-lg border-2 border-dashed">
               <p className="text-muted-foreground mb-4">No patients found matching &ldquo;{searchQuery}&rdquo;</p>
               <Button variant="default" onClick={() => setShowCreateDialog(true)}>
@@ -126,7 +128,7 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
             </div>
           ) : (
             <div className="space-y-2 max-h-[420px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-              {filteredPatients.map((patient: any) => {
+              {patients.map((patient: any) => {
                 const initials = patient.name
                   .split(" ")
                   .map((n: string) => n[0])
@@ -155,7 +157,7 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm mb-0.5">{patient.name}</div>
+                      <div className="font-medium text-sm mb-0.5">{patient.name}</div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Badge variant="outline" className="font-mono text-[10px] py-0 h-5">
                           {patient.patient_id}
@@ -228,11 +230,11 @@ export function StudyPatientSelection({ defaultPatientId, onComplete }: StudyPat
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="flex-1">
+              <Button variant="outline" disabled={createPatientLoading} onClick={() => setShowCreateDialog(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button onClick={handleCreateNewPatient} disabled={!newPatientName || !newPatientAge} className="flex-1">
-                Create & Continue
+              <Button onClick={handleCreateNewPatient} disabled={createPatientLoading || !newPatientName || !newPatientAge || !newPatientGender} className="flex-1">
+                {createPatientLoading ? "Creating" : "Create & Continue"}
               </Button>
             </div>
           </div>

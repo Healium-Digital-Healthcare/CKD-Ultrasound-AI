@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Filter, FileText } from "lucide-react"
-import { useGetCasesQuery } from "@/store/services/cases"
+import { Search, Filter, FileText, RefreshCw } from "lucide-react"
+import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
 import { ReportListTable } from "@/components/reports/report-list"
 import { ViewReportSheet } from "@/components/reports/view-reports"
+import { StatsSkeleton } from "@/components/patients/stats-skeleton"
 
 export default function ReportsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -34,23 +35,20 @@ export default function ReportsPage() {
     },
   })
 
+  const { data: stats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: statsRefetch } = useGetCaseStatsQuery()
+  
   const cases = Array.isArray(data?.data) ? data.data : data?.data ? [data.data] : []
   const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
-
-  const totalReports = pagination.total
-  const todayReports = cases.filter((c) => new Date(c.study_date).toDateString() === new Date().toDateString()).length
-  const last7DaysReports = cases.filter((c) => {
-    const date = new Date(c.study_date)
-    const today = new Date()
-    const diffTime = Math.abs(today.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays <= 7
-  }).length
 
   const handleViewReport = (case_id: string) => {
     // Find case by case_number to get case_id
     setSelectedCaseId(case_id)
     setIsViewerOpen(true)
+  }
+
+  const handleRefresh = () => {
+    refetch()
+    statsRefetch()
   }
 
   return (
@@ -63,22 +61,36 @@ export default function ReportsPage() {
             </div>
             <h1 className="text-2xl font-semibold text-foreground">Reports</h1>
           </div>
+          <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button> 
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{totalReports}</div>
-            <div className="text-sm text-muted-foreground mt-1">Total Reports</div>
-          </div>
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{todayReports}</div>
-            <div className="text-sm text-muted-foreground mt-1">Today</div>
-          </div>
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{last7DaysReports}</div>
-            <div className="text-sm text-muted-foreground mt-1">Last 7 Days</div>
-          </div>
-        </div>
+        {
+          (isStatsFetching || isStatsLoading) ? (
+            <StatsSkeleton/>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.total}</div>
+                <div className="text-sm text-muted-foreground mt-1">Total</div>
+              </div>
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.today}</div>
+                <div className="text-sm text-muted-foreground mt-1">Today</div>
+              </div>
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.last7Days}</div>
+                <div className="text-sm text-muted-foreground mt-1">Last 7 Days</div>
+              </div>
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.last30Days}</div>
+                <div className="text-sm text-muted-foreground mt-1">Last 30 Days</div>
+              </div>
+            </div>
+          )
+        }
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -87,7 +99,7 @@ export default function ReportsPage() {
               <div className="relative w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by patient id or name"
+                  placeholder="Search by case number"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 h-9"

@@ -19,9 +19,16 @@ interface UploadedFile {
 interface StudyImageUploadProps {
   onComplete: (leftImages: string[], rightImages: string[]) => void
   initialImages?: { leftKidney: string[]; rightKidney: string[] }
+  isDisabled?: boolean
+  onUploadingStateChange?: (isUploading: boolean) => void
 }
 
-export function StudyImageUpload({ onComplete, initialImages }: StudyImageUploadProps) {
+export function StudyImageUpload({
+  onComplete,
+  initialImages,
+  isDisabled,
+  onUploadingStateChange,
+}: StudyImageUploadProps) {
   const [leftKidneyFiles, setLeftKidneyFiles] = useState<UploadedFile[]>(() => {
     if (initialImages?.leftKidney.length) {
       return initialImages.leftKidney.map((path, index) => ({
@@ -61,6 +68,13 @@ export function StudyImageUpload({ onComplete, initialImages }: StudyImageUpload
     const rightPaths = rightKidneyFiles.filter((f) => f.status === "completed" && f.path).map((f) => f.path!)
     onComplete(leftPaths, rightPaths)
   }, [leftKidneyFiles, rightKidneyFiles, onComplete])
+
+  useEffect(() => {
+    const isAnyUploading =
+      leftKidneyFiles.some((f) => f.status === "uploading") || rightKidneyFiles.some((f) => f.status === "uploading")
+
+    onUploadingStateChange?.(isAnyUploading)
+  }, [leftKidneyFiles, rightKidneyFiles, onUploadingStateChange])
 
   const uploadFile = async (
     file: File,
@@ -225,7 +239,8 @@ export function StudyImageUpload({ onComplete, initialImages }: StudyImageUpload
 
               <button
                 type="button"
-                className="w-full h-48 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group"
+                disabled={isDisabled}
+                className="w-full h-48 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => leftInputRef.current?.click()}
               >
                 <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
@@ -240,6 +255,7 @@ export function StudyImageUpload({ onComplete, initialImages }: StudyImageUpload
                 ref={leftInputRef}
                 type="file"
                 multiple
+                disabled={isDisabled}
                 accept="image/png,image/jpeg,image/jpg,.dcm"
                 onChange={(e) => handleFileSelect(e.target.files, "left")}
                 className="hidden"
@@ -256,7 +272,8 @@ export function StudyImageUpload({ onComplete, initialImages }: StudyImageUpload
 
               <button
                 type="button"
-                className="w-full h-48 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group"
+                disabled={isDisabled}
+                className="w-full h-48 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => rightInputRef.current?.click()}
               >
                 <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
@@ -271,6 +288,7 @@ export function StudyImageUpload({ onComplete, initialImages }: StudyImageUpload
                 ref={rightInputRef}
                 type="file"
                 multiple
+                disabled={isDisabled}
                 accept="image/png,image/jpeg,image/jpg,.dcm"
                 onChange={(e) => handleFileSelect(e.target.files, "right")}
                 className="hidden"

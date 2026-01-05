@@ -29,7 +29,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           image_path,
           kidney_type,
           ai_analysis_status,
-          ai_analysis_result
+          ai_analysis_result,
+          report,
+          report_html
         )
       `)
       .eq("id", id)

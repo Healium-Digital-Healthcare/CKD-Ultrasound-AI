@@ -1,19 +1,35 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { FileText, Eye, Download } from "lucide-react"
-import type { Case } from "@/types/case"
+import { Eye } from "lucide-react"
+import { useGetCasesQuery } from "@/store/services/cases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Pagination } from "@/components/pagination"
+import type { Case } from "@/types/case"
 
-interface PatientStudiesProps {
-  cases: Case[]
-  isLoading: boolean
+interface PatientStudiesListProps {
+  patientId: string
   onCaseClick: (caseNumber: string) => void
 }
 
-export function PatientStudies({ cases, isLoading, onCaseClick }: PatientStudiesProps) {
+export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesListProps) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  const { data: casesResponse, isLoading } = useGetCasesQuery({
+    params: {
+      page: currentPage,
+      limit: pageSize,
+      patientId: patientId
+    },
+  })
+
+  const cases = casesResponse?.data ? casesResponse.data : []
+  const pagination = casesResponse?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
+
   const getInitials = (name: string) => {
     const parts = name.split(" ")
     if (parts.length >= 2) {
@@ -47,7 +63,6 @@ export function PatientStudies({ cases, isLoading, onCaseClick }: PatientStudies
     return (
       <div className="p-8">
         <div className="bg-white rounded-lg border border-gray-200 p-16 text-center">
-          <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No studies found</h3>
           <p className="text-sm text-gray-600">This patient doesn&apos;t have any studies yet.</p>
         </div>
@@ -55,65 +70,73 @@ export function PatientStudies({ cases, isLoading, onCaseClick }: PatientStudies
     )
   }
 
+  const startEntry = pagination.total === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  const endEntry = Math.min(currentPage * pageSize, pagination.total)
+
   return (
     <div className="p-8">
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-b border-gray-200">
-              <TableHead className="font-medium text-gray-700 text-sm w-1/3">Patient</TableHead>
-              <TableHead className="font-medium text-gray-700 text-sm w-1/3">Scan Date</TableHead>
-              <TableHead className="font-medium text-gray-700 text-sm w-1/3">AI Analysis Result</TableHead>
-              <TableHead className="font-medium text-gray-700 text-sm w-1/3">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {cases.map((caseItem) => (
-              <TableRow key={caseItem.id} className="hover:bg-gray-50/50 border-b border-gray-100">
-                <TableCell className="w-1/3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 bg-gray-100">
-                      <AvatarFallback className="bg-gray-100 text-gray-700 font-medium text-sm">
-                        {getInitials(caseItem.patient.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium text-gray-900">{caseItem.patient.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {caseItem.patient.patient_id} • {caseItem.patient.age}y • {caseItem.patient.sex}
+      <div className="space-y-4">
+        <div className="rounded-lg overflow-hidden bg-card border">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-b">
+                <TableHead className="font-medium text-muted-foreground">Patient</TableHead>
+                <TableHead className="font-medium text-muted-foreground">Case Number</TableHead>
+                <TableHead className="font-medium text-muted-foreground">Scan Date</TableHead>
+                <TableHead className="font-medium text-muted-foreground text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {cases.map((caseItem) => (
+                <TableRow key={caseItem.id} className="hover:bg-muted/50">
+                  <TableCell className="text-foreground">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 bg-muted">
+                        <AvatarFallback className="bg-muted text-foreground font-medium">
+                          {getInitials(caseItem.patient.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium text-foreground">{caseItem.patient.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {caseItem.patient.patient_id} • {caseItem.patient.age}y • {caseItem.patient.sex}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-gray-900 w-1/3">
-                  {new Date(caseItem.study_date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  })}
-                </TableCell>
-                <TableCell className="w-1/3">
-                  <Button variant="link" className="h-auto p-0 text-primary font-normal" asChild>
-                    <a href="#" className="flex items-center gap-1.5">
-                      <Download className="h-3.5 w-3.5" />
-                      Download
-                    </a>
-                  </Button>
-                </TableCell>
-                <TableCell className="w-1/3">
-                  <Button
-                    size="sm"
-                    className="gap-1.5 h-9"
-                    onClick={() => onCaseClick(caseItem.case_number)}
-                  >
-                    Viewer
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </TableCell>
+                  <TableCell className="text-foreground">{caseItem.case_number}</TableCell>
+                  <TableCell className="text-foreground">
+                    {new Date(caseItem.study_date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" className="gap-1.5 h-8" onClick={() => onCaseClick(caseItem.case_number)}>
+                      Viewer
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="w-full">
+          <Pagination
+            currentPage={currentPage}
+            totalEntries={pagination.total}
+            totalPages={pagination.totalPages}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+            pageSize={pageSize}
+          />
+        </div>
       </div>
     </div>
   )

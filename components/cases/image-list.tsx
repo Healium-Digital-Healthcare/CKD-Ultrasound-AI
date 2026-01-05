@@ -82,7 +82,7 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
                 className={`rounded-lg border transition-all ${
                   selectedImage?.id === image.id
                     ? "bg-primary/10 border-primary/20"
-                    : "bg-white border-gray-200 hover:border-primary/20"
+                    : "bg-white border-gray-200 hover:bg-primary/10 hover:border-primary/20"
                 }`}
               >
                 <div className="flex justify-end">

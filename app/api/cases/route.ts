@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
+    const patientId = searchParams.get('patientId') || ''
     
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -30,7 +31,12 @@ export async function GET(request: Request) {
 
     if (search) {
       // AND search (safe)
-      query = query.ilike('case_number', `%${search}%`).ilike('patient.name', `%${search}%`)
+      query = query.ilike('case_number', `%${search}%`)
+    }
+
+    // filter by patient_id
+    if (patientId) {
+      query = query.eq("patient_id", patientId)
     }
 
     query = query.range(from, to)
@@ -49,6 +55,7 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
+    console.log('errrr', error)
     return NextResponse.json({ error: "Failed to fetch cases" }, { status: 500 })
   }
 }
@@ -64,24 +71,16 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    let patientId = body.patient_id;
+    const patientId = body.patient_id;
 
-    if (body.patient_type === "new") {
-      const { data: newPatient, error: patientError } = await supabase
-        .from("patients")
-        .insert({
-          name: body.patient_name,
-          age: parseInt(body.patient_age),
-          sex: body.patient_gender,
-          patient_id: `${new Date().toISOString().slice(0, 10).replace(/-/g, "")}` + `${Math.floor(1000 + Math.random() * 9000)}`,
-          user_id: user.id
-        })
-        .select()
-        .single();
+    const { data: patientData, error: patientDataError} = await supabase
+    .from('patients')
+    .select('*')
+    .eq('id', patientId)
+    .eq('user_id', user.id)
 
-      if (patientError) throw patientError;
-
-      patientId = newPatient.id;
+    if(patientDataError) {
+      throw patientDataError
     }
 
     // 1️⃣ CREATE CASE

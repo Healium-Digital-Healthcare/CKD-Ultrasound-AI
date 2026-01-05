@@ -10,11 +10,11 @@ import { StudyImageUpload } from "./study-image-upload"
 import { StudyAIAnalysis } from "./study-ai-analysis"
 import { StudyReportGeneration } from "./study-report-generation"
 import { useCreateCaseMutation } from "@/store/services/cases"
+import type { Patient } from "@/types/patient"
 
 interface CreateStudySheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  defaultPatientId?: string
 }
 
 const STEPS = [
@@ -24,14 +24,15 @@ const STEPS = [
   { number: 4, label: "Report", icon: FileText },
 ]
 
-export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: CreateStudySheetProps) {
+export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [createdCaseId, setCreatedCaseId] = useState<string | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false)
   const [isAnalyzed, setIsAnalyzed] = useState<boolean>(false)
+  const [isUploadingImages, setIsUploadingImages] = useState<boolean>(false)
 
   // Step data
-  const [patientData, setPatientData] = useState<any>(null)
+  const [patientData, setPatientData] = useState<Patient | null>(null)
   const [imageData, setImageData] = useState<{ leftKidney: string[]; rightKidney: string[] }>({
     leftKidney: [],
     rightKidney: [],
@@ -39,7 +40,8 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
 
   const [analysisData, setAnalysisData] = useState<any>(null)
 
-  const [CreateStudy, { data: createdStudy, isLoading: isStudyCreationLoading, isSuccess: isStudyCreationSuccess}] = useCreateCaseMutation()
+  const [CreateStudy, { data: createdStudy, isLoading: isStudyCreationLoading, isSuccess: isStudyCreationSuccess }] =
+    useCreateCaseMutation()
 
   const handleClose = () => {
     setCurrentStep(1)
@@ -50,7 +52,7 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
     onOpenChange(false)
   }
 
-  const handlePatientComplete = (data: any) => {
+  const handlePatientComplete = (data: Patient) => {
     setPatientData(data)
   }
 
@@ -58,29 +60,32 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
     setImageData({ leftKidney: leftImages, rightKidney: rightImages })
   }, [])
 
+  const handleUploadingStateChange = useCallback((isUploading: boolean) => {
+    setIsUploadingImages(isUploading)
+  }, [])
+
   const handleCreateStudy = async () => {
-    if (imageData.leftKidney.length === 0 && imageData.rightKidney.length === 0) {
+    if (!patientData || (imageData.leftKidney.length === 0 && imageData.rightKidney.length === 0)) {
       return
     }
 
     await CreateStudy({
-      patient_id: patientData.patientId,
-      patient_type: patientData.patientType,
-      patient_name: patientData.patientName,
-      patient_age: patientData.age,
-      patient_gender: patientData.gender,
+      patient_id: patientData.id,
       study_date: new Date().toISOString().split("T")[0],
-      images: [...imageData.leftKidney.map(img => {
-        return {
-          path: img,
-          kidney_type: 'left' as 'left' | 'right'
-        }
-      }), ...imageData.rightKidney.map(img => {
-        return {
-          path: img,
-          kidney_type: 'right' as 'left' | 'right'
-        }
-      })],
+      images: [
+        ...imageData.leftKidney.map((img) => {
+          return {
+            path: img,
+            kidney_type: "left" as "left" | "right",
+          }
+        }),
+        ...imageData.rightKidney.map((img) => {
+          return {
+            path: img,
+            kidney_type: "right" as "left" | "right",
+          }
+        }),
+      ],
     })
   }
 
@@ -114,7 +119,7 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
         return {
           showBack: true,
           continueText: "Create Study & Continue to Analysis",
-          continueDisabled: !isStep2Valid || isStudyCreationLoading,
+          continueDisabled: !isStep2Valid || isStudyCreationLoading || isUploadingImages,
           continueLoading: isStudyCreationLoading,
           onContinue: handleCreateStudy,
         }
@@ -148,7 +153,7 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
   const footerConfig = getFooterButtons()
 
   useEffect(() => {
-    if(isStudyCreationSuccess && createdStudy) {
+    if (isStudyCreationSuccess && createdStudy) {
       setCreatedCaseId(createdStudy.id)
       setCurrentStep(3)
     }
@@ -201,7 +206,7 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
                       className={`
                         w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 border-2
                         ${isCompleted ? "bg-green-500 border-green-500 text-white" : ""}
-                        ${isCurrent ? "border-primary bg-primary text-primary-foreground shadow-lg" : ""}
+                        ${isCurrent ? "border-green-500 bg-green-500 text-white shadow-lg" : ""}
                         ${!isCompleted && !isCurrent ? "border-border bg-white text-muted-foreground" : ""}
                       `}
                     >
@@ -225,9 +230,16 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
         <div className="flex-1 overflow-auto bg-white">
           <div className="h-full">
             {currentStep === 1 && (
-              <StudyPatientSelection defaultPatientId={defaultPatientId} onComplete={handlePatientComplete} />
+              <StudyPatientSelection onComplete={handlePatientComplete} defaultPatientId={patientData?.id} />
             )}
-            {currentStep === 2 && <StudyImageUpload onComplete={handleImagesComplete} initialImages={imageData} />}
+            {currentStep === 2 && (
+              <StudyImageUpload
+                onComplete={handleImagesComplete}
+                initialImages={imageData}
+                isDisabled={isStudyCreationLoading}
+                onUploadingStateChange={handleUploadingStateChange}
+              />
+            )}
             {currentStep === 3 && createdCaseId && (
               <StudyAIAnalysis
                 caseId={createdCaseId}
@@ -236,11 +248,7 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
                 onAnalyzingStateChange={handleAnalysisStateChange}
               />
             )}
-            {currentStep === 4 && createdCaseId && (
-              <StudyReportGeneration
-                caseId={createdCaseId}
-              />
-            )}
+            {currentStep === 4 && createdCaseId && <StudyReportGeneration caseId={createdCaseId} />}
           </div>
         </div>
 
@@ -258,7 +266,7 @@ export function CreateStudySheet({ open, onOpenChange, defaultPatientId }: Creat
             <Button
               onClick={footerConfig.onContinue}
               disabled={footerConfig.continueDisabled}
-              className="gap-2 min-w-[200px]"
+              className="gap-2 min-w-[200px] bg-green-500 hover:bg-green-500"
             >
               {footerConfig.continueLoading ? (
                 <>

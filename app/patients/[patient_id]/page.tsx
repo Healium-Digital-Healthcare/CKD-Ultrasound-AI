@@ -8,13 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Plus, ChevronDown, ChevronUp } from "lucide-react"
 import { PatientOverview } from "@/components/patients/patient-overview"
-import { PatientStudies } from "@/components/patients/patient-studies"
 import { PatientTimeline } from "@/components/patients/patient-timeline"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
-import { CreateCaseSheet } from "@/components/cases/create-case-sheet"
 import type { Case } from "@/types/case"
 import { cn } from "@/lib/utils"
 import { PatientDetailSkeleton } from "@/components/patients/patient-detail-skeleton"
+import { PatientStudiesList } from "@/components/patients/patient-studies"
 
 export default function PatientDetailPage({ params }: { params: Promise<{ patient_id: string }> }) {
   const { patient_id } = use(params)
@@ -22,20 +21,9 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
   const [activeTab, setActiveTab] = useState("overview")
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [createCaseOpen, setCreateCaseOpen] = useState(false)
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(true)
 
   const { data: patient, isLoading: patientLoading, isError: patientError } = useGetPatientQuery(patient_id)
-
-  const { data: casesResponse, isLoading: casesLoading } = useGetCasesQuery({
-    params: { page: 1, limit: 100 },
-  })
-
-  const patientCases = casesResponse?.data
-    ? (Array.isArray(casesResponse.data) ? casesResponse.data : [casesResponse.data]).filter(
-        (c: Case) => c.patient_id === patient_id,
-      )
-    : []
 
   const handleCaseClick = (caseNumber: string) => {
     setSelectedCaseNumber(caseNumber)
@@ -82,8 +70,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
 
   const tabs = [
     { id: "overview", label: "Overview" },
-    { id: "studies", label: "Studies/Cases" },
-    { id: "timeline", label: "Timeline" },
+    { id: "studies", label: "Studies/Cases" }
   ]
 
   return (
@@ -100,10 +87,6 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Patients
-            </Button>
-            <Button onClick={() => setCreateCaseOpen(true)} size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add New Study
             </Button>
           </div>
 
@@ -220,16 +203,13 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        {activeTab === "overview" && <PatientOverview patient={patient} cases={patientCases} />}
+        {activeTab === "overview" && <PatientOverview patientId={patient_id} />}
         {activeTab === "studies" && (
-          <PatientStudies cases={patientCases} isLoading={casesLoading} onCaseClick={handleCaseClick} />
+          <PatientStudiesList patientId={patient_id} onCaseClick={handleCaseClick}/>
         )}
-        {activeTab === "timeline" && <PatientTimeline />}
       </div>
 
       <CaseDetailDrawer caseNumber={selectedCaseNumber} open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
-
-      {/* <CreateCaseSheet open={createCaseOpen} onOpenChange={setCreateCaseOpen} defaultPatientId={patient_id} /> */}
     </div>
   )
 }

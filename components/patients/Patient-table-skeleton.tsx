@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function PatientListTableSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-card rounded">
       <Table>
         <TableHeader>
           <TableRow className="border-b border-gray-200 hover:bg-transparent">

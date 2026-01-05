@@ -19,11 +19,6 @@ const patientFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be less than 100 characters"),
   age: z.coerce.number().min(0, "Age must be positive").max(150, "Age must be less than 150"),
   sex: z.enum(["M", "F"] as const, { message: "Please select a sex" }),
-  severity: z.enum(["normal", "mild", "moderate", "severe", "critical"] as const, {
-    message: "Please select a severity level",
-  }),
-  ckdStage: z.string().optional(),
-  eGFR: z.string().optional(),
 })
 
 type PatientFormValues = z.infer<typeof patientFormSchema>
@@ -43,9 +38,6 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
       name: "",
       age: 0,
       sex: "M",
-      severity: "normal",
-      ckdStage: "",
-      eGFR: "",
     },
   })
 
@@ -55,10 +47,7 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
         patientId: `PID${Math.floor(100000 + Math.random() * 900000)}`,
         name: "",
         age: 0,
-        sex: "M",
-        severity: "normal",
-        ckdStage: "",
-        eGFR: "",
+        sex: "M"
       })
       toast.success("Patient Created Successfully!")
       onOpenChange(false)
@@ -76,12 +65,7 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
       patient_id: values.patientId,
       name: values.name,
       age: values.age,
-      sex: values.sex,
-      severity: values.severity,
-      scanned_on: new Date().toISOString(),
-      last_updated: new Date().toISOString(),
-      ...(values.ckdStage && values.ckdStage !== "" && { ckd_stage: Number(values.ckdStage) }),
-      ...(values.eGFR && values.eGFR !== "" && { egfr: Number(values.eGFR) }),
+      sex: values.sex
     }
 
     createPatient(newPatient)
@@ -168,7 +152,7 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          Sex <span className="text-red-500">*</span>
+                          Gender <span className="text-red-500">*</span>
                         </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
@@ -181,78 +165,6 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
                             <SelectItem value="F">Female</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="severity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Severity <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <div className="relative">
-                            <Activity className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10 pointer-events-none" />
-                            <SelectTrigger className="pl-10">
-                              <SelectValue placeholder="Select severity" />
-                            </SelectTrigger>
-                          </div>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="mild">Mild</SelectItem>
-                          <SelectItem value="moderate">Moderate</SelectItem>
-                          <SelectItem value="severe">Severe</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="ckdStage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CKD Stage (Optional)</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Stethoscope className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Input {...field} type="number" placeholder="Enter CKD stage (1-5)" className="pl-10" />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="eGFR"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>eGFR (Optional)</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Activity className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <Input
-                              {...field}
-                              type="number"
-                              step="0.1"
-                              placeholder="Enter eGFR value"
-                              className="pl-10"
-                            />
-                          </div>
-                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

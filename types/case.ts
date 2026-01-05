@@ -56,19 +56,19 @@ export type AiAnalysisResult = {
   notes: string;
 };
 
-export interface Report {
-  findings: {
-    size: string
-    echogenicity: string
-    cortex: string
-    hydronephrosis: string
-    calculi: string
-    cysts: string
-  }
-  assessment: string
-  impression: string[]
-  recommendations: string[]
-}
+// export interface Report {
+//   findings: {
+//     size: string
+//     echogenicity: string
+//     cortex: string
+//     hydronephrosis: string
+//     calculi: string
+//     cysts: string
+//   }
+//   assessment: string
+//   impression: string[]
+//   recommendations: string[]
+// }
 
 export type ImageAnalysis = {
   id: string
@@ -82,6 +82,7 @@ export type ImageAnalysis = {
   thinkness: number | null,
   area: number | null,
   report: Report | null,
+  report_html?: string
   measurements: Measurement[]
 };
 
@@ -105,18 +106,133 @@ export interface CreateCaseType {
   patient_id?: string,
   study_date: string,
   images: CreateImageAnalysis[],
-  patient_type: string,
-  patient_age: string,
-  patient_name: string,
-  patient_gender: string
 }
 
 export interface CaseListResponse {
-  data: Case,
+  data: Case[],
   pagination: {
     total: number,
     page: number,
     limit: number,
     totalPages: number
   }
+}
+
+export interface Report {
+  // General Details
+  generalDetails: {
+    patientName: string
+    centre: string
+    referringPhysician: string
+    age: string
+    gender: string
+    reportGenerationDate: string
+    scanDate: string
+    patientId: string
+  }
+
+  // Clinical History
+  clinicalHistory: {
+    chiefComplaint: string
+    diabetesMellitus: string
+    hypertension: string
+    familyHistory: string
+    previousKidneyIssues: string
+    currentMedications: string
+  }
+
+  // Intelliscan AI Scores
+  aiScores: {
+    predictedEgfr: number
+    ckdStatus: "YES" | "NO"
+    ckdStage: string
+    modelConfidence: number
+    imageQuality: string
+  }
+
+  // Kidney Morphology
+  morphology: {
+    rightKidney: {
+      length: number
+      width: number
+      corticalThickness: number
+      echogenicity: string
+      cmd: string // Corticomedullary Differentiation
+      hydronephrosis: string
+      stones: number
+      cysts: string
+    }
+    leftKidney: {
+      length: number
+      width: number
+      corticalThickness: number
+      echogenicity: string
+      cmd: string
+      hydronephrosis: string
+      stones: number
+      cysts: string
+    }
+  }
+
+  // Etiology Classification
+  etiologyClassification: {
+    name: string
+    percentage: number
+    confidence: "High" | "Moderate" | "Low"
+  }[]
+
+  // Structural Findings
+  structuralFindings: {
+    name: string
+    present: boolean
+    status: string
+    location: string
+    clinicalSignificance: string
+  }[]
+
+  // Stone Detection
+  stoneDetection: {
+    stones: {
+      number: number
+      location: string
+      size: string
+      confidence: number
+      characteristics: string
+    }[]
+    totalStones: number
+    largestStone: string
+    recommendedAction: string
+  }
+
+  // Clinical Impression
+  clinicalImpression: {
+    rightKidney: string
+    leftKidney: string
+    overall: string
+  }
+
+  // Recommendations
+  recommendations: string[]
+
+  // Images (for annotated ultrasound display)
+  images: {
+    id: string
+    kidney: "left" | "right"
+    view: string
+    dimensions: string
+    notes: string
+  }[]
+
+  // Report metadata
+  reportId: string
+  generatedAt: string
+  hospitalName: string
+  departmentName: string
+}
+
+export interface CaseStats {
+  total: number
+  today: number,
+  last7Days: number,
+  last30Days: number,
 }

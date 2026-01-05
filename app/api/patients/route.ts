@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import type { Patient } from "@/types/patient"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user }} = await supabase.auth.getUser()
@@ -11,16 +11,46 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized user" }, { status: 401 })
     }
 
-    const { data, error } = await supabase
-    .from("patients")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
+    const { searchParams } = new URL(request.url)
+    
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const search = searchParams.get('search') || ''
+    
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+
+    let query = supabase
+      .from("patients")
+      .select(`*`, { count: 'exact' })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false})
+
+    if(search) {
+      // OR search (safe)
+      if (search) {
+        query = query.or(`patient_id.ilike.%${search}%,name.ilike.%${search}%`)
+      }
+
+    }
+
+    query = query.range(from, to)
+
+    const { data, error, count} = await query
 
     if (error) throw error
 
-    return NextResponse.json(data)
+    return NextResponse.json({
+      data,
+      pagination: {
+        total: count || 0,
+        page,
+        limit,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    })
   } catch (error) {
+    console.log('errrr', error)
     return NextResponse.json({ error: "Failed to fetch patients" }, { status: 500 })
   }
 }

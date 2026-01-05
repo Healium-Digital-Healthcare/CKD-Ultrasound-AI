@@ -30,7 +30,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cas
           kidney_type,
           ai_analysis_status,
           ai_analysis_result,
-          measurements
+          measurements,
+          report,
+          report_html
         )
       `)
       .eq("case_number", case_number)

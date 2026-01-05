@@ -76,7 +76,7 @@ export function StudyReportGeneration({ caseId, onGoBack }: StudyReportGeneratio
               onClick={() => setSelectedImageIndex(idx)}
               className={cn(
                 "w-full p-2 rounded border text-left transition-all flex items-center gap-2.5",
-                selectedImageIndex === idx ? "bg-primary/10 border-primary" : "hover:bg-muted border-transparent",
+                selectedImageIndex === idx ? "bg-green-50 border-green-500" : "hover:bg-green-50 border-transparent",
               )}
             >
               <div

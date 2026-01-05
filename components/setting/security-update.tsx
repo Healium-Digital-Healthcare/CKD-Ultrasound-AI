@@ -8,15 +8,35 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Lock, Shield, Clock, Mail } from "lucide-react"
+import { Lock, Shield, Clock, Mail, EyeOff, Eye } from "lucide-react"
+import z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
+import { ca } from "zod/v4/locales"
+import { TwoFactorSetup } from "./TwoFactorSetup"
+
+const passwordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  })
+
+type PasswordFormValues = z.infer<typeof passwordSchema>
+
 
 export function SecurityTab() {
-  const loggedInEmail = "user@organization.com"
-
-  const [passwords, setPasswords] = useState({
-    new: "",
-    confirm: "",
-  })
+  const supabase = createClient()
 
   const [securitySettings, setSecuritySettings] = useState({
     sessionTimeout: "30",
@@ -25,113 +45,132 @@ export function SecurityTab() {
 
   const [is2FAEnabled, setIs2FAEnabled] = useState(false)
 
-  const handlePasswordChange = () => {
-    if (passwords.new !== passwords.confirm) {
-      alert("New passwords do not match!")
-      return
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [updatingPassword, setUpdatingPassword] = useState(false)
+
+  const form = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+  })
+
+  const onSubmit = async (values: PasswordFormValues) => {
+    try{
+      setUpdatingPassword(true)
+      const { data, error } = await supabase.auth.updateUser({
+        password: values.newPassword,
+      })
+      if(error) {
+        throw error
+      }
+      else {
+        toast.success("Password updated successfully!")
+        form.reset()
+      }
+    } catch (error: any) {
+      if (error.message.includes("same password")) {
+          toast.error("New password should be different from the old password.")
+        } else {
+          toast.error("Failed to update password", error.message)
+      }
+    } finally {
+      setUpdatingPassword(false)
     }
-    if (passwords.new.length < 8) {
-      alert("Password must be at least 8 characters!")
-      return
-    }
-    alert("Password changed successfully!")
-    setPasswords({ new: "", confirm: "" })
   }
 
   const handleSecuritySave = () => {
     alert("Security settings saved successfully!")
   }
 
-  const getPasswordStrength = (password: string) => {
-    if (password.length === 0) return { strength: 0, label: "" }
-    if (password.length < 6) return { strength: 1, label: "Weak" }
-    if (password.length < 10) return { strength: 2, label: "Fair" }
-    if (password.length >= 10 && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
-      return { strength: 3, label: "Strong" }
-    }
-    return { strength: 2, label: "Fair" }
-  }
-
-  const passwordStrength = getPasswordStrength(passwords.new)
-
   return (
-    <Card className="p-6">
+    <Card className="p-6 space-y-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Security Settings</h2>
 
-      <Accordion type="single" collapsible className="space-y-4">
-        {/* Password Management Section */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-lg">
+          <Lock className="w-5 h-5 text-blue-600" />
+        </div>
+        <div className="text-left">
+          <h3 className="text-sm font-semibold text-gray-900">Password Management</h3>
+          <p className="text-xs text-gray-500">Change your account password</p>
+        </div>
+      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="flex items-center w-full justify-between gap-4">
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type={showNew ? "text" : "password"}
+                        placeholder="Enter new password"
+                      />
+                      <span
+                        onClick={() => setShowNew(!showNew)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400"
+                      >
+                        {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </span>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type={showConfirm ? "text" : "password"}
+                        placeholder="Confirm new password"
+                      />
+                      <span
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400"
+                      >
+                        {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </span>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button type="submit" size="sm" disabled={updatingPassword}>
+              {updatingPassword ? "Updating..." : "Update Password"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+      {/* <Accordion type="single" collapsible className="space-y-4">
         <AccordionItem value="password" className="border rounded-lg px-4">
           <AccordionTrigger className="hover:no-underline">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-lg">
-                <Lock className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-sm font-semibold text-gray-900">Password Management</h3>
-                <p className="text-xs text-gray-500">Change your account password</p>
-              </div>
-            </div>
           </AccordionTrigger>
-          <AccordionContent className="pt-4 pb-2">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={passwords.new}
-                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                    className="mt-1.5"
-                  />
-                  {passwords.new && (
-                    <div className="mt-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all ${
-                              passwordStrength.strength === 1
-                                ? "bg-red-500 w-1/3"
-                                : passwordStrength.strength === 2
-                                  ? "bg-yellow-500 w-2/3"
-                                  : passwordStrength.strength === 3
-                                    ? "bg-green-500 w-full"
-                                    : ""
-                            }`}
-                          />
-                        </div>
-                        <span className="text-xs font-medium text-gray-600 min-w-[45px]">{passwordStrength.label}</span>
-                      </div>
-                      <p className="text-xs text-gray-500">Min 8 characters</p>
-                    </div>
-                  )}
-                </div>
 
-                <div>
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                    className="mt-1.5"
-                  />
-                  {passwords.confirm && passwords.new !== passwords.confirm && (
-                    <p className="text-xs text-red-500 mt-2">Passwords do not match</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <Button onClick={handlePasswordChange} size="sm">
-                  Update Password
-                </Button>
-              </div>
-            </div>
+          <AccordionContent className="pt-4 pb-2 px-2">
+            
           </AccordionContent>
         </AccordionItem>
 
-        {/* Two-Factor Authentication Section */}
         <AccordionItem value="2fa" className="border rounded-lg px-4">
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-3">
@@ -140,30 +179,15 @@ export function SecurityTab() {
               </div>
               <div className="text-left">
                 <h3 className="text-sm font-semibold text-gray-900">Two-Factor Authentication</h3>
-                <p className="text-xs text-gray-500">Secure your account with email verification</p>
+                <p className="text-xs text-gray-500">Secure your account with MFA</p>
               </div>
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-4 pb-2">
-            <div className="space-y-4">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-sm text-blue-900">
-                  When enabled, you&apos;ll receive a verification code via email each time you sign in.
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Enable 2FA</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Require email verification at login</p>
-                </div>
-                <Switch checked={is2FAEnabled} onCheckedChange={setIs2FAEnabled} />
-              </div>
-            </div>
+            <TwoFactorSetup />
           </AccordionContent>
         </AccordionItem>
 
-        {/* Session Management Section */}
         <AccordionItem value="session" className="border rounded-lg px-4">
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-3">
@@ -227,7 +251,6 @@ export function SecurityTab() {
           </AccordionContent>
         </AccordionItem>
 
-        {/* Access Control Section */}
         <AccordionItem value="access" className="border rounded-lg px-4">
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-3">
@@ -282,7 +305,7 @@ export function SecurityTab() {
             </div>
           </AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion> */}
     </Card>
   )
 }

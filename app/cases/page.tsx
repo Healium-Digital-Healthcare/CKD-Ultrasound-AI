@@ -3,14 +3,14 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Filter } from "lucide-react"
-import { useGetCasesQuery } from "@/store/services/cases"
+import { Plus, Search, RefreshCw } from "lucide-react"
+import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { useEffect } from "react"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
 import { CaseListTable } from "@/components/cases/Case-list"
-import { CreateCaseSheet } from "@/components/cases/create-case-sheet"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
+import { StatsSkeleton } from "@/components/patients/stats-skeleton"
 
 export default function CasesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -37,25 +37,10 @@ export default function CasesPage() {
     },
   })
 
-  const cases = Array.isArray(data?.data) ? data.data : data?.data ? [data.data] : []
-  const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
+  const { data: stats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: statsRefetch } = useGetCaseStatsQuery()
 
-  const totalCases = pagination.total
-  const todayCases = cases.filter((c) => new Date(c.study_date).toDateString() === new Date().toDateString()).length
-  const last7DaysCases = cases.filter((c) => {
-    const date = new Date(c.study_date)
-    const today = new Date()
-    const diffTime = Math.abs(today.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays <= 7
-  }).length
-  const last30DaysCases = cases.filter((c) => {
-    const date = new Date(c.study_date)
-    const today = new Date()
-    const diffTime = Math.abs(today.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays <= 30
-  }).length
+  const cases = data?.data ? data.data : []
+  const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
 
   const handleCreate = () => {
     setIsCreateDialogOpen(true)
@@ -66,35 +51,52 @@ export default function CasesPage() {
     setIsDrawerOpen(true)
   }
 
+  const handleRefresh = () => {
+    refetch()
+    statsRefetch()
+  }
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-foreground">Study List</h1>
-          <Button className="gap-2" onClick={() => handleCreate()}>
-            <Plus className="h-4 w-4" />
-            New Study
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button className="gap-2" onClick={() => handleCreate()}>
+              <Plus className="h-4 w-4" />
+              New Study
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{totalCases}</div>
-            <div className="text-sm text-muted-foreground mt-1">Total</div>
-          </div>
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{todayCases}</div>
-            <div className="text-sm text-muted-foreground mt-1">Today</div>
-          </div>
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{last7DaysCases}</div>
-            <div className="text-sm text-muted-foreground mt-1">Last 7 Days</div>
-          </div>
-          <div className="bg-card rounded-lg border p-6">
-            <div className="text-3xl font-semibold text-foreground">{last30DaysCases}</div>
-            <div className="text-sm text-muted-foreground mt-1">Last 30 Days</div>
-          </div>
-        </div>
+        {
+          (isStatsFetching || isStatsLoading) ? (
+            <StatsSkeleton/>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.total}</div>
+                <div className="text-sm text-muted-foreground mt-1">Total</div>
+              </div>
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.today}</div>
+                <div className="text-sm text-muted-foreground mt-1">Today</div>
+              </div>
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.last7Days}</div>
+                <div className="text-sm text-muted-foreground mt-1">Last 7 Days</div>
+              </div>
+              <div className="bg-card rounded-lg border p-6">
+                <div className="text-3xl font-semibold text-foreground">{stats?.last30Days}</div>
+                <div className="text-sm text-muted-foreground mt-1">Last 30 Days</div>
+              </div>
+            </div>
+          )
+        }
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -103,16 +105,16 @@ export default function CasesPage() {
               <div className="relative w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by patient id or name"
+                  placeholder="Search by case number"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 h-9"
                 />
               </div>
-              <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent">
+              {/* <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent">
                 <Filter className="h-4 w-4" />
                 Filter
-              </Button>
+              </Button> */}
             </div>
           </div>
 

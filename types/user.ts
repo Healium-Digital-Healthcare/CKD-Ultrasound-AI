@@ -21,15 +21,29 @@ export interface UserGroup {
   updated_at: string
 }
 
+// export interface Organization {
+//   id: string
+//   name: string
+//   type: "Hospital" | "Clinic" | "Private Practice" | "Research"
+//   description?: string
+//   address?: string
+//   phone?: string
+//   email?: string
+//   logo?: string
+//   created_at: string
+//   updated_at: string
+// }
+
+
 export interface Organization {
-  id: string
   name: string
-  type: "Hospital" | "Clinic" | "Private Practice" | "Research"
-  description?: string
-  address?: string
-  phone?: string
+  organization_type:
+    | "hospital"
+    | "clinic"
+    | "private_practice"
+    | "research"
+  department?: string
   email?: string
-  logo?: string
-  created_at: string
-  updated_at: string
+  phone_number?: string
+  address?: string
 }

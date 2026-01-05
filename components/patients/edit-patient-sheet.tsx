@@ -21,11 +21,6 @@ const patientFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be less than 100 characters"),
   age: z.coerce.number().min(0, "Age must be positive").max(150, "Age must be less than 150"),
   sex: z.enum(["M", "F"] as const, { message: "Please select a sex" }),
-  severity: z.enum(["normal", "mild", "moderate", "severe", "critical"] as const, {
-    message: "Please select a severity level",
-  }),
-  ckdStage: z.coerce.number().optional(),
-  eGFR: z.coerce.number().optional()
 })
 
 type PatientFormValues = z.infer<typeof patientFormSchema>
@@ -47,9 +42,6 @@ export function EditPatientSheet({ patient, open, onOpenChange }: EditPatientShe
       name: patient.name,
       age: +patient.age,
       sex: patient.sex,
-      severity: patient.severity ?? "normal",
-      ckdStage: patient.ckd_stage,
-      eGFR: patient.egfr,
     },
   })
 
@@ -75,9 +67,6 @@ export function EditPatientSheet({ patient, open, onOpenChange }: EditPatientShe
       name: values.name,
       age: values.age,
       sex: values.sex,
-      severity: values.severity,
-      ckd_stage: values.ckdStage,
-      egfr: values.eGFR,
     }
 
     updatePatient({ id: patient.id, data: { ...updatedPatient }})
@@ -100,161 +89,89 @@ export function EditPatientSheet({ patient, open, onOpenChange }: EditPatientShe
                 <div className="px-8 pt-2 pb-20">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                        control={form.control}
-                        name="patientId"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>
-                            Patient ID <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <Input {...field} readOnly className="pl-10 bg-gray-50 cursor-not-allowed" />
-                            </div>
-                            </FormControl>
-                            <FormDescription>Patient ID cannot be changed</FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>
-                            Patient Name <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <Input {...field} placeholder="Enter patient full name" className="pl-10" />
-                            </div>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
-                    <div className="grid grid-cols-2 gap-4">
                         <FormField
-                        control={form.control}
-                        name="age"
-                        render={({ field }) => (
+                            control={form.control}
+                            name="patientId"
+                            render={({ field }) => (
                             <FormItem>
-                            <FormLabel>
-                                Age <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <Input {...field} type="number" placeholder="Enter age" className="pl-10" />
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-
-                        <FormField
-                        control={form.control}
-                        name="sex"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>
-                                Sex <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormLabel>
+                                Patient ID <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select sex" />
-                                </SelectTrigger>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <Input {...field} readOnly className="pl-10 bg-gray-50 cursor-not-allowed" />
+                                </div>
                                 </FormControl>
-                                <SelectContent>
-                                <SelectItem value="M">Male</SelectItem>
-                                <SelectItem value="F">Female</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
+                                <FormDescription>Patient ID cannot be changed</FormDescription>
+                                <FormMessage />
                             </FormItem>
-                        )}
-                        />
-                    </div>
-
-                    <FormField
-                        control={form.control}
-                        name="severity"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>
-                            Severity <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <div className="relative">
-                                <Activity className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10 pointer-events-none" />
-                                <SelectTrigger className="pl-10">
-                                    <SelectValue placeholder="Select severity" />
-                                </SelectTrigger>
-                                </div>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="normal">Normal</SelectItem>
-                                <SelectItem value="mild">Mild</SelectItem>
-                                <SelectItem value="moderate">Moderate</SelectItem>
-                                <SelectItem value="severe">Severe</SelectItem>
-                                <SelectItem value="critical">Critical</SelectItem>
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                        control={form.control}
-                        name="ckdStage"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>CKD Stage (Optional)</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                <Stethoscope className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <Input {...field} type="number" placeholder="Enter CKD stage (1-5)" className="pl-10" />
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
+                            )}
                         />
 
                         <FormField
-                        control={form.control}
-                        name="eGFR"
-                        render={({ field }) => (
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
                             <FormItem>
-                            <FormLabel>eGFR (Optional)</FormLabel>
-                            <FormControl>
+                                <FormLabel>
+                                Patient Name <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
                                 <div className="relative">
-                                <Activity className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <Input
-                                    {...field}
-                                    type="number"
-                                    step="0.1"
-                                    placeholder="Enter eGFR value"
-                                    className="pl-10"
-                                />
+                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <Input {...field} placeholder="Enter patient full name" className="pl-10" />
                                 </div>
-                            </FormControl>
-                            <FormMessage />
+                                </FormControl>
+                                <FormMessage />
                             </FormItem>
-                        )}
+                            )}
                         />
-                    </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                            control={form.control}
+                            name="age"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>
+                                    Age <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <Input {...field} type="number" placeholder="Enter age" className="pl-10" />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+
+                            <FormField
+                            control={form.control}
+                            name="sex"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>
+                                    Gender <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select sex" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                    <SelectItem value="M">Male</SelectItem>
+                                    <SelectItem value="F">Female</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        </div>
                     </form>
                 </Form>
                 </div>

@@ -19,7 +19,6 @@ const navigation = [
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchText, setSearchText] = useState("")
 
   const getPageTitle = () => {
@@ -29,22 +28,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const handleSearch = (text: string) => {
     setSearchText(text)
-    console.log(searchText)
-  }
-
-  const handleMobileMenuToggle = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
-  }
-
-  const handleMobileMenuClose = () => {
-    setIsMobileMenuOpen(false)
   }
 
   return (
     <Provider store={store}>
       <div className="flex h-screen overflow-hidden bg-neutral-50">
         {/* Sidebar */}
-        <DashboardSidebar isMobileMenuOpen={isMobileMenuOpen} onMobileMenuClose={handleMobileMenuClose} />
+        <DashboardSidebar />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -52,7 +42,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <DashboardHeader
             headerTitle={getPageTitle()}
             onSearch={handleSearch}
-            onMobileMenuToggle={handleMobileMenuToggle}
           />
 
           {/* Page Content */}

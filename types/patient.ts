@@ -19,3 +19,26 @@ export interface FetchPatientByPatienIdResponse {
   message: string,
   data: Patient
 }
+
+export interface PatientListResponse {
+  data: Patient[],
+  pagination: {
+    total: number,
+    page: number,
+    limit: number,
+    totalPages: number
+  }
+}
+
+export interface PatientStats {
+  total: number
+  stable: number
+  critical: number
+  recovering: number
+}
+
+export interface EgfrTimelinePoint {
+  date: string
+  egfr: number
+  study: string
+}

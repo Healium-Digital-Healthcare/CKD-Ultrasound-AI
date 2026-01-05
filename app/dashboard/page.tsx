@@ -1,244 +1,297 @@
 "use client"
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileText, TrendingUp, Users, Activity, Calendar, Filter, RefreshCw } from "lucide-react"
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
+import { RefreshCw, Filter, FileText, Users, Activity, TrendingUp } from "lucide-react"
+import { ResponsiveBar } from "@nivo/bar"
+import { ResponsivePie } from "@nivo/pie"
+import { useGetDashboardStatsQuery } from "@/store/services/organization"
+import DashboardSkeleton from "@/components/organization/dashboard-skeleton"
 
 export default function DashboardPage() {
-  const [dateRange, setDateRange] = useState("30")
+  const [dateRange, setDateRange] = useState("last_30_days")
 
-  // Mock data for charts
-  const trendsData = [
-    { month: "Jan", cases: 45, patients: 32 },
-    { month: "Feb", cases: 52, patients: 38 },
-    { month: "Mar", cases: 61, patients: 45 },
-    { month: "Apr", cases: 58, patients: 41 },
-    { month: "May", cases: 70, patients: 52 },
-    { month: "Jun", cases: 68, patients: 48 },
-  ]
+  // API call
+  const { data, isLoading, refetch, isFetching } = useGetDashboardStatsQuery(
+    { params: { date_range: dateRange } },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  )
 
-  const severityData = [
-    { name: "Stable", value: 145, color: "#22c55e" },
-    { name: "Recovering", value: 89, color: "#eab308" },
-    { name: "Critical", value: 34, color: "#ef4444" },
-  ]
+  // Prepare charts data safely
+  const severityData = useMemo(() => {
+    if (!data?.severityData) return []
+    return data.severityData.map((d: any) => ({
+      id: d.name,
+      label: d.name,
+      value: d.value,
+      color: d.color,
+    }))
+  }, [data])
 
-  const diseaseDistribution = [
-    { disease: "Diabetic Nephropathy", count: 87 },
-    { disease: "Hypertensive Nephrosclerosis", count: 65 },
-    { disease: "Glomerulonephritis", count: 54 },
-    { disease: "Polycystic Kidney", count: 43 },
-    { disease: "Hydronephrosis", count: 38 },
-    { disease: "Other", count: 49 },
-  ]
+  const ckdDistribution = useMemo(() => {
+    if (!data?.ckdDistribution) return []
+    return data.ckdDistribution.map((d: any) => ({
+      x: d.ckdStage,
+      y: d.count,
+    }))
+  }, [data])
 
-  return (
-    <div className="p-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500 mt-1">Comprehensive insights and data visualization</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
+  const comparisonData = useMemo(() => {
+    if (!data?.stats) return []
+    return [
+      { name: "Cases", value: data.stats.totalCases, color: "hsl(var(--chart-1))" },
+      { name: "Patients", value: data.stats.totalPatients, color: "hsl(var(--chart-2))" },
+      { name: "Analyses", value: data.stats.totalAnalyses, color: "hsl(var(--chart-3))" },
+    ]
+  }, [data])
+
+  return isLoading || isFetching ? (
+    <DashboardSkeleton />
+  ) : (
+    <div className="min-h-screen bg-background">
+      {/* Header Section */}
+      <div className="border-b border-border bg-card">
+        <div className="px-8 py-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-sm text-muted-foreground mt-2">Monitor your organization&apos;s analytics and insights</p>
+            </div>
+            <Button size="sm" onClick={() => refetch()} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filters:</span>
+      {/* Main Content */}
+      <div className="p-8 space-y-8">
+        {/* Filter Bar */}
+        <div className="flex items-center gap-4 bg-card border border-border rounded-lg p-4">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Date Range:</span>
+          <Select value={dateRange} onValueChange={(value) => setDateRange(value)}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="last_7_days">Last 7 days</SelectItem>
+              <SelectItem value="last_30_days">Last 30 days</SelectItem>
+              <SelectItem value="last_90_days">Last 90 days</SelectItem>
+              <SelectItem value="last_year">Last year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Stats Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Studies</p>
+                <p className="text-2xl font-bold text-foreground mt-3">{data?.stats?.totalCases ?? 0}</p>
+              </div>
+              <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-primary" />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Label className="text-sm text-gray-600">Date Range</Label>
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">Last 7 days</SelectItem>
-                <SelectItem value="30">Last 30 days</SelectItem>
-                <SelectItem value="90">Last 90 days</SelectItem>
-                <SelectItem value="365">Last year</SelectItem>
-              </SelectContent>
-            </Select>
+
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Patients</p>
+                <p className="text-2xl font-bold text-foreground mt-3">{data?.stats?.totalPatients ?? 0}</p>
+              </div>
+              <div className="w-10 h-10 rounded-md bg-chart-2/10 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-chart-2" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AI Analyses</p>
+                <p className="text-2xl font-bold text-foreground mt-3">{data?.stats?.totalAnalyses ?? 0}</p>
+              </div>
+              <div className="w-10 h-10 rounded-md bg-chart-3/10 flex items-center justify-center flex-shrink-0">
+                <Activity className="w-5 h-5 text-chart-3" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Avg. eGFR</p>
+                <p className="text-2xl font-bold text-foreground mt-3">{data?.stats?.avgEgfr ?? 0}</p>
+              </div>
+              <div className="w-10 h-10 rounded-md bg-chart-4/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-chart-4" />
+              </div>
+            </div>
           </div>
         </div>
-      </Card>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Total Studies</p>
-              <p className="text-3xl font-bold text-gray-900">336</p>
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +12% from last month
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Total Patients</p>
-              <p className="text-3xl font-bold text-gray-900">256</p>
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +8% from last month
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">AI Analyses</p>
-              <p className="text-3xl font-bold text-gray-900">1,248</p>
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +15% from last month
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-              <Activity className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Avg. eGFR</p>
-              <p className="text-3xl font-bold text-gray-900">52.3</p>
-              <p className="text-xs text-yellow-600 mt-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                mL/min/1.73m²
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Trends Chart */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cases & Patients Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={trendsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Bar Chart */}
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-6">Cases, Patients & Analyses</h3>
+            <div style={{ height: 450 }}>
+              <ResponsiveBar
+                data={comparisonData}
+                keys={["value"]}
+                indexBy="name"
+                margin={{ top: 40, right: 40, bottom: 80, left: 100 }}
+                padding={0.5}
+                colors={(d) => d.data.color}
+                borderRadius={8}
+                borderWidth={0}
+                // enableDots={true}
+                motionConfig="gentle"
+                axisBottom={{
+                  tickSize: 0,
+                  tickPadding: 16,
+                  tickRotation: -40,
+                  legend: "",
+                  legendPosition: "middle",
+                  legendOffset: 60,
+                }}
+                axisLeft={{
+                  tickSize: 0,
+                  tickPadding: 16,
+                  tickRotation: 0,
+                  legend: "Count",
+                  legendPosition: "middle",
+                  legendOffset: -70,
+                }}
+                enableLabel={true}
+                label={(d) => `${d.value}`}
+                labelSkipWidth={0}
+                labelSkipHeight={0}
+                labelTextColor="hsl(var(--foreground))"
+                tooltip={({ value, data }) => (
+                  <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
+                    <p className="text-sm font-medium text-foreground">{data.name}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{value}</p>
+                  </div>
+                )}
+                theme={{
+                  axis: {
+                    domain: { line: { stroke: "transparent" } },
+                    legend: { text: { fontSize: 13, fill: "hsl(var(--foreground))" } },
+                    ticks: { line: { stroke: "transparent" } },
+                  },
+                  grid: { line: { stroke: "hsl(var(--border))", strokeWidth: 1 } },
+                  labels: { text: { fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 700 } },
+                  tooltip: { container: { background: "transparent", border: "none" } },
                 }}
               />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="cases"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: "#3b82f6", r: 4 }}
-                name="Cases"
-              />
-              <Line
-                type="monotone"
-                dataKey="patients"
-                stroke="#10b981"
-                strokeWidth={2}
-                dot={{ fill: "#10b981", r: 4 }}
-                name="Patients"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+            </div>
+          </div>
 
-         {/* Severity Distribution */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Severity Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
+          {/* Pie Chart - Equal Size */}
+          <div className="bg-card border border-border rounded-lg">
+            <h3 className="text-lg font-semibold text-foreground p-6">Patient Severity Distribution</h3>
+            <div style={{ height: 400 }}>
+              <ResponsivePie
                 data={severityData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }: any) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {severityData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
+                margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
+                colors={(d) => d.data.color}
+                borderWidth={3}
+                borderColor="hsl(var(--card))"
+                innerRadius={0.2}
+                padAngle={2}
+                enableArcLabels={true}
+                arcLabelsTextColor="white"
+                arcLabelsRadiusOffset={0.6}
+                arcLabelsSkipAngle={10}
+                enableArcLinkLabels={false}
+                animate={true}
+                motionConfig="wobbly"
+                tooltip={({ datum }) => (
+                  <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
+                    <p className="text-sm font-medium text-foreground">{datum.label}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{datum.value}</p>
+                  </div>
+                )}
+                theme={{
+                  labels: { text: { fontSize: 14, fontWeight: 700 } },
+                  tooltip: { container: { background: "transparent", border: "none" } },
+                }}
+              />
+            </div>
+            <div className="flex gap-8 items-center justify-center p-2">
+              {severityData.map((item) => (
+                <div key={item.id} className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }}></div>
+                  <span className="text-sm text-foreground">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-      {/* Disease Distribution Chart */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Disease Classification Distribution</h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={diseaseDistribution}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="disease" stroke="#6b7280" angle={-15} textAnchor="end" height={100} />
-            <YAxis stroke="#6b7280" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#fff",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
+        <div className="bg-card border border-border rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-foreground mb-6">CKD Stage Distribution</h3>
+          <div style={{ height: 450 }}>
+            <ResponsiveBar
+              data={ckdDistribution}
+              keys={["y"]}
+              indexBy="x"
+              margin={{ top: 40, right: 40, bottom: 80, left: 100 }}
+              padding={0.5}
+              colors={["hsl(var(--chart-1))"]}
+              borderRadius={8}
+              borderWidth={0}
+              motionConfig="gentle"
+              axisBottom={{
+                tickSize: 0,
+                tickPadding: 16,
+                tickRotation: -40,
+                legend: "CKD Stage",
+                legendPosition: "middle",
+                legendOffset: 60,
+              }}
+              axisLeft={{
+                tickSize: 0,
+                tickPadding: 16,
+                tickRotation: 0,
+                legend: "Count",
+                legendPosition: "middle",
+                legendOffset: -70,
+              }}
+              enableLabel={true}
+              label={(d) => `${d.value}`}
+              labelSkipWidth={0}
+              labelSkipHeight={0}
+              labelTextColor="hsl(var(--foreground))"
+              tooltip={({ value, data }) => (
+                <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
+                  <p className="text-sm font-medium text-foreground">{data.x}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{value}</p>
+                </div>
+              )}
+              theme={{
+                axis: {
+                  domain: { line: { stroke: "transparent" } },
+                  legend: { text: { fontSize: 13, fill: "hsl(var(--foreground))" } },
+                  ticks: { line: { stroke: "transparent" } },
+                },
+                grid: { line: { stroke: "hsl(var(--border))", strokeWidth: 1 } },
+                labels: { text: { fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 700 } },
+                tooltip: { container: { background: "transparent", border: "none" } },
               }}
             />
-            <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </Card>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -117,8 +117,8 @@ export function ViewReportSheet({ caseId, open, onOpenChange }: ViewReportSheetP
                         onClick={() => handleImageSelect(image.id)}
                         className={`w-full text-left p-3 rounded-lg border transition-colors ${
                           selectedImageId === image.id
-                            ? "bg-primary/10 border-primary/20"
-                            : "bg-white border-gray-200 hover:border-primary/20"
+                            ? "bg-green-50 border-green-500"
+                            : "bg-white border-gray-200 hover:bg-green-50 hover:border-green-50"
                         }`}
                       >
                         <div className="flex items-center gap-3">

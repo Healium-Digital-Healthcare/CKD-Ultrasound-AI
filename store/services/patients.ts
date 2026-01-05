@@ -1,14 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { FetchPatientByPatienIdResponse, Patient } from "@/types/patient"
-import build from "next/dist/build";
+import type { EgfrTimelinePoint, FetchPatientByPatienIdResponse, Patient, PatientListResponse, PatientStats } from "@/types/patient"
+import { QueryRequest } from "@/types/query";
 
 export const patientsApi = createApi({
   reducerPath: "patientsApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
   tagTypes: ["Patient"],
   endpoints: (builder) => ({
-    getPatients: builder.query<Patient[], void>({
-      query: () => "/patients",
+    getPatients: builder.query<PatientListResponse, QueryRequest>({
+      query: ({params}) => ({
+        url: "/patients",
+        method: "GET",
+        params
+      }),
       providesTags: ["Patient"],
     }),
     getPatient: builder.query<Patient, string>({
@@ -44,6 +48,16 @@ export const patientsApi = createApi({
         method: 'GET',
         params: { patientId }
       })
+    }),
+    getPatientStats: builder.query<PatientStats, void>({
+      query: () => "/patients/stats",
+      providesTags: ["Patient"],
+    }),
+    getPatientTimeLine: builder.query<EgfrTimelinePoint[],string>({
+      query: (id) => ({
+        url: `/patients/${id}/timeline`,
+        method: 'GET'
+      })
     })
   }),
 })
@@ -54,5 +68,7 @@ export const {
   useCreatePatientMutation,
   useUpdatePatientMutation,
   useDeletePatientMutation,
-  useLazyGetPatientByPatientIdQuery
+  useLazyGetPatientByPatientIdQuery,
+  useGetPatientStatsQuery,
+  useGetPatientTimeLineQuery
 } = patientsApi
