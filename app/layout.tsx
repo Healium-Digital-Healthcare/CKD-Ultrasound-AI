@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+// import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { UserProvider } from "@/lib/contexts/UserContext";
 import { Toaster } from "@/components/ui/sonner";
@@ -32,17 +32,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
+        {/* <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
           disableTransitionOnChange
         >
-          <UserProvider>
-            {children}
-          </UserProvider>
-          <Toaster/>
-        </ThemeProvider>
+        </ThemeProvider> */}
+        <UserProvider>
+          {children}
+        </UserProvider>
+        <Toaster/>
       </body>
     </html>
   );

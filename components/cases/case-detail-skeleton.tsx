@@ -1,3 +1,5 @@
+"use client"
+
 import { AIAnalysisSkeleton } from "./ai-analysis-skeleton";
 import { ImageListSkeleton } from "./image-list-skeleton";
 import { ImageViewerSkeleton } from "./image-viewer-skeleton";

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Activity } from "lucide-react"
 import Image from "next/image"
 
-export default function LoginForm() {
+export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -70,13 +70,7 @@ export default function LoginForm() {
             height={40}
             className="object-contain mt-1"
           />
-          <Image
-            src="/logo/aws-logo.svg"
-            alt="AWS Data Storage"
-            width={120}
-            height={40}
-            className="object-contain"
-          />
+          <Image src="/logo/aws-logo.svg" alt="AWS Data Storage" width={120} height={40} className="object-contain" />
         </div>
       </div>
 
@@ -121,9 +115,9 @@ export default function LoginForm() {
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
-                <button type="button" className="text-sm text-primary hover:text-primary/80 font-medium">
+                {/* <button type="button" className="text-sm text-primary hover:text-primary/80 font-medium">
                   Forgot password?
-                </button>
+                </button> */}
               </div>
               <div className="relative">
                 <Input
@@ -165,3 +159,5 @@ export default function LoginForm() {
     </div>
   )
 }
+
+export default LoginForm

@@ -1,24 +1,11 @@
 "use client"
 
 import type React from "react"
-import {
-  ZoomIn,
-  ZoomOut,
-  Ruler,
-  Square,
-  Triangle,
-  Circle,
-  PenTool,
-  MousePointer,
-  Trash2,
-  Save,
-  Eraser,
-} from "lucide-react"
+import { Ruler, Square, Triangle, Circle, PenTool, MousePointer, Eraser } from "lucide-react"
 import type { ImageAnalysis, Measurement } from "@/types/case"
 import { useState, useRef, useEffect } from "react"
 import { useSaveMeasurementsMutation } from "@/store/services/cases"
 import { Button } from "@/components/ui/button"
-import { loadDicomFile, isDicomFile, type DicomImageData } from "@/lib/dicom-loader"
 
 interface ImageViewerProps {
   selectedImage: ImageAnalysis | null
@@ -32,47 +19,21 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [activeTool, setActiveTool] = useState<"none" | "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser">("none")
+  const [activeTool, setActiveTool] = useState<
+    "none" | "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser"
+  >("none")
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentDrawing, setCurrentDrawing] = useState<Point[]>([])
   const [measurements, setMeasurements] = useState<Measurement[]>([])
   const [hoveredMeasurementId, setHoveredMeasurementId] = useState<string | null>(null)
-  const [dicomData, setDicomData] = useState<DicomImageData | null>(null)
-  const [isLoadingDicom, setIsLoadingDicom] = useState(false)
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
-  const dicomCanvasRef = useRef<HTMLCanvasElement>(null)
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const [saveMeasurements, { isLoading: isSaving }] = useSaveMeasurementsMutation()
 
-  // Load DICOM
-  useEffect(() => {
-    if (selectedImage?.signed_url && selectedImage?.image_path && isDicomFile(selectedImage.image_path)) {
-      setIsLoadingDicom(true)
-      setDicomData(null)
-
-      fetch(selectedImage.signed_url)
-        .then((response) => response.arrayBuffer())
-        .then((arrayBuffer) => loadDicomFile(arrayBuffer))
-        .then((data) => {
-          if (data) setDicomData(data)
-          setIsLoadingDicom(false)
-        })
-        .catch((error) => {
-          console.error("[v0] Error loading DICOM file:", error)
-          setIsLoadingDicom(false)
-        })
-    } else {
-      setDicomData(null)
-      setIsLoadingDicom(false)
-    }
-  }, [selectedImage?.id, selectedImage?.signed_url, selectedImage?.image_path])
-
-  // Set measurements when image changes
   useEffect(() => {
     if (selectedImage?.measurements) {
       setMeasurements(selectedImage.measurements)
@@ -81,34 +42,17 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
     }
   }, [selectedImage?.id])
 
-  // Draw DICOM image on its canvas
   useEffect(() => {
-    if (!dicomData || !dicomCanvasRef.current) return
-
-    const canvas = dicomCanvasRef.current
-    canvas.width = dicomData.width
-    canvas.height = dicomData.height
-
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    const imageData = ctx.createImageData(dicomData.width, dicomData.height)
-    imageData.data.set(dicomData.imageData)
-    ctx.putImageData(imageData, 0, 0)
-  }, [dicomData])
-
-  // Draw measurements on overlay canvas
-  useEffect(() => {
-    if (!overlayCanvasRef.current || (!dicomData && !imageSize)) return
+    if (!overlayCanvasRef.current || !imageSize) return
 
     const canvas = overlayCanvasRef.current
-    const width = dicomData?.width ?? imageSize?.width ?? 0
-    const height = dicomData?.height ?? imageSize?.height ?? 0
+    const width = imageSize.width ?? 0
+    const height = imageSize.height ?? 0
     canvas.width = width
     canvas.height = height
 
     drawMeasurements()
-  }, [dicomData, imageSize, measurements, zoom, pan])
+  }, [imageSize, measurements, zoom, pan])
 
   const drawMeasurements = () => {
     const canvas = overlayCanvasRef.current
@@ -212,14 +156,26 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       if (activeTool === "angle" && currentDrawing.length === 3) {
         setMeasurements((prev) => [
           ...prev,
-          { id: `${Date.now()}-${Math.random()}`, tool: activeTool, points: currentDrawing, color: "#22c55e", createdAt: new Date().toISOString() },
+          {
+            id: `${Date.now()}-${Math.random()}`,
+            tool: activeTool,
+            points: currentDrawing,
+            color: "#22c55e",
+            createdAt: new Date().toISOString(),
+          },
         ])
         setCurrentDrawing([])
         setIsDrawing(false)
       } else if (currentDrawing.length === 2) {
         setMeasurements((prev) => [
           ...prev,
-          { id: `${Date.now()}-${Math.random()}`, tool: activeTool as "linear" | "area" | "ellipse", points: currentDrawing, color: "#22c55e", createdAt: new Date().toISOString() },
+          {
+            id: `${Date.now()}-${Math.random()}`,
+            tool: activeTool as "linear" | "area" | "ellipse",
+            points: currentDrawing,
+            color: "#22c55e",
+            createdAt: new Date().toISOString(),
+          },
         ])
         setCurrentDrawing([])
         setIsDrawing(false)
@@ -269,7 +225,12 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
         if (distanceToLine(point, p1, p2) < threshold) return measurement.id
       } else if ((measurement.tool === "area" || measurement.tool === "ellipse") && measurement.points.length === 2) {
         const [p1, p2] = measurement.points
-        if (point.x >= Math.min(p1.x, p2.x) - threshold && point.x <= Math.max(p1.x, p2.x) + threshold && point.y >= Math.min(p1.y, p2.y) - threshold && point.y <= Math.max(p1.y, p2.y) + threshold)
+        if (
+          point.x >= Math.min(p1.x, p2.x) - threshold &&
+          point.x <= Math.max(p1.x, p2.x) + threshold &&
+          point.y >= Math.min(p1.y, p2.y) - threshold &&
+          point.y <= Math.max(p1.y, p2.y) + threshold
+        )
           return measurement.id
       } else if (measurement.tool === "angle" && measurement.points.length === 3) {
         for (let i = 0; i < measurement.points.length - 1; i++)
@@ -300,25 +261,60 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       {/* Toolbar */}
       <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between gap-2 px-4 flex-shrink-0">
         <div className="flex items-center">
-          <Button variant="ghost" onClick={() => setActiveTool("none")} className={`p-1.5 rounded transition-colors ${activeTool === "none" ? "bg-primary text-white" : "text-gray-600"}`} title="Selection Tool">
+          <Button
+            variant="ghost"
+            onClick={() => setActiveTool("none")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "none" ? "bg-primary text-white" : "text-gray-600"}`}
+            title="Selection Tool"
+          >
             <MousePointer className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={() => handleToolSelect("linear")} className={`p-1.5 rounded transition-colors ${activeTool === "linear" ? "bg-primary text-white" : "text-gray-600"}`} title="Linear Measurement">
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect("linear")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "linear" ? "bg-primary text-white" : "text-gray-600"}`}
+            title="Linear Measurement"
+          >
             <Ruler className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={() => handleToolSelect("area")} className={`p-1.5 rounded transition-colors ${activeTool === "area" ? "bg-primary text-white" : "text-gray-600"}`} title="Area Measurement">
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect("area")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "area" ? "bg-primary text-white" : "text-gray-600"}`}
+            title="Area Measurement"
+          >
             <Square className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={() => handleToolSelect("ellipse")} className={`p-1.5 rounded transition-colors ${activeTool === "ellipse" ? "bg-primary text-white" : "text-gray-600"}`} title="Ellipse Measurement">
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect("ellipse")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "ellipse" ? "bg-primary text-white" : "text-gray-600"}`}
+            title="Ellipse Measurement"
+          >
             <Circle className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={() => handleToolSelect("angle")} className={`p-1.5 rounded transition-colors ${activeTool === "angle" ? "bg-primary text-white" : "text-gray-600"}`} title="Angle Measurement">
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect("angle")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "angle" ? "bg-primary text-white" : "text-gray-600"}`}
+            title="Angle Measurement"
+          >
             <Triangle className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={() => handleToolSelect("freehand")} className={`p-1.5 rounded transition-colors ${activeTool === "freehand" ? "bg-primary text-white" : "text-gray-600"}`} title="Freehand Drawing">
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect("freehand")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "freehand" ? "bg-primary text-white" : "text-gray-600"}`}
+            title="Freehand Drawing"
+          >
             <PenTool className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" onClick={() => handleToolSelect("eraser")} className={`p-1.5 rounded transition-colors ${activeTool === "eraser" ? "bg-red-600 text-white" : "text-gray-600"}`} title="Eraser">
+          <Button
+            variant="ghost"
+            onClick={() => handleToolSelect("eraser")}
+            className={`p-1.5 rounded transition-colors ${activeTool === "eraser" ? "bg-red-600 text-white" : "text-gray-600"}`}
+            title="Eraser"
+          >
             <Eraser className="h-4 w-4" />
           </Button>
         </div>
@@ -334,7 +330,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
         </div>
       </div>
 
-      {/* Image / DICOM container */}
+      {/* Image container */}
       <div
         ref={containerRef}
         className="flex-1 flex items-center justify-center p-4 overflow-hidden relative"
@@ -348,18 +344,10 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
           className="flex items-center justify-center transition-transform"
           style={{
             transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
-            // transformOrigin: "top center",
             transition: isDragging || isDrawing ? "none" : "transform 0.2s",
           }}
         >
-          {isLoadingDicom ? (
-            <div className="text-sm">Loading DICOM...</div>
-          ) : dicomData ? (
-            <div style={{ width: dicomData.width, height: dicomData.height, position: "relative" }}>
-              <canvas ref={dicomCanvasRef} />
-              <canvas ref={overlayCanvasRef} className="absolute inset-0" />
-            </div>
-          ) : (
+          <div style={{ position: "relative" }}>
             <img
               ref={imageRef}
               src={selectedImage?.signed_url || "/placeholder.svg"}
@@ -371,7 +359,8 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
                 setImageSize({ width: img.naturalWidth, height: img.naturalHeight })
               }}
             />
-          )}
+            <canvas ref={overlayCanvasRef} className="absolute inset-0" />
+          </div>
         </div>
       </div>
     </div>
