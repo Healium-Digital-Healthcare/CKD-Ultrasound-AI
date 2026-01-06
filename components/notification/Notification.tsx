@@ -83,7 +83,6 @@ export default function Notifications() {
             </Button>
           )}
         </div>
-
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -121,7 +120,6 @@ export default function Notifications() {
             </div>
           )}
         </ScrollArea>
-
         <Separator />
       </PopoverContent>
     </Popover>

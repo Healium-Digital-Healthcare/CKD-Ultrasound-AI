@@ -26,7 +26,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
     <div>
       {/* Desktop Header */}
       <nav className="hidden md:flex items-center z-10 border-b border-border/40 h-16 ml-64 bg-background/80 backdrop-blur-md">
-        <div className="flex-1 flex items-center justify-between px-6">
+        <div className="flex-1 flex items-center justify-between px-4">
           {/* Left Section - Title */}
           <div className="flex items-center gap-4 flex-1 max-w-md">
             <div className="relative flex-1">
