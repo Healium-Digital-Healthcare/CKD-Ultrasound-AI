@@ -56,7 +56,7 @@ export default function DashboardPage() {
         <div className="px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Monitor your organization's analytics and insights</p>
+            <p className="text-sm text-muted-foreground">Monitor your organization&apso;s analytics and insights</p>
           </div>
           <div className="flex items-center gap-3">
             <Select value={dateRange} onValueChange={(value) => setDateRange(value)}>
