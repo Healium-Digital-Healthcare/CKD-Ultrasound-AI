@@ -6,14 +6,14 @@ export default function DashboardSkeleton() {
   return (
     <div className="flex flex-col h-full">
       {/* Header Skeleton */}
-      <div className="px-4 py-4 flex items-center justify-between border-b border-border">
+      <div className="px-4 py-4 flex items-center justify-between">
         <div className="flex-1">
-          <Skeleton className="h-8 w-48 rounded mb-2" />
-          <Skeleton className="h-4 w-80 rounded" />
+          <Skeleton className="bg-background border h-8 w-48 rounded mb-2" />
+          <Skeleton className="bg-background border h-4 w-80 rounded" />
         </div>
         <div className="flex items-center gap-3">
-          <Skeleton className="h-9 w-32 rounded" />
-          <Skeleton className="h-9 w-24 rounded" />
+          <Skeleton className="bg-background border h-9 w-32 rounded" />
+          <Skeleton className="bg-background border h-9 w-24 rounded" />
         </div>
       </div>
 
