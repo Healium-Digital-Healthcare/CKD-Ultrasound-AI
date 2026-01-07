@@ -4,13 +4,11 @@ import { useState, useEffect } from "react"
 import { PatientListTable } from "@/components/patients/patient-list-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Filter, RefreshCw } from "lucide-react"
-import { useGetPatientsQuery, useGetPatientStatsQuery } from "@/store/services/patients"
+import { Plus, RefreshCw, Search } from "lucide-react"
+import { useGetPatientsQuery } from "@/store/services/patients"
 import { PatientListTableSkeleton } from "@/components/patients/Patient-table-skeleton"
 import { CreatePatientSheet } from "@/components/patients/create-patient-sheet"
 import { EditPatientSheet } from "@/components/patients/edit-patient-sheet"
-import { StatsSkeleton } from "@/components/patients/stats-skeleton"
 
 export default function PatientsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -22,22 +20,20 @@ export default function PatientsPage() {
   const [selectedPatient, setSelectedPatient] = useState<any>(null)
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
-  const { data: stats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: statsRefetch } = useGetPatientStatsQuery()
-
   const { data, isLoading, isError, error, refetch, isFetching } = useGetPatientsQuery({
-      params: {
-        page: currentPage,
-        limit: pageSize,
-        search: debouncedSearch,
-      },
+    params: {
+      page: currentPage,
+      limit: pageSize,
+      search: debouncedSearch,
+      status: statusFilter,
+    },
   })
-  
+
   const patients = Array.isArray(data?.data) ? data.data : data?.data ? [data.data] : []
   const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
 
   const handleRefresh = () => {
     refetch()
-    statsRefetch()
   }
 
   const handleCreate = () => {
@@ -58,82 +54,46 @@ export default function PatientsPage() {
   }, [searchQuery])
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="flex flex-col h-full">
+      <div className="p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-foreground">Patients</h1>
-          <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Patient Registry</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Manage patient records and view AI analysis status</p>
+          </div>
+          <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button className="gap-2" onClick={handleCreate}>
+            <Button size="sm" className="gap-2 bg-green-600 hover:bg-green-700" onClick={handleCreate}>
               <Plus className="h-4 w-4" />
-              Add New Patient
+              Add Patient
             </Button>
           </div>
         </div>
+      </div>
 
-        {
-          (isStatsLoading || isStatsFetching) ? (
-            <StatsSkeleton/>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.total}</div>
-                <div className="text-sm text-muted-foreground mt-1">Total Patients</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.stable}</div>
-                <div className="text-sm text-muted-foreground mt-1">Stable</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.critical}</div>
-                <div className="text-sm text-muted-foreground mt-1">Critical</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.recovering}</div>
-                <div className="text-sm text-muted-foreground mt-1">Recovering</div>
-              </div>
-            </div>
-          )
-        }
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Patient Records</h2>
+      <div className="flex-1 overflow-auto">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between p-4 border bg-background">
             <div className="flex items-center gap-2">
-              <div className="relative w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search patients by Name or Patient Id"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="pl-9 h-9"
-                />
-              </div>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => {
-                  setStatusFilter(value)
-                  setCurrentPage(1)
-                }}
-              >
-                <SelectTrigger className="w-[150px] h-9 bg-transparent">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="stable">Stable</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="recovering">Recovering</SelectItem>
-                </SelectContent>
-              </Select>
+              <span className="text-sm font-medium text-muted-foreground">Status:</span>
+              {["All", "Critical", "Stable", "Recovering"].map((label) => (
+                <Button
+                  key={label}
+                  variant={statusFilter === label.toLowerCase().replace(" ", "") ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 px-3 text-xs"
+                  onClick={() => setStatusFilter(label.toLowerCase().replace(" ", "") as any)}
+                >
+                  {label}
+                </Button>
+              ))}
             </div>
+            <span className="text-sm text-muted-foreground ml-4">
+              Showing {patients.length} of{" "} {pagination.total} patients
+            </span>
           </div>
 
           {isError && (

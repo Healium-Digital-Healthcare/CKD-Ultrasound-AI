@@ -18,9 +18,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useDeletePatientMutation } from "@/store/services/patients"
-import  {Pagination}  from "@/components/pagination" // Assuming it's in the same directory or adjust path accordingly
+import { Pagination } from "@/components/pagination" // Assuming it's in the same directory or adjust path accordingly
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
 interface PatientListTableProps {
   patients: Patient[]
@@ -101,91 +101,123 @@ export function PatientListTable({
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="rounded overflow-hidden bg-card">
+      <div className="space-y-4 bg-background">
+        <div className="overflow-hidden border">
           <Table>
             <TableHeader>
-              <TableRow className="border-b hover:bg-transparent">
-                <TableHead className="font-medium text-muted-foreground w-1/6">Patient</TableHead>
-                <TableHead className="font-medium text-center text-muted-foreground w-1/6">Stage</TableHead>
-                <TableHead className="font-medium text-muted-foreground w-1/6">Status</TableHead>
-                <TableHead className="font-medium text-muted-foreground w-1/6">Last Scan</TableHead>
-                <TableHead className="font-medium text-muted-foreground w-1/6">Actions</TableHead>
+              <TableRow className="border-b bg-muted/30 hover:bg-transparent">
+                <TableHead className="font-medium text-muted-foreground h-10">PATIENT INFO</TableHead>
+                <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
+                <TableHead className="font-medium text-muted-foreground">STUDY DATE</TableHead>
+                <TableHead className="font-medium text-muted-foreground">MODALITY</TableHead>
+                <TableHead className="font-medium text-muted-foreground text-center">EGFR</TableHead>
+                <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
+                <TableHead className="font-medium text-muted-foreground text-right">ACTIONS</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {patients.map((patient) => (
-                <TableRow
-                  key={patient.id}
-                  className="border-b border-gray-100 hover:bg-gray-50/50 cursor-pointer"
-                  onClick={() => handleRowClick(patient.id)}
-                >
-                  <TableCell className="w-1/6">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600 font-medium text-sm">
-                        {patient.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2)}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900">{patient.name}</span>
-                        <span className="text-xs text-gray-500">
-                          {patient.patient_id} • {patient.age}y • {patient.sex === "M" ? "Male" : "Female"}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-center text-gray-900 w-1/6">{getCkdStageLabel(patient.ckd_stage)}</TableCell>
-                  <TableCell className="w-1/6">
-                    <Badge variant="outline" className={cn("font-normal capitalize", getStatusColor(patient.severity))}>
-                      {getStatusLabel(patient.severity)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600 w-1/6">
-                    {patient.scanned_on ? new Date(patient.scanned_on).toISOString().split("T")[0] : "-"}
-                  </TableCell>
-                  <TableCell className="w-1/6 flex items-center" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      className="gap-1.5 h-8"
-                      onClick={() => handleRowClick(patient.id)}
-                    >
-                      Detail
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(patient)}>Edit</DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(patient.id)}
-                          className="text-red-600 focus:text-red-600"
+              {patients.map((patient) => {
+                const colors = [
+                  "bg-red-100",
+                  "bg-green-100",
+                  "bg-yellow-100",
+                  "bg-blue-100",
+                  "bg-purple-100",
+                  "bg-pink-100",
+                ]
+                const colorIndex = patient.name.charCodeAt(0) % colors.length
+                const avatarBg = colors[colorIndex]
+                const textColor = patient.name.charCodeAt(0) % 2 === 0 ? "text-red-700" : "text-green-700"
+
+                return (
+                  <TableRow
+                    key={patient.id}
+                    className="border-b hover:bg-muted/50 cursor-pointer h-16"
+                    onClick={() => handleRowClick(patient.id)}
+                  >
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${avatarBg} ${textColor} font-semibold text-sm`}
                         >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                          {patient.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-foreground">{patient.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {patient.age} yrs, {patient.sex === "M" ? "Male" : "Female"}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground">#{patient.patient_id}</TableCell>
+                    <TableCell className="text-sm text-foreground">
+                      {patient.scanned_on ? new Date(patient.scanned_on).toLocaleDateString() : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-normal text-xs">
+                        {patient.modality || "Unknown"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm font-medium text-center text-foreground">
+                      {(patient.egfr !== undefined && patient.egfr !== null) ? patient.egfr.toFixed(1) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn("font-normal capitalize", getStatusColor(patient.severity))}
+                      >
+                        {getStatusLabel(patient.severity)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-end items-center gap-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
+                          onClick={() => handleRowClick(patient.id)}
+                        >
+                          View
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild className="">
+                            <Button variant="ghost" size="icon" className="p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onEdit(patient)}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteClick(patient.id)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </div>
-        <div className="w-full">
+        <div className="w-full p-2">
           <Pagination
-          currentPage={currentPage}
-          totalEntries={totalEntries}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
+            currentPage={currentPage}
+            totalEntries={totalEntries}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
           />
         </div>
       </div>

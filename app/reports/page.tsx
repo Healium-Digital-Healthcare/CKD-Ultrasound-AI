@@ -1,22 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Filter, FileText, RefreshCw } from "lucide-react"
+import { Search, Filter, Download, RefreshCw, BarChart3 } from "lucide-react"
 import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
 import { ReportListTable } from "@/components/reports/report-list"
 import { ViewReportSheet } from "@/components/reports/view-reports"
 import { StatsSkeleton } from "@/components/patients/stats-skeleton"
 
-export default function ReportsPage() {
+function ReportsContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null)
   const [isViewerOpen, setIsViewerOpen] = useState(false)
+  const [reportType, setReportType] = useState("All")
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,17 +32,21 @@ export default function ReportsPage() {
       page: currentPage,
       limit: pageSize,
       search: debouncedSearch,
-      analyzed_by_ai: true, // Only fetch analyzed cases
+      analyzed_by_ai: true,
     },
   })
 
-  const { data: stats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: statsRefetch } = useGetCaseStatsQuery()
-  
+  const {
+    data: stats,
+    isLoading: isStatsLoading,
+    isFetching: isStatsFetching,
+    refetch: statsRefetch,
+  } = useGetCaseStatsQuery()
+
   const cases = Array.isArray(data?.data) ? data.data : data?.data ? [data.data] : []
   const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
 
   const handleViewReport = (case_id: string) => {
-    // Find case by case_number to get case_id
     setSelectedCaseId(case_id)
     setIsViewerOpen(true)
   }
@@ -52,63 +57,96 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-primary" />
+    <>
+      <div className="flex flex-col h-full">
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Reports</h1>
+              <p className="text-sm text-muted-foreground mt-1">View and manage AI-generated diagnostic reports</p>
             </div>
-            <h1 className="text-2xl font-semibold text-foreground">Reports</h1>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+              <Button variant="default" size="sm" className="gap-2 h-9">
+                <Download className="h-4 w-4" />
+                Export All
+              </Button>
+            </div>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button> 
+
+          {isStatsFetching || isStatsLoading ? (
+            <StatsSkeleton />
+          ) : (
+            <div className="grid grid-cols-4 gap-3">
+              <div className="bg-card rounded-lg border p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
+                      Total Reports
+                    </div>
+                    <div className="text-xl font-semibold text-foreground">{stats?.total || 0}</div>
+                  </div>
+                  <BarChart3 className="h-5 w-5 text-green-600" />
+                </div>
+              </div>
+              <div className="bg-card rounded-lg border p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">Today</div>
+                    <div className="text-xl font-semibold text-foreground">{stats?.today || 0}</div>
+                  </div>
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="bg-card rounded-lg border p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">Last 7 Days</div>
+                    <div className="text-xl font-semibold text-foreground">{stats?.last7Days || 0}</div>
+                  </div>
+                  <BarChart3 className="h-5 w-5 text-orange-600" />
+                </div>
+              </div>
+              <div className="bg-card rounded-lg border p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
+                      Last 30 Days
+                    </div>
+                    <div className="text-xl font-semibold text-foreground">{stats?.last30Days || 0}</div>
+                  </div>
+                  <BarChart3 className="h-5 w-5 text-purple-600" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {
-          (isStatsFetching || isStatsLoading) ? (
-            <StatsSkeleton/>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.total}</div>
-                <div className="text-sm text-muted-foreground mt-1">Total</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.today}</div>
-                <div className="text-sm text-muted-foreground mt-1">Today</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.last7Days}</div>
-                <div className="text-sm text-muted-foreground mt-1">Last 7 Days</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.last30Days}</div>
-                <div className="text-sm text-muted-foreground mt-1">Last 30 Days</div>
-              </div>
-            </div>
-          )
-        }
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Available Reports</h2>
+        <div className="flex-1 overflow-auto px-4 py-4">
+          <div className="bg-background flex items-center justify-between gap-3 p-4 border">
             <div className="flex items-center gap-2">
-              <div className="relative w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by case number"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9"
-                />
+              <span className="text-sm font-medium text-muted-foreground">Type:</span>
+              {["All", "AI Analysis", "Final", "Draft"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setReportType(type)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    reportType === type
+                      ? "bg-green-600 text-white"
+                      : "bg-transparent text-muted-foreground border border-border hover:bg-muted"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-muted-foreground">
+                Showing {cases.length} of {pagination.total} reports
               </div>
-              <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent">
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
             </div>
           </div>
 
@@ -140,9 +178,19 @@ export default function ReportsPage() {
             />
           )}
         </div>
-      </div>
 
-      {selectedCaseId && <ViewReportSheet caseId={selectedCaseId} open={isViewerOpen} onOpenChange={setIsViewerOpen} />}
-    </div>
+        {selectedCaseId && (
+          <ViewReportSheet caseId={selectedCaseId} open={isViewerOpen} onOpenChange={setIsViewerOpen} />
+        )}
+      </div>
+    </>
+  )
+}
+
+export default function ReportsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ReportsContent />
+    </Suspense>
   )
 }

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, RefreshCw } from "lucide-react"
+import { Search, RefreshCw, FileText, Calendar, Clock, TrendingUp, Plus } from "lucide-react"
 import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { useEffect } from "react"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
@@ -11,6 +11,25 @@ import { CaseListTable } from "@/components/cases/Case-list"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 import { StatsSkeleton } from "@/components/patients/stats-skeleton"
+
+const rangeFilters: {value: "all" | "today" | "week" | "month", label: string}[] = [
+  {
+    label: 'All',
+    value: 'all'
+  },
+  {
+    label: 'Today',
+    value: 'today'
+  },
+  {
+    label: 'This Week',
+    value: 'week'
+  },
+  {
+    label: 'This Month',
+    value: 'month'
+  }
+]
 
 export default function CasesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -20,6 +39,7 @@ export default function CasesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [filterRange, setFilterRange] = useState<"all" | "today" | "week" | "month">("all")
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -34,10 +54,16 @@ export default function CasesPage() {
       page: currentPage,
       limit: pageSize,
       search: debouncedSearch,
+      range: filterRange
     },
   })
 
-  const { data: stats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: statsRefetch } = useGetCaseStatsQuery()
+  const {
+    data: stats,
+    isLoading: isStatsLoading,
+    isFetching: isStatsFetching,
+    refetch: statsRefetch,
+  } = useGetCaseStatsQuery()
 
   const cases = data?.data ? data.data : []
   const pagination = data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
@@ -57,100 +83,126 @@ export default function CasesPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-foreground">Study List</h1>
-          <div className="flex items-center gap-4">
+    <div className="flex flex-col h-full">
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Study List</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Manage imaging studies and view analysis results</p>
+          </div>
+          <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button className="gap-2" onClick={() => handleCreate()}>
+            <Button size="sm" className="gap-2 bg-green-600 hover:bg-green-700" onClick={handleCreate}>
               <Plus className="h-4 w-4" />
               New Study
             </Button>
           </div>
         </div>
+      </div>
 
-        {
-          (isStatsFetching || isStatsLoading) ? (
-            <StatsSkeleton/>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.total}</div>
-                <div className="text-sm text-muted-foreground mt-1">Total</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.today}</div>
-                <div className="text-sm text-muted-foreground mt-1">Today</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.last7Days}</div>
-                <div className="text-sm text-muted-foreground mt-1">Last 7 Days</div>
-              </div>
-              <div className="bg-card rounded-lg border p-6">
-                <div className="text-3xl font-semibold text-foreground">{stats?.last30Days}</div>
-                <div className="text-sm text-muted-foreground mt-1">Last 30 Days</div>
+      <div className="px-4 pt-3 pb-2">
+        {isStatsFetching || isStatsLoading ? (
+          <StatsSkeleton />
+        ) : (
+          <div className="grid grid-cols-4 gap-3">
+            <div className="bg-card rounded-lg border p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Total Studies</div>
+                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.total}</div>
+                </div>
+                <FileText className="h-5 w-5 text-green-600" />
               </div>
             </div>
-          )
-        }
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Study List</h2>
-            <div className="flex items-center gap-2">
-              <div className="relative w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by case number"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9"
-                />
+            <div className="bg-card rounded-lg border p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Today</div>
+                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.today}</div>
+                </div>
+                <Calendar className="h-5 w-5 text-blue-600" />
               </div>
-              {/* <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent">
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button> */}
+            </div>
+            <div className="bg-card rounded-lg border p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 7 Days</div>
+                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.last7Days}</div>
+                </div>
+                <Clock className="h-5 w-5 text-muted-foreground text-orange-600" />
+              </div>
+            </div>
+            <div className="bg-card rounded-lg border p-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 30 Days</div>
+                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.last30Days}</div>
+                </div>
+                <TrendingUp className="h-5 w-5 text-muted-foreground text-purple-600" />
+              </div>
             </div>
           </div>
+        )}
+      </div>
 
-          {isError && (
-            <div className="p-6 flex items-center justify-center min-h-[400px] bg-card rounded-lg border">
-              <div className="text-center">
-                <p className="text-destructive mb-4">Error loading cases: {error?.toString()}</p>
-                <Button onClick={refetch}>Try Again</Button>
-              </div>
-            </div>
-          )}
-
-          {(isLoading || isFetching) && <CaseListTableSkeleton />}
-
-          {!isError && !isLoading && !isFetching && (
-            <CaseListTable
-              cases={cases}
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              pageSize={pagination.limit}
-              totalEntries={pagination.total}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size)
-                setCurrentPage(1)
-              }}
-              onRefresh={refetch}
-              onCaseClick={handleCaseClick}
-            />
-          )}
+      <div className="flex-1 overflow-auto px-4 py-3">
+        <div className="flex items-center justify-between gap-4 bg-background border p-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Filter:</span>
+            {rangeFilters.map((rangeFilter) => (
+              <Button
+                key={rangeFilter.value}
+                variant={filterRange === rangeFilter.value ? "default" : "outline"}
+                size="sm"
+                className="h-8 px-3 text-xs"
+                onClick={() => setFilterRange(rangeFilter.value)}
+              >
+                {rangeFilter.label}
+              </Button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground ml-auto">
+            <span>
+              Showing {cases.length} of {pagination.total} studies
+            </span>
+          </div>
         </div>
+
+        {isError && (
+          <div className="p-6 flex items-center justify-center min-h-[400px] bg-card rounded-lg border">
+            <div className="text-center">
+              <p className="text-destructive mb-4">Error loading cases: {error?.toString()}</p>
+              <Button onClick={refetch}>Try Again</Button>
+            </div>
+          </div>
+        )}
+
+        {(isLoading || isFetching) && <CaseListTableSkeleton />}
+
+        {!isError && !isLoading && !isFetching && (
+          <CaseListTable
+            cases={cases}
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            pageSize={pagination.limit}
+            totalEntries={pagination.total}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+            onRefresh={refetch}
+            onCaseClick={handleCaseClick}
+          />
+        )}
       </div>
       {isCreateDialogOpen && (
         <CreateStudySheet open={isCreateDialogOpen} onOpenChange={(value) => setIsCreateDialogOpen(value)} />
       )}
-      
+
       <CaseDetailDrawer caseNumber={selectedCaseNumber} open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   )

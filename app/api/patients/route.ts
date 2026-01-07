@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
+    const status = searchParams.get('status') || ''
     
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -28,10 +29,13 @@ export async function GET(request: NextRequest) {
 
     if(search) {
       // OR search (safe)
-      if (search) {
-        query = query.or(`patient_id.ilike.%${search}%,name.ilike.%${search}%`)
-      }
+      query = query.or(`patient_id.ilike.%${search}%,name.ilike.%${search}%`)
+    }
 
+    if(status && status !== 'all') {
+      if(status === 'critical') query = query.eq('severity', 'critical')
+      else if( status === 'stable') query = query.in('severity', ['normal', 'mild'])
+      else if( status === 'recovering') query = query.in('severity', ['severe', 'moderate'])
     }
 
     query = query.range(from, to)
@@ -44,7 +48,7 @@ export async function GET(request: NextRequest) {
       data,
       pagination: {
         total: count || 0,
-        page,
+        page: count === 0 ? 0 : page,
         limit,
         totalPages: Math.ceil((count || 0) / limit)
       }

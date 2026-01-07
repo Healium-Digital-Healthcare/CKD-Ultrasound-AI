@@ -12,6 +12,7 @@ export interface Patient {
   avatar?: string,
   email?: string,
   phone?: string,
+  modality?: string,
   date_of_birth?: string 
 }
 

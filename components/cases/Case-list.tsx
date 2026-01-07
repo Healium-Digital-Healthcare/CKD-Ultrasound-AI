@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Download, Eye } from "lucide-react"
+import { Eye } from "lucide-react"
 import type { Case } from "@/types/case"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Pagination } from "../pagination"
@@ -29,7 +29,6 @@ export function CaseListTable({
   onPageSizeChange,
   onCaseClick,
 }: CaseListTableProps) {
-
   const getInitials = (name: string) => {
     const parts = name.split(" ")
     if (parts.length >= 2) {
@@ -38,60 +37,98 @@ export function CaseListTable({
     return name.substring(0, 2).toUpperCase()
   }
 
+  const getModalityColor = (modality: string) => {
+    const colors: Record<string, string> = {
+      ultrasound: "bg-emerald-100 text-emerald-700",
+      "ct scan": "bg-blue-100 text-blue-700",
+      mri: "bg-purple-100 text-purple-700",
+      xray: "bg-amber-100 text-amber-700",
+    }
+    return colors[modality?.toLowerCase()] || "bg-gray-100 text-gray-700"
+  }
+
+  const getStatusBadge = (status: string) => {
+    const configs: Record<string, { bg: string; dot: string }> = {
+      completed: { bg: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
+      pending: { bg: "bg-amber-100 text-amber-700", dot: "bg-amber-500" },
+      "in review": { bg: "bg-blue-100 text-blue-700", dot: "bg-blue-500" },
+      error: { bg: "bg-red-100 text-red-700", dot: "bg-red-500" },
+    }
+    return configs[status?.toLowerCase()] || { bg: "bg-gray-100 text-gray-700", dot: "bg-gray-500" }
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg overflow-hidden bg-card">
+    <div className="space-y-4 bg-background">
+      <div className=" overflow-hidden bg-card border">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-b">
-              <TableHead className="font-medium text-muted-foreground">Patient</TableHead>
-              <TableHead className="font-medium text-muted-foreground">Case Number</TableHead>
-              <TableHead className="font-medium text-muted-foreground">Scan Date</TableHead>
-              <TableHead className="font-medium text-muted-foreground text-right">Actions</TableHead>
+            <TableRow className="hover:bg-transparent border-b bg-muted/30">
+              <TableHead className="font-semibold text-muted-foreground text-xs">PATIENT INFO</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-xs">STUDY ID</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-xs">STUDY DATE</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-xs">MODALITY</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-xs">STATUS</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-xs text-right">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {cases.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                   No cases found
                 </TableCell>
               </TableRow>
             ) : (
               cases.map((caseItem) => (
-                <TableRow key={caseItem.id} className="hover:bg-muted/50">
+                <TableRow key={caseItem.id} className="hover:bg-muted/40 border-b">
                   <TableCell className="text-foreground">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 bg-muted">
-                        <AvatarFallback className="bg-muted text-foreground font-medium">
+                      <Avatar className="h-9 w-9 bg-blue-100">
+                        <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-xs">
                           {getInitials(caseItem.patient.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium text-foreground">{caseItem.patient.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {caseItem.patient.patient_id} • {caseItem.patient.age}y • {caseItem.patient.sex}
+                        <div className="font-medium text-sm text-foreground">{caseItem.patient.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {caseItem.patient.age} yrs, {caseItem.patient.sex === "M" ? "Male" : "Female"}
                         </div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-foreground">
-                    {caseItem.case_number}
-                  </TableCell>
-                  <TableCell className="text-foreground">
+                  <TableCell className="text-foreground text-sm">#{caseItem.case_number}</TableCell>
+                  <TableCell className="text-foreground text-sm">
                     {new Date(caseItem.study_date).toLocaleDateString("en-US", {
                       year: "numeric",
-                      month: "2-digit",
+                      month: "short",
                       day: "2-digit",
                     })}
                   </TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-block px-2.5 py-1 rounded text-xs font-medium ${getModalityColor(caseItem.modality || "")}`}
+                    >
+                      {caseItem.modality || "N/A"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`h-2 w-2 rounded-full ${getStatusBadge(caseItem.status || "").dot}`}></span>
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(caseItem.status || "").bg}`}
+                      >
+                        {caseItem.status || "N/A"}
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button
+                      variant="ghost"
                       size="sm"
-                      className="gap-1.5 h-8"
+                      className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
                       onClick={() => onCaseClick?.(caseItem.case_number)}
                     >
-                      Viewer
+                      View
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
                   </TableCell>
@@ -102,14 +139,14 @@ export function CaseListTable({
         </Table>
       </div>
 
-      <div className="w-full">
+      <div className="w-full p-2">
         <Pagination
-        currentPage={currentPage}
-        totalEntries={totalEntries}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        pageSize={pageSize}
+          currentPage={currentPage}
+          totalEntries={totalEntries}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          pageSize={pageSize}
         />
       </div>
     </div>

@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
     const patientId = searchParams.get('patientId') || ''
+    const range = searchParams.get('range') || ''
     
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -28,6 +29,39 @@ export async function GET(request: Request) {
       `, { count: 'exact' })
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
+
+    if (range && range !== 'all') {
+      const now = new Date()
+
+      // Start of today (00:00:00)
+      const todayStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      )
+
+      let fromDate: Date | null = null
+
+      if (range === 'today') {
+        fromDate = todayStart
+      }
+
+      else if (range === 'week') {
+        fromDate = new Date(todayStart)
+        fromDate.setDate(fromDate.getDate() - 7)
+      }
+
+      else if (range === 'month') {
+        fromDate = new Date(todayStart)
+        fromDate.setDate(fromDate.getDate() - 30)
+      }
+
+      if (fromDate) {
+        query = query
+          .gte('study_date', fromDate.toISOString())
+          .lte('study_date', now.toISOString())
+      }
+    }
 
     if (search) {
       // AND search (safe)
@@ -49,7 +83,7 @@ export async function GET(request: Request) {
       data,
       pagination: {
         total: count || 0,
-        page,
+        page: count === 0 ? 0 : page,
         limit,
         totalPages: Math.ceil((count || 0) / limit)
       }
