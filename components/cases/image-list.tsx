@@ -85,7 +85,7 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
                     : "bg-white border-gray-200 hover:bg-primary/10 hover:border-primary/20"
                 }`}
               >
-                <div className="flex justify-end">
+                {/* <div className="flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
@@ -102,42 +102,32 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </div>
+                </div> */}
 
-                {/* <button onClick={() => onSelectImage(image)} className="w-full px-2 pb-2 text-left">
-                  <img
-                    src={image.signed_url || "/placeholder.svg"}
-                    alt="Case Image"
-                    className="w-16 h-16 rounded object-cover bg-gray-100 select-none"
-                    onContextMenu={handleContextMenu}
-                    onDragStart={handleDragStart}
-                    draggable={false}
-                  />
-                </button> */}
                 <button
-                                  key={image.id}
-                                  onClick={() => onSelectImage(image)}
-                                  className="flex items-center gap-2.5 px-2 pb-2"
-                                >
-                                  <div
-                                    className={cn(
-                                      "w-12 h-12 rounded border overflow-hidden flex-shrink-0",
-                                    )}
-                                  >
-                                    <img
-                                      src={image.signed_url || "/placeholder.svg"}
-                                      alt={`${image.kidney_type} ${image.id}`}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                  <div className="flex-1 min-w-0 text-left">
-                                    <p className="text-xs font-medium text-foreground capitalize">{image.kidney_type} Kidney</p>
-                                    <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
-                                  </div>
-                                  {image.ai_analysis_status === "completed" && (
-                                    <Check className={cn("h-4 w-4", selectedImage?.id === image.id ? "text-primary" : "text-green-600")} />
-                                  )}
-                                </button>
+                  key={image.id}
+                  onClick={() => onSelectImage(image)}
+                  className="flex items-center gap-2.5 p-2"
+                >
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded border overflow-hidden flex-shrink-0",
+                    )}
+                  >
+                    <img
+                      src={image.signed_url || "/placeholder.svg"}
+                      alt={`${image.kidney_type} ${image.id}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-xs font-medium text-foreground capitalize">{image.kidney_type} Kidney</p>
+                    <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
+                  </div>
+                  {image.ai_analysis_status === "completed" && (
+                    <Check className={cn("h-4 w-4", selectedImage?.id === image.id ? "text-primary" : "text-green-600")} />
+                  )}
+                </button>
               </div>
             ))}
           </div>

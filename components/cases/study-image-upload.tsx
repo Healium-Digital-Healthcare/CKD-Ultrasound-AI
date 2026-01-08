@@ -1,25 +1,25 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Upload, X, CheckCircle, AlertCircle, Loader2, ImageIcon, ChevronDown } from "lucide-react"
+import { Upload, X, CheckCircle, AlertCircle, FileText, Delete, Trash } from "lucide-react"
+import { Patient } from "@/types/patient"
 
 interface UploadedFile {
   id: string
   name: string
   file: File
   path?: string
+  size?: number
   status: "pending" | "uploading" | "completed" | "error"
   progress: number
   error?: string
 }
 
 interface StudyImageUploadProps {
-  onComplete: (leftImages: string[], rightImages: string[]) => void
-  initialImages?: { leftKidney: string[]; rightKidney: string[] }
+  onComplete: (leftImage: string | null, rightImage: string | null) => void
+  initialImages?: { leftKidney: string | null; rightKidney: string | null }
   isDisabled?: boolean
+  patient: Patient
   onUploadingStateChange?: (isUploading: boolean) => void
 }
 
@@ -27,62 +27,56 @@ export function StudyImageUpload({
   onComplete,
   initialImages,
   isDisabled,
+  patient,
   onUploadingStateChange,
 }: StudyImageUploadProps) {
-  const [leftKidneyFiles, setLeftKidneyFiles] = useState<UploadedFile[]>(() => {
-    if (initialImages?.leftKidney.length) {
-      return initialImages.leftKidney.map((path, index) => ({
-        id: `restored-left-${index}`,
-        name: path.split("/").pop() || `image-${index + 1}`,
-        file: new File([], ""), // Dummy file object for restored images
-        path,
+  
+  const [leftKidneyFile, setLeftKidneyFile] = useState<UploadedFile | null>(() => {
+    if (initialImages?.leftKidney) {
+      return {
+        id: `restored-left`,
+        name: initialImages.leftKidney.split("/").pop() || `left-kidney-image`,
+        file: new File([], ""),
+        path: initialImages.leftKidney,
         status: "completed" as const,
         progress: 100,
-      }))
+      }
     }
-    return []
+    return null
   })
 
-  const [rightKidneyFiles, setRightKidneyFiles] = useState<UploadedFile[]>(() => {
-    if (initialImages?.rightKidney.length) {
-      return initialImages.rightKidney.map((path, index) => ({
-        id: `restored-right-${index}`,
-        name: path.split("/").pop() || `image-${index + 1}`,
-        file: new File([], ""), // Dummy file object for restored images
-        path,
+  const [rightKidneyFile, setRightKidneyFile] = useState<UploadedFile | null>(() => {
+    if (initialImages?.rightKidney) {
+      return {
+        id: `restored-right`,
+        name: initialImages.rightKidney.split("/").pop() || `right-kidney-image`,
+        file: new File([], ""),
+        path: initialImages.rightKidney,
         status: "completed" as const,
         progress: 100,
-      }))
+      }
     }
-    return []
+    return null
   })
-
-  const [leftExpanded, setLeftExpanded] = useState(true)
-  const [rightExpanded, setRightExpanded] = useState(true)
 
   const leftInputRef = useRef<HTMLInputElement>(null)
   const rightInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const leftPaths = leftKidneyFiles.filter((f) => f.status === "completed" && f.path).map((f) => f.path!)
-    const rightPaths = rightKidneyFiles.filter((f) => f.status === "completed" && f.path).map((f) => f.path!)
-    onComplete(leftPaths, rightPaths)
-  }, [leftKidneyFiles, rightKidneyFiles, onComplete])
+    const leftPath = leftKidneyFile?.status === "completed" && leftKidneyFile.path ? leftKidneyFile.path : null
+    const rightPath = rightKidneyFile?.status === "completed" && rightKidneyFile.path ? rightKidneyFile.path : null
+    onComplete(leftPath, rightPath)
+  }, [leftKidneyFile, rightKidneyFile, onComplete])
 
   useEffect(() => {
-    const isAnyUploading =
-      leftKidneyFiles.some((f) => f.status === "uploading") || rightKidneyFiles.some((f) => f.status === "uploading")
-
+    const isAnyUploading = leftKidneyFile?.status === "uploading" || rightKidneyFile?.status === "uploading"
     onUploadingStateChange?.(isAnyUploading)
-  }, [leftKidneyFiles, rightKidneyFiles, onUploadingStateChange])
+  }, [leftKidneyFile, rightKidneyFile, onUploadingStateChange])
 
-  const uploadFile = async (
-    file: File,
-    fileId: string,
-    setFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>,
-  ) => {
+  const uploadFile = async (file: File, fileId: string, kidney: "left" | "right") => {
+    const setFile = kidney === "left" ? setLeftKidneyFile : setRightKidneyFile
+
     try {
-      // Get signed URL
       const urlResponse = await fetch("/api/images/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,208 +90,334 @@ export function StudyImageUpload({
       const urlData = await urlResponse.json()
       const signedFile = urlData.files[0]
 
-      // Upload file with progress
       const xhr = new XMLHttpRequest()
 
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
           const progress = (e.loaded / e.total) * 100
-          setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, progress: Math.round(progress) } : f)))
+          setFile((prev) => (prev ? { ...prev, progress: Math.round(progress) } : null))
         }
       })
 
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === fileId ? { ...f, status: "completed", progress: 100, path: signedFile.path } : f,
-            ),
-          )
+          setFile((prev) => (prev ? { ...prev, status: "completed", progress: 100, path: signedFile.path } : null))
         } else {
-          setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "error", error: "Upload failed" } : f)))
+          setFile((prev) => (prev ? { ...prev, status: "error", error: "Upload failed" } : null))
         }
       })
 
       xhr.addEventListener("error", () => {
-        setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "error", error: "Network error" } : f)))
+        setFile((prev) => (prev ? { ...prev, status: "error", error: "Network error" } : null))
       })
 
-      setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "uploading" } : f)))
+      setFile((prev) => (prev ? { ...prev, status: "uploading" } : null))
 
       xhr.open("PUT", signedFile.signedUrl)
       xhr.setRequestHeader("Content-Type", file.type)
       xhr.send(file)
     } catch (error) {
-      setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, status: "error", error: "Upload failed" } : f)))
+      setFile((prev) => (prev ? { ...prev, status: "error", error: "Upload failed" } : null))
     }
   }
 
   const handleFileSelect = (files: FileList | null, kidney: "left" | "right") => {
-    if (!files) return
+    if (!files || files.length === 0) return
 
-    const setFiles = kidney === "left" ? setLeftKidneyFiles : setRightKidneyFiles
+    const file = files[0]
+    const fileId = `${Date.now()}-${Math.random()}`
+    const setFile = kidney === "left" ? setLeftKidneyFile : setRightKidneyFile
 
-    const newFiles: UploadedFile[] = Array.from(files).map((file) => ({
-      id: `${Date.now()}-${Math.random()}`,
+    const newFile: UploadedFile = {
+      id: fileId,
       name: file.name,
       file,
+      size: file.size,
       status: "pending",
       progress: 0,
-    }))
+    }
 
-    setFiles((prev) => [...prev, ...newFiles])
-
-    // Start uploads
-    newFiles.forEach((file) => uploadFile(file.file, file.id, setFiles))
+    setFile(newFile)
+    uploadFile(file, fileId, kidney)
   }
 
-  const removeFile = (fileId: string, kidney: "left" | "right") => {
-    const setFiles = kidney === "left" ? setLeftKidneyFiles : setRightKidneyFiles
-    setFiles((prev) => prev.filter((f) => f.id !== fileId))
+  const removeFile = (kidney: "left" | "right") => {
+    if (kidney === "left") {
+      setLeftKidneyFile(null)
+    } else {
+      setRightKidneyFile(null)
+    }
   }
 
-  const renderFileList = (
-    files: UploadedFile[],
-    kidney: "left" | "right",
-    isExpanded: boolean,
-    setExpanded: (expanded: boolean) => void,
-  ) => (
-    <div className="mt-4">
-      <button
-        type="button"
-        onClick={() => setExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/30 transition-colors"
-      >
-        <span className="text-sm font-medium text-foreground">{files.length} file(s) uploaded</span>
-        <ChevronDown
-          className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`}
-        />
-      </button>
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 B"
+    const k = 1024
+    const sizes = ["B", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round((bytes / Math.pow(k, i)) * 10) / 10 + " " + sizes[i]
+  }
 
-      {isExpanded && (
-        <div className="space-y-2 mt-2">
-          {files.map((file) => (
+  const getFileExtension = (name: string) => {
+    const ext = name.split(".").pop()?.toUpperCase() || "FILE"
+    return ext
+  }
+
+  const renderUploadedFile = (file: UploadedFile, kidney: "left" | "right") => (
+    <div
+      key={file.id}
+      className="border-2 border-solid border-green-500 bg-green-50 rounded-xl p-4"
+    >
+      <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
+        <div className="text-center text-white">
+          <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <p className="text-sm opacity-75">Ultrasound Image</p>
+        </div>
+        <div className="absolute top-2 right-2">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-emerald-500 text-white">
+            <CheckCircle className="w-3 h-3" />
+            Uploaded
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center bg-green-100"
+            
+          >
+            <FileText
+              className="w-5 h-5"
+              style={{
+                color: "green",
+              }}
+            />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">{file.name}</p>
+            <p className="text-xs text-gray-500">
+              {file.size ? formatFileSize(file.size) : "0 B"} • {getFileExtension(file.name)}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => removeFile(kidney)}
+          disabled={file.status === "uploading"}
+          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+        >
+          <Trash className="w-5 h-5" />
+        </button>
+      </div>
+
+      {file.status === "uploading" && (
+        <div className="mt-3">
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div
-              key={file.id}
-              className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 transition-colors hover:bg-muted/50"
-            >
-              <div className="flex-shrink-0">
-                <ImageIcon className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate text-foreground">{file.name}</p>
-                {file.status === "uploading" && (
-                  <div className="mt-2">
-                    <div className="w-full bg-muted rounded-full h-1.5">
-                      <div
-                        className="h-1.5 rounded-full bg-primary transition-all"
-                        style={{ width: `${file.progress}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{file.progress}%</p>
-                  </div>
-                )}
-                {file.status === "error" && <p className="text-xs text-destructive mt-1">{file.error}</p>}
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {file.status === "uploading" && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                {file.status === "completed" && <CheckCircle className="h-4 w-4 text-green-600" />}
-                {file.status === "error" && <AlertCircle className="h-4 w-4 text-destructive" />}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => removeFile(file.id, kidney)}
-                  disabled={file.status === "uploading"}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: `${file.progress}%`,
+                backgroundColor: kidney === "left" ? "#0ea5e9" : "#a855f7",
+              }}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">{file.progress}%</p>
         </div>
       )}
     </div>
   )
 
+  const totalUploaded =
+    (leftKidneyFile?.status === "completed" ? 1 : 0) + (rightKidneyFile?.status === "completed" ? 1 : 0)
+
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-foreground">Upload Ultrasound Images</h2>
-            <p className="text-sm text-muted-foreground mt-1">Upload images for both kidneys to continue</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Kidney */}
-            <div>
-              <div className="mb-4">
-                <h3 className="text-base font-semibold text-foreground">Left Kidney</h3>
-                <p className="text-sm text-muted-foreground">PNG, JPEG, or DICOM files</p>
+    <div className="w-full">
+      <div className="px-6 py-6">
+        <div className="mb-8 p-4 bg-white border border-gray-200 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                <span className="text-sm font-semibold text-emerald-700">{patient.name.charAt(0).toUpperCase()}</span>
               </div>
-
-              <button
-                type="button"
-                disabled={isDisabled}
-                className="w-full h-48 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => leftInputRef.current?.click()}
-              >
-                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                  <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div>
+                <p className="font-semibold text-gray-900">{patient.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {patient.patient_id && (
+                    <>
+                      <span className="text-sm text-gray-500 font-mono">#{patient.patient_id}</span>
+                      <span className="text-gray-300">•</span>
+                    </>
+                  )}
+                  <span className="text-sm text-gray-500">{patient.age} yrs</span>
+                  <span className="text-gray-300">•</span>
+                  <span className="text-sm text-gray-500">{patient.sex === "M" ? "Male" : "Female"}</span>
                 </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-foreground">Click to upload</p>
-                  <p className="text-xs text-muted-foreground mt-1">or drag and drop</p>
-                </div>
-              </button>
-              <input
-                ref={leftInputRef}
-                type="file"
-                multiple
-                disabled={isDisabled}
-                accept="image/png,image/jpeg,image/jpg,.dcm"
-                onChange={(e) => handleFileSelect(e.target.files, "left")}
-                className="hidden"
-              />
-              {leftKidneyFiles.length > 0 && renderFileList(leftKidneyFiles, "left", leftExpanded, setLeftExpanded)}
-            </div>
-
-            {/* Right Kidney */}
-            <div>
-              <div className="mb-4">
-                <h3 className="text-base font-semibold text-foreground">Right Kidney</h3>
-                <p className="text-sm text-muted-foreground">PNG, JPEG, or DICOM files</p>
               </div>
-
-              <button
-                type="button"
-                disabled={isDisabled}
-                className="w-full h-48 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-muted/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => rightInputRef.current?.click()}
-              >
-                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                  <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-foreground">Click to upload</p>
-                  <p className="text-xs text-muted-foreground mt-1">or drag and drop</p>
-                </div>
-              </button>
-              <input
-                ref={rightInputRef}
-                type="file"
-                multiple
-                disabled={isDisabled}
-                accept="image/png,image/jpeg,image/jpg,.dcm"
-                onChange={(e) => handleFileSelect(e.target.files, "right")}
-                className="hidden"
-              />
-              {rightKidneyFiles.length > 0 &&
-                renderFileList(rightKidneyFiles, "right", rightExpanded, setRightExpanded)}
             </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle className="w-3.5 h-3.5" />
+              Selected Patient
+            </span>
           </div>
         </div>
+
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">Upload Ultrasound Images</h2>
+          <p className="text-gray-500 mt-1">Upload one image for each kidney to continue with AI analysis</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Left Kidney</h3>
+                <p className="text-xs text-gray-500">PNG, JPEG, or DICOM files</p>
+              </div>
+            </div>
+
+            {leftKidneyFile ? (
+              renderUploadedFile(leftKidneyFile, "left")
+            ) : (
+              <button
+                type="button"
+                disabled={isDisabled}
+                className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => leftInputRef.current?.click()}
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <Upload className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <p className="font-medium text-gray-700 mb-1">Click to upload</p>
+                  <p className="text-sm text-gray-500">or drag and drop</p>
+                  <p className="text-xs text-gray-400 mt-3">Maximum file size: 50MB</p>
+                </div>
+              </button>
+            )}
+            <input
+              ref={leftInputRef}
+              type="file"
+              disabled={isDisabled}
+              accept="image/png,image/jpeg,image/jpg,.dcm"
+              onChange={(e) => handleFileSelect(e.target.files, "left")}
+              className="hidden"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Right Kidney</h3>
+                <p className="text-xs text-gray-500">PNG, JPEG, or DICOM files</p>
+              </div>
+            </div>
+
+            {rightKidneyFile ? (
+              renderUploadedFile(rightKidneyFile, "right")
+            ) : (
+              <button
+                type="button"
+                disabled={isDisabled}
+                className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => rightInputRef.current?.click()}
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <Upload className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <p className="font-medium text-gray-700 mb-1">Click to upload</p>
+                  <p className="text-sm text-gray-500">or drag and drop</p>
+                  <p className="text-xs text-gray-400 mt-3">Maximum file size: 50MB</p>
+                </div>
+              </button>
+            )}
+            <input
+              ref={rightInputRef}
+              type="file"
+              disabled={isDisabled}
+              accept="image/png,image/jpeg,image/jpg,.dcm"
+              onChange={(e) => handleFileSelect(e.target.files, "right")}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        {totalUploaded === 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-900 mb-2">Image Upload Guidelines</h4>
+                <ul className="text-sm text-blue-800 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    Ensure images are clear and properly oriented
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    DICOM files are recommended for best analysis results
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    One image per kidney is required to proceed
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    Each image should be less than 50MB
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {totalUploaded === 2 && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-emerald-900 mb-1">Images Ready for Analysis</h4>
+                <p className="text-sm text-emerald-700">
+                  Both kidney images have been uploaded successfully. You can now proceed to AI analysis.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

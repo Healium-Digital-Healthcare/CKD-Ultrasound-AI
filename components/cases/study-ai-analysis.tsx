@@ -13,20 +13,19 @@ import { ImageViewer } from "./image-viewer"
 import { EditFindingsDialog } from "./edit-finding-dialog"
 import { AIAnalysisPanel } from "./ai-analysis-panel"
 import { ImageAnalysis } from "@/types/case"
+import { Patient } from "@/types/patient"
 
 
 interface StudyAIAnalysisProps {
   caseId: string
-  images: { leftKidney: string[]; rightKidney: string[] }
   onComplete: (value: boolean) => void
   onAnalyzingStateChange?: (analyzing: boolean) => void
 }
 
-export function StudyAIAnalysis({ caseId, images, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
+export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
   const [zoom, setZoom] = useState(100)
   const [rightWidth, setRightWidth] = useState(384) // 24rem = 384px
-  
 
   const { data: caseData, isLoading: caseDataLoading, isFetching: caseDataFetching } = useGetCaseByCaseIdQuery(caseId)
   const [runAnalysis, { isLoading: isAnalyzing }] = useRunAnalysisMutation()

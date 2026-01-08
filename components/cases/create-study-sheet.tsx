@@ -33,21 +33,20 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
 
   // Step data
   const [patientData, setPatientData] = useState<Patient | null>(null)
-  const [imageData, setImageData] = useState<{ leftKidney: string[]; rightKidney: string[] }>({
-    leftKidney: [],
-    rightKidney: [],
+  const [imageData, setImageData] = useState<{ leftKidney: string | null; rightKidney: string | null }>({
+    leftKidney: null,
+    rightKidney: null,
   })
 
   const [analysisData, setAnalysisData] = useState<any>(null)
 
-  const [CreateStudy, { data: createdStudy, isLoading: isStudyCreationLoading, isSuccess: isStudyCreationSuccess }] =
-    useCreateCaseMutation()
+  const [CreateStudy, { data: createdStudy, isLoading: isStudyCreationLoading, isSuccess: isStudyCreationSuccess }] = useCreateCaseMutation()
 
   const handleClose = () => {
     setCurrentStep(1)
     setCreatedCaseId(null)
     setPatientData(null)
-    setImageData({ leftKidney: [], rightKidney: [] })
+    setImageData({ leftKidney: null, rightKidney: null })
     setAnalysisData(null)
     onOpenChange(false)
   }
@@ -56,8 +55,8 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
     setPatientData(data)
   }
 
-  const handleImagesComplete = useCallback((leftImages: string[], rightImages: string[]) => {
-    setImageData({ leftKidney: leftImages, rightKidney: rightImages })
+  const handleImagesComplete = useCallback((leftImage: string | null, rightImage: string | null) => {
+    setImageData({ leftKidney: leftImage, rightKidney: rightImage })
   }, [])
 
   const handleUploadingStateChange = useCallback((isUploading: boolean) => {
@@ -65,26 +64,21 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
   }, [])
 
   const handleCreateStudy = async () => {
-    if (!patientData || (imageData.leftKidney.length === 0 && imageData.rightKidney.length === 0)) {
+    if (!patientData || (imageData.leftKidney === null || imageData.rightKidney === null)) {
       return
     }
 
     await CreateStudy({
       patient_id: patientData.id,
       study_date: new Date().toISOString().split("T")[0],
-      images: [
-        ...imageData.leftKidney.map((img) => {
-          return {
-            path: img,
+      images: [{
+            path: imageData.leftKidney,
             kidney_type: "left" as "left" | "right",
-          }
-        }),
-        ...imageData.rightKidney.map((img) => {
-          return {
-            path: img,
+          },
+          {
+            path: imageData.rightKidney,
             kidney_type: "right" as "left" | "right",
           }
-        }),
       ],
     })
   }
@@ -102,7 +96,7 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
   }
 
   const isStep1Valid = patientData !== null
-  const isStep2Valid = imageData.leftKidney.length > 0 || imageData.rightKidney.length > 0
+  const isStep2Valid = imageData.leftKidney !== null && imageData.rightKidney !== null
   const isStep3Valid = analysisData !== null
 
   const getFooterButtons = () => {
@@ -238,12 +232,12 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
                 initialImages={imageData}
                 isDisabled={isStudyCreationLoading}
                 onUploadingStateChange={handleUploadingStateChange}
+                patient={patientData!}
               />
             )}
             {currentStep === 3 && createdCaseId && (
               <StudyAIAnalysis
                 caseId={createdCaseId}
-                images={imageData}
                 onComplete={handleAnalysisComplete}
                 onAnalyzingStateChange={handleAnalysisStateChange}
               />
