@@ -122,6 +122,23 @@ export const casesApi = createApi({
       query: () => "/cases/stats",
       providesTags: ["Case"],
     }),
+    getSignedUrl: builder.query<{ signedUrl: string }, string>({
+      query: (path) => ({
+        url: "/images/get-signed-url",
+        method: "POST",
+        body: { path },
+      }),
+    }),
+    getUploadUrl: builder.mutation<
+      { files: Array<{ name: string; path: string; signedUrl: string; token: string }> },
+      { files: Array<{ name: string }> }
+    >({
+      query: (body) => ({
+        url: "/images/upload-url",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 })
 
@@ -143,4 +160,8 @@ export const {
   useGetCaseByCaseIdQuery,
   useSaveMeasurementsMutation,
   useGetCaseStatsQuery,
+  useGetSignedUrlQuery,
+  useGetUploadUrlMutation,
+  useLazyGetSignedUrlQuery
+
 } = casesApi

@@ -1,20 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Brain, Loader2, Edit2, AlertCircle, Check } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useRunAnalysisMutation, useLazyGetCaseImagesQuery, useGetCaseQuery, useGetCaseByCaseIdQuery } from "@/store/services/cases"
+import { useRunAnalysisMutation, useGetCaseByCaseIdQuery } from "@/store/services/cases"
 import { ImageListSkeleton } from "./image-list-skeleton"
 import { ImageViewerSkeleton } from "./image-viewer-skeleton"
 import { AIAnalysisSkeleton } from "./ai-analysis-skeleton"
 import { ImageViewer } from "./image-viewer"
-import { EditFindingsDialog } from "./edit-finding-dialog"
 import { AIAnalysisPanel } from "./ai-analysis-panel"
-import { ImageAnalysis } from "@/types/case"
-import { Patient } from "@/types/patient"
-
+import { StudyAIAnalysisProcessing } from "./study-ai-analysis-processing"
+import { StudyAIAnalysisReady } from "./study-ai-analysis-ready"
+import type { ImageAnalysis } from "@/types/case"
 
 interface StudyAIAnalysisProps {
   caseId: string
@@ -22,10 +19,44 @@ interface StudyAIAnalysisProps {
   onAnalyzingStateChange?: (analyzing: boolean) => void
 }
 
+interface AnalysisStep {
+  id: string
+  title: string
+  description: string
+  status: "complete" | "processing" | "pending"
+}
+
 export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
   const [zoom, setZoom] = useState(100)
-  const [rightWidth, setRightWidth] = useState(384) // 24rem = 384px
+  const [rightWidth, setRightWidth] = useState(384)
+  const [processingSteps, setProcessingSteps] = useState<AnalysisStep[]>([
+    {
+      id: "preprocessing",
+      title: "Image preprocessing",
+      description: "Normalizing and enhancing image quality",
+      status: "complete",
+    },
+    {
+      id: "segmentation",
+      title: "Kidney segmentation",
+      description: "Identifying kidney regions in images",
+      status: "complete",
+    },
+    {
+      id: "ckd",
+      title: "CKD classification",
+      description: "Determining chronic kidney disease stage",
+      status: "processing",
+    },
+    { id: "egfr", title: "eGFR prediction", description: "Estimating glomerular filtration rate", status: "pending" },
+    {
+      id: "structural",
+      title: "Structural analysis",
+      description: "Detecting abnormalities and findings",
+      status: "pending",
+    },
+  ])
 
   const { data: caseData, isLoading: caseDataLoading, isFetching: caseDataFetching } = useGetCaseByCaseIdQuery(caseId)
   const [runAnalysis, { isLoading: isAnalyzing }] = useRunAnalysisMutation()
@@ -53,7 +84,20 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
     await runAnalysis(caseId)
   }
 
-  if (isLoading) {
+  if (isLoading && !isAnalyzed) {
+    if (isAnalyzing) {
+      return (
+        <StudyAIAnalysisProcessing
+          patientName={caseData?.patient?.name || "Patient"}
+          patientId={caseData?.patient?.patient_id || ""}
+          patientAge={caseData?.patient?.age || 0}
+          patientSex={caseData?.patient?.sex || "M"}
+          filesCount={caseData?.images?.length || 0}
+          fileSize="4.5 MB"
+          steps={processingSteps}
+        />
+      )
+    }
     return (
       <div className="flex h-full overflow-hidden bg-background">
         <ImageListSkeleton />
@@ -65,39 +109,23 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
     )
   }
 
+  if (!isAnalyzed) {
+    return (
+      <StudyAIAnalysisReady
+        patientName={caseData?.patient?.name || "Patient"}
+        patientId={caseData?.patient?.patient_id || ""}
+        patientAge={caseData?.patient?.age || 0}
+        patientSex={caseData?.patient?.sex || "M"}
+        filesCount={caseData?.images?.length || 0}
+        fileSize="4.5 MB"
+        onStart={handleStartAnalysis}
+        isLoading={isAnalyzing}
+      />
+    )
+  }
+
   return (
     <div className="h-full overflow-hidden flex flex-col">
-      {!isAnalyzed && (
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="border border-border rounded-lg p-12 max-w-xl w-full">
-            <div className="flex flex-col items-center gap-6 text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <Brain className="h-10 w-10 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">AI Analysis Ready</h3>
-                <p className="text-muted-foreground">
-                  Start the AI analysis to process uploaded kidney images and generate comprehensive findings
-                </p>
-              </div>
-              <Button onClick={handleStartAnalysis} disabled={isAnalyzing} size="lg" className="min-w-[200px]">
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Brain className="h-5 w-5 mr-2" />
-                    Start AI Analysis
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {caseData && caseData.analyzed_by_ai && caseData?.images.length > 0 && (
         <div className="flex-1 flex overflow-hidden">
           <div className="w-48 border-r border-border overflow-y-auto">
@@ -133,7 +161,9 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
                     <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
                   </div>
                   {img.ai_analysis_status === "completed" && (
-                    <Check className={cn("h-4 w-4", selectedImage?.id === img.id ? "text-primary" : "text-green-600")} />
+                    <Check
+                      className={cn("h-4 w-4", selectedImage?.id === img.id ? "text-primary" : "text-green-600")}
+                    />
                   )}
                 </button>
               ))}
@@ -142,13 +172,11 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
 
           <ImageViewer onZoomChange={setZoom} zoom={zoom} selectedImage={selectedImage} />
 
-          {
-            selectedImage?.id && (
-              <div style={{ width: rightWidth }} className="overflow-y-auto overflow-x-hidden">
-                  <AIAnalysisPanel imageId={selectedImage.id}/>
-                </div>
-            )
-          }
+          {selectedImage?.id && (
+            <div style={{ width: rightWidth }} className="overflow-y-auto overflow-x-hidden">
+              <AIAnalysisPanel imageId={selectedImage.id} />
+            </div>
+          )}
         </div>
       )}
     </div>

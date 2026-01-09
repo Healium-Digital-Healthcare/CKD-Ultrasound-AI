@@ -20,7 +20,7 @@ interface CaseDetailDrawerProps {
 
 export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailDrawerProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
-  const [zoom, setZoom] = useState(100)
+  const [zoom, setZoom] = useState(50)
   const [rightWidth, setRightWidth] = useState(384) // 24rem = 384px
   const [isResizingRight, setIsResizingRight] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -69,7 +69,7 @@ export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailD
   useEffect(() => {
     if (!open) {
       setSelectedImage(null)
-      setZoom(100)
+      setZoom(50)
     }
   }, [open])
 
@@ -105,13 +105,13 @@ export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailD
                   <div>
                     <div className="text-xs text-gray-500 font-medium mb-0.5">Age</div>
                     <div className="text-sm font-medium text-gray-900">
-                      {caseData ? `${caseData.patient.age}y` : "..."}
+                      {caseData ? `${caseData.patient.age}` : "..."}
                     </div>
                   </div>
                   <div className="h-8 w-px bg-gray-100" />
                   <div>
                     <div className="text-xs text-gray-500 font-medium mb-0.5">Sex</div>
-                    <div className="text-sm font-medium text-gray-900">{caseData ? caseData.patient.sex : "..."}</div>
+                    <div className="text-sm font-medium text-gray-900">{caseData?.patient.sex ? caseData.patient.sex === 'M' ? "Male" : "Female" : "..."}</div>
                   </div>
                 </div>
               </div>

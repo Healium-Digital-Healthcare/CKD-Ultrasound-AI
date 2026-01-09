@@ -6,6 +6,12 @@ import type { ImageAnalysis, Measurement } from "@/types/case"
 import { useState, useRef, useEffect } from "react"
 import { useSaveMeasurementsMutation } from "@/store/services/cases"
 import { Button } from "@/components/ui/button"
+import dynamic from "next/dynamic"
+
+const CornerstoneViewer = dynamic(() => import("@/components/cases/cornerstone-viewer"), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full text-gray-400">Loading DICOM...</div>,
+})
 
 interface ImageViewerProps {
   selectedImage: ImageAnalysis | null
@@ -27,6 +33,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   const [measurements, setMeasurements] = useState<Measurement[]>([])
   const [hoveredMeasurementId, setHoveredMeasurementId] = useState<string | null>(null)
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null)
+  const [fileType, setFileType] = useState<"image" | "dicom" | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -53,6 +60,14 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
 
     drawMeasurements()
   }, [imageSize, measurements, zoom, pan])
+
+  useEffect(() => {
+    if (selectedImage?.signed_url) {
+      const urlWithoutQuery = selectedImage.signed_url.split("?")[0]
+      const isDicom = urlWithoutQuery.toLowerCase().endsWith(".dcm")
+      setFileType(isDicom ? "dicom" : "image")
+    }
+  }, [selectedImage?.signed_url])
 
   const drawMeasurements = () => {
     const canvas = overlayCanvasRef.current
@@ -124,7 +139,13 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       return
     }
 
-    if (activeTool === "none" || activeTool === "freehand") {
+    if (activeTool === "none") {
+      setIsDragging(true)
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
+      return
+    }
+
+    if (activeTool === "freehand") {
       setIsDragging(true)
       setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
     } else {
@@ -142,8 +163,16 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       return
     }
 
-    if (activeTool === "none" || activeTool === "freehand") {
+    if (activeTool === "none") {
       if (isDragging) setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y })
+      return
+    }
+
+    if (activeTool === "freehand") {
+      if (isDragging) {
+        const point = getCanvasCoordinates(e)
+        setCurrentDrawing((prev) => [...prev, point])
+      }
     } else if (isDrawing) {
       const point = getCanvasCoordinates(e)
       if (activeTool === "angle" && currentDrawing.length < 3) setCurrentDrawing((prev) => [...prev, point])
@@ -257,112 +286,142 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   }
 
   return (
-    <div className="flex-1 bg-gray-50 flex flex-col min-w-0 overflow-hidden">
-      {/* Toolbar */}
-      <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between gap-2 px-4 flex-shrink-0">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            onClick={() => setActiveTool("none")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "none" ? "bg-primary text-white" : "text-gray-600"}`}
-            title="Selection Tool"
-          >
-            <MousePointer className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleToolSelect("linear")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "linear" ? "bg-primary text-white" : "text-gray-600"}`}
-            title="Linear Measurement"
-          >
-            <Ruler className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleToolSelect("area")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "area" ? "bg-primary text-white" : "text-gray-600"}`}
-            title="Area Measurement"
-          >
-            <Square className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleToolSelect("ellipse")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "ellipse" ? "bg-primary text-white" : "text-gray-600"}`}
-            title="Ellipse Measurement"
-          >
-            <Circle className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleToolSelect("angle")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "angle" ? "bg-primary text-white" : "text-gray-600"}`}
-            title="Angle Measurement"
-          >
-            <Triangle className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleToolSelect("freehand")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "freehand" ? "bg-primary text-white" : "text-gray-600"}`}
-            title="Freehand Drawing"
-          >
-            <PenTool className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => handleToolSelect("eraser")}
-            className={`p-1.5 rounded transition-colors ${activeTool === "eraser" ? "bg-red-600 text-white" : "text-gray-600"}`}
-            title="Eraser"
-          >
-            <Eraser className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => handleZoomChange(Math.max(50, zoom - 25))}>
-            -
-          </Button>
-          <span className="text-sm text-gray-600 w-16 text-center">{zoom}%</span>
-          <Button variant="ghost" size="sm" onClick={() => handleZoomChange(Math.min(200, zoom + 25))}>
-            +
-          </Button>
-        </div>
+    <div className="flex-1 bg-gray-50 flex flex-col min-w-0 overflow-hidden relative">
+      <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-white rounded-lg p-1 shadow-lg">
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTool("none")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "none" ? "bg-emerald-500 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Selection Tool"
+        >
+          <MousePointer className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => handleToolSelect("linear")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "linear" ? "bg-emerald-500 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Linear Measurement"
+        >
+          <Ruler className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => handleToolSelect("area")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "area" ? "bg-emerald-500 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Area Measurement"
+        >
+          <Square className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => handleToolSelect("ellipse")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "ellipse" ? "bg-emerald-500 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Ellipse Measurement"
+        >
+          <Circle className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => handleToolSelect("angle")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "angle" ? "bg-emerald-500 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Angle Measurement"
+        >
+          <Triangle className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-5 bg-gray-200 mx-0.5"></div>
+        <Button
+          variant="ghost"
+          onClick={() => handleToolSelect("freehand")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "freehand" ? "bg-emerald-500 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Freehand Drawing"
+        >
+          <PenTool className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => handleToolSelect("eraser")}
+          className={`tool-btn w-8 h-8 p-0 rounded-md transition-colors flex items-center justify-center ${activeTool === "eraser" ? "bg-red-600 text-white" : "text-gray-600 hover:bg-gray-100"}`}
+          title="Eraser"
+        >
+          <Eraser className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Image container */}
-      <div
-        ref={containerRef}
-        className="flex-1 flex items-center justify-center p-4 overflow-hidden relative"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        style={{ cursor: getCursor() }}
-      >
-        <div
-          className="flex items-center justify-center transition-transform"
-          style={{
-            transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
-            transition: isDragging || isDrawing ? "none" : "transform 0.2s",
-          }}
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-white rounded-lg p-1 shadow-lg">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleZoomChange(Math.max(50, zoom - 25))}
+          className="w-7 h-7 p-0 text-gray-600 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
         >
-          <div style={{ position: "relative" }}>
-            <img
-              ref={imageRef}
-              src={selectedImage?.signed_url || "/placeholder.svg"}
-              alt="Case Image"
-              draggable={false}
-              className="max-w-full max-h-full object-contain select-none pointer-events-none"
-              onLoad={(e) => {
-                const img = e.currentTarget
-                setImageSize({ width: img.naturalWidth, height: img.naturalHeight })
-              }}
-            />
-            <canvas ref={overlayCanvasRef} className="absolute inset-0" />
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+          </svg>
+        </Button>
+        <span className="text-xs font-medium text-gray-700 w-12 text-center">{zoom}%</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleZoomChange(Math.min(200, zoom + 25))}
+          className="w-7 h-7 p-0 text-gray-600 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </Button>
+      </div>
+
+      {fileType === "dicom" && selectedImage ? (
+        <CornerstoneViewer
+          signedUrl={selectedImage.signed_url!}
+          kidneySide={selectedImage.kidney_type || "Kidney"}
+          zoom={zoom}
+          onZoomChange={onZoomChange}
+          activeTool={activeTool}
+          isDragging={isDragging}
+          pan={pan} // Pass pan state
+          dragStart={dragStart} // Pass dragStart state
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+        />
+      ) : (
+        <div
+          ref={containerRef}
+          className="flex-1 flex items-center justify-center p-6 overflow-hidden relative"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          style={{ cursor: getCursor() }}
+        >
+          <div
+            className="flex items-center justify-center transition-transform relative"
+            style={{
+              transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
+              transition: isDragging || isDrawing ? "none" : "transform 0.2s",
+            }}
+          >
+            <div style={{ position: "relative" }}>
+              <div className="relative max-w-full max-h-full">
+                <img
+                  ref={imageRef}
+                  src={selectedImage?.signed_url || "/placeholder.svg?height=380&width=480&query=ultrasound+kidney"}
+                  alt="Case Image"
+                  draggable={false}
+                  className="w-full h-full object-contain select-none pointer-events-none"
+                  onLoad={(e) => {
+                    const img = e.currentTarget
+                    setImageSize({ width: img.naturalWidth, height: img.naturalHeight })
+                  }}
+                />
+              </div>
+              <canvas ref={overlayCanvasRef} className="absolute inset-0" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
