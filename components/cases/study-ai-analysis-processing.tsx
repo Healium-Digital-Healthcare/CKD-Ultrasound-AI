@@ -1,6 +1,7 @@
 "use client"
 
 import { ChevronLeft } from "lucide-react"
+import { useGetCaseFileSizeQuery } from "@/store/services/cases"
 
 interface AnalysisStep {
   id: string
@@ -10,24 +11,30 @@ interface AnalysisStep {
 }
 
 interface StudyAIAnalysisProcessingProps {
+  caseId: string
   patientName: string
   patientId: string
   patientAge: number
   patientSex: string
   filesCount: number
-  fileSize: string
   steps: AnalysisStep[]
 }
 
 export function StudyAIAnalysisProcessing({
+  caseId,
   patientName,
   patientId,
   patientAge,
   patientSex,
   filesCount,
-  fileSize,
   steps,
 }: StudyAIAnalysisProcessingProps) {
+  const { data: fileSizeData } = useGetCaseFileSizeQuery(caseId, {
+    skip: !caseId,
+  })
+
+  const fileSize = fileSizeData?.formattedSize ?? "Calculating..."
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
       <div className="flex-1 overflow-y-auto px-6 py-6">

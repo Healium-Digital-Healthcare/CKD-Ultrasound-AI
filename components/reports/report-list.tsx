@@ -93,7 +93,7 @@ export function ReportListTable({
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9 bg-muted">
-                        <AvatarFallback className="bg-muted text-foreground font-medium text-xs">
+                        <AvatarFallback className="font-medium text-xs">
                           {getInitials(caseItem.patient.name)}
                         </AvatarFallback>
                       </Avatar>

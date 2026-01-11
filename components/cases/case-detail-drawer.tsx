@@ -20,11 +20,10 @@ interface CaseDetailDrawerProps {
 
 export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailDrawerProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
-  const [zoom, setZoom] = useState(50)
+  const [zoom, setZoom] = useState(75)
   const [rightWidth, setRightWidth] = useState(384) // 24rem = 384px
   const [isResizingRight, setIsResizingRight] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
 
   const {
     data: caseData,
@@ -69,7 +68,7 @@ export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailD
   useEffect(() => {
     if (!open) {
       setSelectedImage(null)
-      setZoom(50)
+      setZoom(75)
     }
   }, [open])
 

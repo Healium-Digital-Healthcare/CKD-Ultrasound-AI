@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { DicomPreview } from "./dicom-preview"
 
 import type { ImageAnalysis } from "@/types/case"
 import { Check, MoreHorizontal, Trash2 } from "lucide-react"
@@ -24,6 +25,11 @@ interface ImageListProps {
   images: ImageAnalysis[]
   selectedImage: ImageAnalysis | null
   onSelectImage: (image: ImageAnalysis) => void
+}
+
+const getFileType = (path: string) => {
+  const cleanPath = path.split("?")[0]
+  return cleanPath.toLowerCase().endsWith(".dcm") ? "dicom" : "image"
 }
 
 export function ImageList({ images, selectedImage, onSelectImage }: ImageListProps) {
@@ -76,60 +82,68 @@ export function ImageList({ images, selectedImage, onSelectImage }: ImageListPro
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="p-2 space-y-2">
-            {images.map((image, idx) => (
-              <div
-                key={image.id}
-                className={`rounded-lg border transition-all ${
-                  selectedImage?.id === image.id
-                    ? "bg-primary/10 border-primary/20"
-                    : "bg-white border-gray-200 hover:bg-primary/10 hover:border-primary/20"
-                }`}
-              >
-                {/* <div className="flex justify-end">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={(e) => handleDeleteClick(image.id, e)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div> */}
+            {images.map((image, idx) => {
+              const fileType = getFileType(image.image_path)
 
-                <button
+              return (
+                <div
                   key={image.id}
-                  onClick={() => onSelectImage(image)}
-                  className="flex items-center gap-2.5 p-2"
+                  className={`rounded-lg border transition-all ${
+                    selectedImage?.id === image.id
+                      ? "bg-primary/10 border-primary/20"
+                      : "bg-white border-gray-200 hover:bg-primary/10 hover:border-primary/20"
+                  }`}
                 >
-                  <div
-                    className={cn(
-                      "w-12 h-12 rounded border overflow-hidden flex-shrink-0",
-                    )}
+                  <div className="flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={(e) => handleDeleteClick(image.id, e)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <button
+                    key={image.id}
+                    onClick={() => onSelectImage(image)}
+                    className="flex items-center gap-2.5 px-2 pb-2"
                   >
-                    <img
-                      src={image.signed_url || "/placeholder.svg"}
-                      alt={`${image.kidney_type} ${image.id}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-xs font-medium text-foreground capitalize">{image.kidney_type} Kidney</p>
-                    <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
-                  </div>
-                  {image.ai_analysis_status === "completed" && (
-                    <Check className={cn("h-4 w-4", selectedImage?.id === image.id ? "text-primary" : "text-green-600")} />
-                  )}
-                </button>
-              </div>
-            ))}
+                    <div className={cn("w-12 h-12 rounded border overflow-hidden flex-shrink-0")}>
+                      {fileType === "dicom" ? (
+                        <DicomPreview signedUrl={image.signed_url || ""} className="w-full h-full" />
+                      ) : (
+                        <img
+                          src={image.signed_url || "/placeholder.svg"}
+                          alt={`${image.kidney_type} ${image.id}`}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-medium text-foreground capitalize">{image.kidney_type} Kidney</p>
+                      <p className="text-xs text-muted-foreground">
+                        {fileType === "dicom" ? "DICOM" : `Image`} {idx + 1}
+                      </p>
+                    </div>
+                    {image.ai_analysis_status === "completed" && (
+                      <Check
+                        className={cn("h-4 w-4", selectedImage?.id === image.id ? "text-primary" : "text-green-600")}
+                      />
+                    )}
+                  </button>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

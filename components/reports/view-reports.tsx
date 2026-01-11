@@ -9,6 +9,7 @@ import { ReportPanel } from "@/components/cases/report-panel"
 import { ImageListSkeleton } from "@/components/cases/image-list-skeleton"
 import { ReportGenerationSkeleton } from "@/components/cases/report-generation-skeleton"
 import type { ImageAnalysis } from "@/types/case"
+import { DicomPreview } from "../cases/dicom-preview"
 
 interface ViewReportSheetProps {
   caseId: string
@@ -55,6 +56,11 @@ export function ViewReportSheet({ caseId, open, onOpenChange }: ViewReportSheetP
       setCurrentImageIndex(newIndex)
       setSelectedImageId(imageAnalysesData[newIndex].id)
     }
+  }
+
+  const getFileType = (path: string) => {
+    const cleanPath = path.split("?")[0]
+    return cleanPath.toLowerCase().endsWith(".dcm") ? "dicom" : "image"
   }
 
   const totalImages = imageAnalysesData?.length ?? 0
@@ -111,33 +117,42 @@ export function ViewReportSheet({ caseId, open, onOpenChange }: ViewReportSheetP
                     <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
                       Images ({totalImages})
                     </div>
-                    {imageAnalysesData?.map((image: ImageAnalysis, idx: number) => (
-                      <button
-                        key={image.id}
-                        onClick={() => handleImageSelect(image.id)}
-                        className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                          selectedImageId === image.id
-                            ? "bg-green-50 border-green-500"
-                            : "bg-white border-gray-200 hover:bg-green-50 hover:border-green-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
-                            {image.signed_url && (
-                              <img
-                                src={image.signed_url || "/placeholder.svg"}
-                                alt={`${image.kidney_type} kidney`}
-                                className="w-full h-full object-cover"
-                              />
-                            )}
+                    {imageAnalysesData?.map((image: ImageAnalysis, idx: number) => {
+                      if(!image.signed_url) return <></>
+                      const fileType = getFileType(image.signed_url)
+
+                      return (
+                        <button
+                          key={image.id}
+                          onClick={() => handleImageSelect(image.id)}
+                          className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                            selectedImageId === image.id
+                              ? "bg-green-50 border-green-500"
+                              : "bg-white border-gray-200 hover:bg-green-50 hover:border-green-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
+                              
+                              { fileType === "dicom" ? (
+                                <DicomPreview signedUrl={image.signed_url || ""} className="w-full h-full" />
+                              ) : (
+                                <img
+                                  src={image.signed_url || "/placeholder.svg"}
+                                  alt={`${image.kidney_type} ${image.id}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate capitalize">{image.kidney_type} Kidney</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">Image {idx + 1}</div>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate capitalize">{image.kidney_type} Kidney</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">Image {idx + 1}</div>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      )
+
+                    })}
                   </div>
                 </div>
 

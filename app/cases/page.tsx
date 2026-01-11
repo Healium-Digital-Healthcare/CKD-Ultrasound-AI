@@ -114,7 +114,9 @@ export default function CasesPage() {
                   <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Total Studies</div>
                   <div className="text-2xl font-bold text-foreground mt-1">{stats?.total}</div>
                 </div>
-                <FileText className="h-5 w-5 text-green-600" />
+                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-4 h-4 text-primary" />
+                </div>
               </div>
             </div>
             <div className="bg-card rounded-lg border p-3">
@@ -123,7 +125,9 @@ export default function CasesPage() {
                   <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Today</div>
                   <div className="text-2xl font-bold text-foreground mt-1">{stats?.today}</div>
                 </div>
-                <Calendar className="h-5 w-5 text-blue-600" />
+                <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
               </div>
             </div>
             <div className="bg-card rounded-lg border p-3">
@@ -132,7 +136,9 @@ export default function CasesPage() {
                   <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 7 Days</div>
                   <div className="text-2xl font-bold text-foreground mt-1">{stats?.last7Days}</div>
                 </div>
-                <Clock className="h-5 w-5 text-muted-foreground text-orange-600" />
+                <div className="w-8 h-8 rounded bg-orange-50 flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-5 w-5 text-muted-foreground text-orange-600" />
+                </div>
               </div>
             </div>
             <div className="bg-card rounded-lg border p-3">
@@ -141,7 +147,9 @@ export default function CasesPage() {
                   <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 30 Days</div>
                   <div className="text-2xl font-bold text-foreground mt-1">{stats?.last30Days}</div>
                 </div>
-                <TrendingUp className="h-5 w-5 text-muted-foreground text-purple-600" />
+                <div className="w-8 h-8 rounded bg-purple-50 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-5 w-5 text-muted-foreground text-purple-600" />
+                </div>
               </div>
             </div>
           </div>

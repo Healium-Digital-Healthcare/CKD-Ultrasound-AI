@@ -43,14 +43,26 @@ export default function CornerstoneViewer({
   useEffect(() => {
     if (!signedUrl || !dicomRef.current) return
 
+    const element = dicomRef.current
     const loadDicom = async () => {
-      const element = dicomRef.current
-      if (!element) return
-
       setIsLoading(true)
       setError(null)
 
       try {
+        if (element.hasChildNodes()) {
+          while (element.firstChild) {
+            element.removeChild(element.firstChild)
+          }
+        }
+
+        try {
+          cornerstone.disable(element)
+        } catch (e) {
+          // Element might not be enabled yet, that's ok
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 100))
+
         cornerstoneWADOImageLoader.external.cornerstone = cornerstone
         cornerstoneWADOImageLoader.external.dicomParser = dicomParser
 
@@ -62,8 +74,7 @@ export default function CornerstoneViewer({
 
         cornerstone.registerImageLoader("wadouri", cornerstoneWADOImageLoader.wadouri.loadImage)
 
-        // Small delay for DOM
-        await new Promise((resolve) => setTimeout(resolve, 50))
+        await new Promise((resolve) => setTimeout(resolve, 100))
 
         // Enable element
         cornerstone.enable(element)
@@ -118,7 +129,7 @@ export default function CornerstoneViewer({
 
   return (
     <div
-      className="flex-1 flex items-center justify-center p-6 overflow-hidden relative bg-gray-50"
+      className="flex-1 flex items-center justify-center p-6 overflow-hidden relative bg-gray-900"
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}

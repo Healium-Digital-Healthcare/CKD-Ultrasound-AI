@@ -410,7 +410,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
                   src={selectedImage?.signed_url || "/placeholder.svg?height=380&width=480&query=ultrasound+kidney"}
                   alt="Case Image"
                   draggable={false}
-                  className="w-full h-full object-contain select-none pointer-events-none"
+                  className="w-full h-full rounded-lg object-contain select-none pointer-events-none"
                   onLoad={(e) => {
                     const img = e.currentTarget
                     setImageSize({ width: img.naturalWidth, height: img.naturalHeight })

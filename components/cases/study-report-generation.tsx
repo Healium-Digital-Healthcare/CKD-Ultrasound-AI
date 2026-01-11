@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 import { ReportPanel } from "./report-panel"
 import { Button } from "@/components/ui/button"
 import { ReportGenerationSkeleton } from "./report-generation-skeleton"
+import { ImageAnalysis } from "@/types/case"
+import { DicomPreview } from "./dicom-preview"
 
 interface StudyReportGenerationProps {
   caseId: string
@@ -21,6 +23,11 @@ export function StudyReportGeneration({ caseId, onGoBack }: StudyReportGeneratio
   const isAnalyzed = caseData?.analyzed_by_ai || false
   const images = caseData?.images || []
   const selectedImage = images[selectedImageIndex]
+
+  const getFileType = (path: string) => {
+    const cleanPath = path.split("?")[0]
+    return cleanPath.toLowerCase().endsWith(".dcm") ? "dicom" : "image"
+  }
 
   useEffect(() => {
     if (images.length > 0) {
@@ -70,34 +77,41 @@ export function StudyReportGeneration({ caseId, onGoBack }: StudyReportGeneratio
           <h3 className="text-xs font-semibold text-foreground uppercase tracking-wide">Images ({images.length})</h3>
         </div>
         <div className="p-2 space-y-1">
-          {images.map((img: any, idx: number) => (
-            <button
-              key={img.id}
-              onClick={() => setSelectedImageIndex(idx)}
-              className={cn(
-                "w-full p-2 rounded border text-left transition-all flex items-center gap-2.5",
-                selectedImageIndex === idx ? "bg-green-50 border-green-500" : "hover:bg-green-50 border-transparent",
-              )}
-            >
-              <div
-                className={cn(
-                  "w-12 h-12 rounded border overflow-hidden flex-shrink-0",
-                  selectedImageIndex === idx ? "border-primary" : "border-border",
-                )}
+          {images?.map((image: ImageAnalysis, idx: number) => {
+            if(!image.signed_url) return <></>
+            const fileType = getFileType(image.signed_url)
+
+            return (
+              <button
+                key={image.id}
+                onClick={() => setSelectedImageIndex(idx)}
+                className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                  selectedImage.id === image.id
+                    ? "bg-green-50 border-green-500"
+                    : "bg-white border-gray-200 hover:bg-green-50 hover:border-green-50"
+                }`}
               >
-                <img
-                  src={img.signed_url || img.image_path || "/placeholder.svg"}
-                  alt={`${img.kidney_type} ${idx}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground capitalize">{img.kidney_type} Kidney</p>
-                <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
-              </div>
-              <Check className="h-4 w-4 text-green-600" />
-            </button>
-          ))}
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
+                    
+                    { fileType === "dicom" ? (
+                      <DicomPreview signedUrl={image.signed_url || ""} className="w-full h-full" />
+                    ) : (
+                      <img
+                        src={image.signed_url || "/placeholder.svg"}
+                        alt={`${image.kidney_type} ${image.id}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate capitalize">{image.kidney_type} Kidney</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Image {idx + 1}</div>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
         </div>
       </div>
 

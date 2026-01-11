@@ -139,6 +139,13 @@ export const casesApi = createApi({
         body,
       }),
     }),
+    getCaseFileSize: builder.query<{ formattedSize: string; bytes: number }, string>({
+      query: (caseId) => ({
+        url: "/cases/file-size",
+        method: "POST",
+        body: { caseId },
+      }),
+    }),
   }),
 })
 
@@ -162,6 +169,6 @@ export const {
   useGetCaseStatsQuery,
   useGetSignedUrlQuery,
   useGetUploadUrlMutation,
-  useLazyGetSignedUrlQuery
-
+  useLazyGetSignedUrlQuery,
+  useGetCaseFileSizeQuery
 } = casesApi

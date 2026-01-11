@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Upload, X, CheckCircle, AlertCircle, FileText, Trash, Trash2 } from "lucide-react"
 import { useGetUploadUrlMutation, useLazyGetSignedUrlQuery } from "@/store/services/cases"
 import type { Patient } from "@/types/patient"
+import { DicomPreview } from "./dicom-preview"
 
 interface UploadedFile {
   id: string
@@ -187,8 +188,6 @@ export function StudyImageUpload({
     const end = path.substring(path.length - maxLength / 2)
     return `${start}...${end}`
   }
-  
-  console.log('left file', leftKidneyFile)
 
   const callCompleteIfReady = () => {
     const leftImage =
@@ -220,6 +219,12 @@ export function StudyImageUpload({
     onComplete(leftImage, rightImage)
   }
 
+  const getFileType = (path: string) => {
+    if(!path) return
+    const cleanPath = path.split("?")[0]
+    return cleanPath.toLowerCase().endsWith(".dcm") ? "dicom" : "image"
+  }
+
   useEffect(() => {
     callCompleteIfReady()
   }, [leftKidneyFile, rightKidneyFile, onComplete])
@@ -244,11 +249,11 @@ export function StudyImageUpload({
   if (!patient) return null
 
   const isUploading = leftKidneyFile?.status === "uploading" || rightKidneyFile?.status === "uploading"
-  const totalUploaded =
-    (leftKidneyFile?.status === "completed" ? 1 : 0) + (rightKidneyFile?.status === "completed" ? 1 : 0)
+  const totalUploaded = (leftKidneyFile?.status === "completed" ? 1 : 0) + (rightKidneyFile?.status === "completed" ? 1 : 0)
 
   const renderUploadedFile = (file: UploadedFile, kidney: "left" | "right") => {
     const signedUrl = file.displaySignedUrl
+    const fileType = getFileType(signedUrl!)
 
     return (
       <div
@@ -256,12 +261,16 @@ export function StudyImageUpload({
         className="border-2 border-solid border-green-500 bg-green-50 rounded-xl p-4"
       >
         <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
-          {signedUrl ? (
-            <img
-              src={signedUrl || "/placeholder.svg"}
-              alt={`${kidney} kidney`}
-              className="w-full h-full object-cover"
-            />
+          {signedUrl && fileType ? (
+            fileType === "dicom" ? (
+              <DicomPreview signedUrl={signedUrl || ""} className="w-full h-full" />
+            ) : (
+              <img
+                src={signedUrl || "/placeholder.svg"}
+                alt={`${kidney} kidney`}
+                className="w-full h-full object-cover"
+              />
+            )
           ) : (
             <div className="text-center text-white">
               <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">

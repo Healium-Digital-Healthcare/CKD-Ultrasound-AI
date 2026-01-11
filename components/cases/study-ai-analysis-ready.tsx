@@ -2,28 +2,35 @@
 
 import { Button } from "@/components/ui/button"
 import { Zap, Beaker, ClipboardList } from "lucide-react"
+import { useGetCaseFileSizeQuery } from "@/store/services/cases"
 
 interface StudyAIAnalysisReadyProps {
+  caseId: string
   patientName: string
   patientId: string
   patientAge: number
   patientSex: string
   filesCount: number
-  fileSize: string
   onStart: () => void
   isLoading: boolean
 }
 
 export function StudyAIAnalysisReady({
+  caseId,
   patientName,
   patientId,
   patientAge,
   patientSex,
   filesCount,
-  fileSize,
   onStart,
   isLoading,
 }: StudyAIAnalysisReadyProps) {
+  const { data: fileSizeData, isLoading: isSizeFetching } = useGetCaseFileSizeQuery(caseId, {
+    skip: !caseId,
+  })
+
+  const fileSize = fileSizeData?.formattedSize ?? "Calculating..."
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
       <div className="px-6 py-6 flex-1 overflow-y-auto">

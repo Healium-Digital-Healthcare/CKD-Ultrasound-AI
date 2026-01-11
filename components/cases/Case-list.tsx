@@ -27,8 +27,9 @@ export function CaseListTable({
   totalEntries,
   onPageChange,
   onPageSizeChange,
-  onCaseClick,
+  onCaseClick
 }: CaseListTableProps) {
+
   const getInitials = (name: string) => {
     const parts = name.split(" ")
     if (parts.length >= 2) {
@@ -83,8 +84,8 @@ export function CaseListTable({
                 <TableRow key={caseItem.id} className="hover:bg-muted/40 border-b">
                   <TableCell className="text-foreground">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 bg-blue-100">
-                        <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-xs">
+                      <Avatar className="h-9 w-9">
+                        <AvatarFallback className="font-medium text-xs">
                           {getInitials(caseItem.patient.name)}
                         </AvatarFallback>
                       </Avatar>

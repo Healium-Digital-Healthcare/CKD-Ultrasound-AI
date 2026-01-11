@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Filter, Download, RefreshCw, BarChart3 } from "lucide-react"
+import { Search, Filter, Download, RefreshCw, BarChart3, FileText, Calendar, Clock, TrendingUp } from "lucide-react"
 import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
 import { ReportListTable } from "@/components/reports/report-list"
@@ -63,7 +63,7 @@ function ReportsContent() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-              <p className="text-sm text-muted-foreground mt-1">View and manage AI-generated diagnostic reports</p>
+              <p className="text-sm text-muted-foreground mt-1">View and manage AI analysed diagnostic reports</p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
@@ -84,41 +84,45 @@ function ReportsContent() {
               <div className="bg-card rounded-lg border p-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
-                      Total Reports
-                    </div>
-                    <div className="text-xl font-semibold text-foreground">{stats?.total || 0}</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Total Reports</div>
+                    <div className="text-2xl font-bold text-foreground mt-1">{stats?.total}</div>
                   </div>
-                  <BarChart3 className="h-5 w-5 text-green-600" />
+                  <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-4 h-4 text-primary" />
+                  </div>
                 </div>
               </div>
               <div className="bg-card rounded-lg border p-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">Today</div>
-                    <div className="text-xl font-semibold text-foreground">{stats?.today || 0}</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Today</div>
+                    <div className="text-2xl font-bold text-foreground mt-1">{stats?.today}</div>
                   </div>
-                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
                 </div>
               </div>
               <div className="bg-card rounded-lg border p-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">Last 7 Days</div>
-                    <div className="text-xl font-semibold text-foreground">{stats?.last7Days || 0}</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 7 Days</div>
+                    <div className="text-2xl font-bold text-foreground mt-1">{stats?.last7Days}</div>
                   </div>
-                  <BarChart3 className="h-5 w-5 text-orange-600" />
+                  <div className="w-8 h-8 rounded bg-orange-50 flex items-center justify-center flex-shrink-0">
+                    <Clock className="h-5 w-5 text-muted-foreground text-orange-600" />
+                  </div>
                 </div>
               </div>
               <div className="bg-card rounded-lg border p-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
-                      Last 30 Days
-                    </div>
-                    <div className="text-xl font-semibold text-foreground">{stats?.last30Days || 0}</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 30 Days</div>
+                    <div className="text-2xl font-bold text-foreground mt-1">{stats?.last30Days}</div>
                   </div>
-                  <BarChart3 className="h-5 w-5 text-purple-600" />
+                  <div className="w-8 h-8 rounded bg-purple-50 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="h-5 w-5 text-muted-foreground text-purple-600" />
+                  </div>
                 </div>
               </div>
             </div>

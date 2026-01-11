@@ -197,7 +197,7 @@ export function PatientListTable({
                             <DropdownMenuItem
                               onClick={() => handleDeleteClick(patient.id)}
                               className="text-red-600 focus:text-red-600"
-                            > 200 + 200 + 200 + 400
+                            >
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
