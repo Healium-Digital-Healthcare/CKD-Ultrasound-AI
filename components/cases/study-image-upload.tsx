@@ -5,6 +5,7 @@ import { Upload, X, CheckCircle, AlertCircle, FileText, Trash, Trash2 } from "lu
 import { useGetUploadUrlMutation, useLazyGetSignedUrlQuery } from "@/store/services/cases"
 import type { Patient } from "@/types/patient"
 import { DicomPreview } from "./dicom-preview"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 interface UploadedFile {
   id: string
@@ -40,6 +41,9 @@ export function StudyImageUpload({
   patient,
   onUploadingStateChange,
 }: StudyImageUploadProps) {
+  const [leftFileError, setLeftFileError] = useState<string | null>(null)
+  const [rightFileError, setRightFileError] = useState<string | null>(null)
+
   const [leftKidneyFile, setLeftKidneyFile] = useState<UploadedFile | null>(() => {
     if (initialImages?.leftKidney?.path) {
       return {
@@ -80,9 +84,28 @@ export function StudyImageUpload({
   const leftInputRef = useRef<HTMLInputElement>(null)
   const rightInputRef = useRef<HTMLInputElement>(null)
 
+  const isValidFile = (file: File) => {
+    const allowedMimeTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "application/dicom",
+      "application/dicom+json",
+      "application/octet-stream", // many DICOMs come as this
+    ]
+
+    const allowedExtensions = ["png", "jpg", "jpeg", "dcm"]
+
+    const extension = file.name.split(".").pop()?.toLowerCase()
+
+    return (
+      allowedMimeTypes.includes(file.type) ||
+      (extension && allowedExtensions.includes(extension))
+    )
+  }
+
   const uploadFile = async (file: File, kidney: "left" | "right") => {
     const setFile = kidney === "left" ? setLeftKidneyFile : setRightKidneyFile
-    console.log('file file', file)
     try {
       setFile((prev) => (prev ? { ...prev, status: "uploading" } : null))
 
@@ -148,6 +171,14 @@ export function StudyImageUpload({
     if (!files || files.length === 0) return
 
     const file = files[0]
+
+    if (!isValidFile(file)) {
+      kidney === 'left' ? setLeftFileError("Only PNG, JPG, JPEG images or DICOM (.dcm) files are allowed.") : setRightFileError("Only PNG, JPG, JPEG images or DICOM (.dcm) files are allowed.")
+      return
+    }
+
+    kidney === 'left' ? setLeftFileError(null) : setRightFileError(null)
+
     const setFile = kidney === "left" ? setLeftKidneyFile : setRightKidneyFile
 
     const newFile: UploadedFile = {
@@ -248,7 +279,9 @@ export function StudyImageUpload({
 
   if (!patient) return null
 
-  const isUploading = leftKidneyFile?.status === "uploading" || rightKidneyFile?.status === "uploading"
+  const isRightKidneyUploading = rightKidneyFile?.status === "uploading"
+  const isLeftKidneyUploading = leftKidneyFile?.status === "uploading"
+
   const totalUploaded = (leftKidneyFile?.status === "completed" ? 1 : 0) + (rightKidneyFile?.status === "completed" ? 1 : 0)
 
   const renderUploadedFile = (file: UploadedFile, kidney: "left" | "right") => {
@@ -374,22 +407,25 @@ export function StudyImageUpload({
           <p className="text-gray-500 mt-1">Upload one image for each kidney to continue with AI analysis</p>
         </div>
 
+
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Left Kidney</h3>
-                <p className="text-xs text-gray-500">PNG, JPEG, or DICOM files</p>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Left Kidney</h3>
+                  <p className="text-xs text-gray-500">PNG, JPEG, or DICOM files</p>
+                </div>
               </div>
               {leftKidneyFile?.status === "uploading" && (
                 <div className="ml-auto flex items-center gap-2">
@@ -404,7 +440,7 @@ export function StudyImageUpload({
             ) : (
               <button
                 type="button"
-                disabled={isDisabled || isUploading}
+                disabled={isDisabled || isLeftKidneyUploading}
                 className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => leftInputRef.current?.click()}
               >
@@ -421,7 +457,7 @@ export function StudyImageUpload({
             <input
               ref={leftInputRef}
               type="file"
-              disabled={isDisabled || isUploading}
+              disabled={isDisabled || isLeftKidneyUploading}
               accept="image/png,image/jpeg,image/jpg,.dcm"
               onChange={(e) => handleFileSelect(e.target.files, "left")}
               className="hidden"
@@ -429,20 +465,22 @@ export function StudyImageUpload({
           </div>
 
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-medium text-gray-900">Right Kidney</h3>
-                <p className="text-xs text-gray-500">PNG, JPEG, or DICOM files</p>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">Right Kidney</h3>
+                  <p className="text-xs text-gray-500">PNG, JPEG, or DICOM files</p>
+                </div>
               </div>
               {rightKidneyFile?.status === "uploading" && (
                 <div className="ml-auto flex items-center gap-2">
@@ -457,7 +495,7 @@ export function StudyImageUpload({
             ) : (
               <button
                 type="button"
-                disabled={isDisabled || isUploading}
+                disabled={isDisabled || isRightKidneyUploading}
                 className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => rightInputRef.current?.click()}
               >
@@ -474,7 +512,7 @@ export function StudyImageUpload({
             <input
               ref={rightInputRef}
               type="file"
-              disabled={isDisabled || isUploading}
+              disabled={isDisabled || isRightKidneyUploading}
               accept="image/png,image/jpeg,image/jpg,.dcm"
               onChange={(e) => handleFileSelect(e.target.files, "right")}
               className="hidden"
