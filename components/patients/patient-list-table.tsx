@@ -21,6 +21,7 @@ import {
 import { useDeletePatientMutation } from "@/store/services/patients"
 import { Pagination } from "@/components/pagination" // Assuming it's in the same directory or adjust path accordingly
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "../ui/avatar"
 
 interface PatientListTableProps {
   patients: Patient[]
@@ -108,7 +109,7 @@ export function PatientListTable({
               <TableRow className="border-b bg-muted/30 hover:bg-transparent">
                 <TableHead className="font-medium text-muted-foreground h-10">PATIENT INFO</TableHead>
                 <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
-                <TableHead className="font-medium text-muted-foreground">Last Scan Date</TableHead>
+                <TableHead className="font-medium text-muted-foreground">LAST SCAN DATE</TableHead>
                 <TableHead className="font-medium text-muted-foreground">MODALITY</TableHead>
                 <TableHead className="font-medium text-muted-foreground text-center">EGFR</TableHead>
                 <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
@@ -137,16 +138,16 @@ export function PatientListTable({
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-full ${avatarBg} ${textColor} font-semibold text-sm`}
-                        >
-                          {patient.name
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="font-medium text-xs">
+                            {patient.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")
                             .toUpperCase()
                             .slice(0, 2)}
-                        </div>
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-foreground">{patient.name}</span>
                           <span className="text-xs text-muted-foreground">

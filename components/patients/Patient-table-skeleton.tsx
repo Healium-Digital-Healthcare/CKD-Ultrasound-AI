@@ -12,7 +12,7 @@ export function PatientListTableSkeleton() {
             <TableRow className="border-b bg-muted/30 hover:bg-transparent">
               <TableHead className="font-semibold text-muted-foreground h-10">PATIENT INFO</TableHead>
               <TableHead className="font-semibold text-muted-foreground">MRN / ID</TableHead>
-              <TableHead className="font-semibold text-muted-foreground">STUDY DATE</TableHead>
+              <TableHead className="font-semibold text-muted-foreground">LAST SCAN DATE</TableHead>
               <TableHead className="font-semibold text-muted-foreground">MODALITY</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-center">EGFR</TableHead>
               <TableHead className="font-semibold text-muted-foreground">STATUS</TableHead>
