@@ -1,4 +1,5 @@
 "use client"
+
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -11,6 +12,8 @@ export interface PaginationProps {
   onPageSizeChange: (size: number) => void
 }
 
+type PageItem = number | "ellipsis"
+
 export function Pagination({
   currentPage,
   totalPages,
@@ -22,36 +25,47 @@ export function Pagination({
   const startEntry = totalEntries === 0 ? 0 : (currentPage - 1) * pageSize + 1
   const endEntry = Math.min(currentPage * pageSize, totalEntries)
 
-  const getPageNumbers = () => {
-    const pages = []
-    const maxPagesToShow = 5
-    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
-    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
+  const getPageItems = (): PageItem[] => {
+    if (totalPages <= 1) return [1]
 
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1)
+    const pages: PageItem[] = []
+
+    pages.push(1)
+
+    if (currentPage > 3) {
+      pages.push("ellipsis")
     }
 
-    for (let i = startPage; i <= endPage; i++) {
+    const start = Math.max(2, currentPage - 1)
+    const end = Math.min(totalPages - 1, currentPage + 1)
+
+    for (let i = start; i <= end; i++) {
       pages.push(i)
     }
+
+    if (currentPage < totalPages - 2) {
+      pages.push("ellipsis")
+    }
+
+    pages.push(totalPages)
+
     return pages
   }
 
-  const pageNumbers = getPageNumbers()
+  const pageItems = getPageItems()
 
   return (
     <div className="flex items-center justify-between text-sm">
-      {/* Left side: Results count */}
+      {/* Left side */}
       <div className="text-muted-foreground">
         Showing <span className="font-medium text-foreground">{startEntry}</span> to{" "}
         <span className="font-medium text-foreground">{endEntry}</span> of{" "}
         <span className="font-medium text-foreground">{totalEntries}</span> results
       </div>
 
-      {/* Right side: Pagination controls */}
+      {/* Right side */}
       <div className="flex items-center gap-4">
-        {/* Rows per page dropdown */}
+        {/* Page size */}
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground">Rows per page:</span>
           <select
@@ -66,38 +80,45 @@ export function Pagination({
           </select>
         </div>
 
+        {/* Pagination */}
         <div className="flex items-center gap-1">
-          {/* Previous button */}
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 bg-transparent"
+            className="h-8 w-8"
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={totalPages === 0 || currentPage === 1}
+            disabled={currentPage === 1}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          {/* Page number buttons */}
-          {pageNumbers.map((page) => (
-            <Button
-              key={page}
-              onClick={() => onPageChange(page)}
-              className={
-                page === currentPage
-                  ? "h-8 w-8 rounded-md bg-green-600 text-white hover:bg-green-700"
-                  : "h-8 w-8 rounded-md border text-black border-input bg-background hover:bg-muted"
-              }
-            >
-              {page}
-            </Button>
-          ))}
+          {pageItems.map((item, index) =>
+            item === "ellipsis" ? (
+              <span
+                key={`ellipsis-${index}`}
+                className="px-2 text-muted-foreground"
+              >
+                …
+              </span>
+            ) : (
+              <Button
+                key={item}
+                onClick={() => onPageChange(item)}
+                className={
+                  item === currentPage
+                    ? "h-8 w-8 rounded-md bg-green-600 text-white hover:bg-green-700"
+                    : "h-8 w-8 rounded-md border text-black border-input bg-background hover:bg-muted"
+                }
+              >
+                {item}
+              </Button>
+            )
+          )}
 
-          {/* Next button */}
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8 bg-transparent"
+            className="h-8 w-8"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >

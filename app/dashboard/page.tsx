@@ -42,7 +42,7 @@ export default function DashboardPage() {
   const comparisonData = useMemo(() => {
     if (!data?.stats) return []
     return [
-      { name: "Cases", value: data.stats.totalCases, color: "hsl(var(--chart-1))" },
+      { name: "Studies", value: data.stats.totalCases, color: "hsl(var(--chart-1))" },
       { name: "Patients", value: data.stats.totalPatients, color: "hsl(var(--chart-2))" },
       { name: "Analyses", value: data.stats.totalAnalyses, color: "hsl(var(--chart-3))" },
     ]
@@ -138,7 +138,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Bar Chart */}
             <div className="bg-card border border-border rounded-lg">
-              <h3 className="text-lg font-semibold text-foreground p-6">Cases, Patients & Analyses</h3>
+              <h3 className="text-lg font-semibold text-foreground p-6">Studies, Patients & Analyses</h3>
               <div style={{ height: 450 }} className="">
                 <ResponsiveBar
                   data={comparisonData}

@@ -108,7 +108,7 @@ export function PatientListTable({
               <TableRow className="border-b bg-muted/30 hover:bg-transparent">
                 <TableHead className="font-medium text-muted-foreground h-10">PATIENT INFO</TableHead>
                 <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
-                <TableHead className="font-medium text-muted-foreground">STUDY DATE</TableHead>
+                <TableHead className="font-medium text-muted-foreground">Last Scan Date</TableHead>
                 <TableHead className="font-medium text-muted-foreground">MODALITY</TableHead>
                 <TableHead className="font-medium text-muted-foreground text-center">EGFR</TableHead>
                 <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
