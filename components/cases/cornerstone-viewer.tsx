@@ -1,124 +1,91 @@
 "use client"
 
+import { loadCornerstone } from "@/lib/cornerstoneSetup"
 import type React from "react"
-
 import { useEffect, useRef, useState } from "react"
-import cornerstone from "cornerstone-core"
-import cornerstoneWADOImageLoader from "cornerstone-wado-image-loader"
-import dicomParser from "dicom-parser"
 
 interface CornerstoneViewerProps {
   signedUrl: string
   kidneySide: string
   zoom: number
-  onZoomChange: (zoom: number) => void
   activeTool: "none" | "linear" | "area" | "angle" | "ellipse" | "freehand" | "eraser"
   isDragging: boolean
-  pan: { x: number; y: number } // Added pan prop
-  dragStart: { x: number; y: number } // Added dragStart prop
+  pan: { x: number; y: number }
   onMouseDown: (e: React.MouseEvent) => void
   onMouseMove: (e: React.MouseEvent) => void
   onMouseUp: () => void
   onMouseLeave: () => void
 }
 
-export default function CornerstoneViewer({
-  signedUrl,
-  kidneySide,
-  zoom,
-  onZoomChange,
-  activeTool,
-  isDragging,
-  pan, // Added pan
-  dragStart, // Added dragStart
-  onMouseDown,
-  onMouseMove,
-  onMouseUp,
-  onMouseLeave,
-}: CornerstoneViewerProps) {
+export default function CornerstoneViewer(props: CornerstoneViewerProps) {
+  const {
+    signedUrl,
+    zoom,
+    activeTool,
+    isDragging,
+    pan,
+    onMouseDown,
+    onMouseMove,
+    onMouseUp,
+    onMouseLeave,
+  } = props
+
   const dicomRef = useRef<HTMLDivElement>(null)
+  const [cornerstone, setCornerstone] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // ✅ Load Cornerstone CLIENT-ONLY
   useEffect(() => {
-    if (!signedUrl || !dicomRef.current) return
+    loadCornerstone().then(setCornerstone)
+  }, [])
+
+  // ✅ Load image
+  useEffect(() => {
+    if (!cornerstone || !signedUrl || !dicomRef.current) return
 
     const element = dicomRef.current
+    let cancelled = false
+
     const loadDicom = async () => {
       setIsLoading(true)
       setError(null)
 
       try {
-        if (element.hasChildNodes()) {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild)
-          }
-        }
-
         try {
           cornerstone.disable(element)
-        } catch (e) {
-          // Element might not be enabled yet, that's ok
-        }
+        } catch {}
 
-        await new Promise((resolve) => setTimeout(resolve, 100))
-
-        cornerstoneWADOImageLoader.external.cornerstone = cornerstone
-        cornerstoneWADOImageLoader.external.dicomParser = dicomParser
-
-        cornerstoneWADOImageLoader.configure({
-          beforeSend: (xhr: XMLHttpRequest) => {
-            // No credentials needed - token is in the signed URL
-          },
-        })
-
-        cornerstone.registerImageLoader("wadouri", cornerstoneWADOImageLoader.wadouri.loadImage)
-
-        await new Promise((resolve) => setTimeout(resolve, 100))
-
-        // Enable element
+        element.innerHTML = ""
         cornerstone.enable(element)
 
         const imageId = `wadouri:${signedUrl}`
+        const image = await cornerstone.loadAndCacheImage(imageId)
 
-        const image = await cornerstone.loadImage(imageId)
+        if (cancelled) return
+
+        cornerstone.reset(element)
         cornerstone.displayImage(element, image)
+        cornerstone.fitToWindow(element)
+
         setIsLoading(false)
       } catch (err) {
-        console.error("[v0] Error loading DICOM:", err)
-        setError(err instanceof Error ? err.message : "Failed to load DICOM file")
+        console.error("[Cornerstone]", err)
+        setError("Failed to load DICOM")
         setIsLoading(false)
-
-        // Cleanup on error
-        if (element) {
-          try {
-            cornerstone.disable(element)
-          } catch (e) {
-            console.warn("[v0] Error disabling element:", e)
-          }
-        }
       }
     }
 
     loadDicom()
 
-    // Cleanup
     return () => {
-      if (dicomRef.current) {
-        try {
-          cornerstone.disable(dicomRef.current)
-        } catch (e) {
-          console.warn("[v0] Cleanup error:", e)
-        }
-      }
+      cancelled = true
+      try {
+        cornerstone.disable(element)
+        element.innerHTML = ""
+      } catch {}
     }
-  }, [signedUrl])
-
-  useEffect(() => {
-    if (activeTool === "none" && isDragging) {
-      // No action needed as pan is now a prop
-    }
-  }, [isDragging])
+  }, [cornerstone, signedUrl])
 
   const getCursor = () => {
     if (isDragging) return "grabbing"
@@ -129,7 +96,7 @@ export default function CornerstoneViewer({
 
   return (
     <div
-      className="flex-1 flex items-center justify-center p-6 overflow-hidden relative bg-gray-900"
+      className="flex-1 flex items-center justify-center p-6 overflow-hidden relative"
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -138,25 +105,25 @@ export default function CornerstoneViewer({
     >
       <div
         className="relative w-full h-full flex items-center justify-center"
-        style={{ transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)` }} // Apply pan transform
+        style={{
+          transform: `scale(${zoom / 100}) translate(${pan.x / (zoom / 100)}px, ${pan.y / (zoom / 100)}px)`,
+        }}
       >
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
-            <p className="text-gray-300">Loading DICOM...</p>
+          <div className="absolute inset-0 flex items-center justify-center rounded-lg">
+            <p className="">Loading DICOM...</p>
           </div>
         )}
+
         {error && (
           <div className="absolute inset-0 flex items-center justify-center bg-red-900/40 rounded-lg">
-            <div className="text-center">
-              <p className="text-red-300 text-sm font-medium mb-2">Failed to load DICOM</p>
-              <p className="text-red-200 text-xs">{error}</p>
-            </div>
+            <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
+
         <div
           ref={dicomRef}
           className="w-full h-full max-w-[600px] max-h-[600px] rounded-lg shadow-2xl overflow-hidden"
-          style={{ backgroundColor: "#000000" }}
         />
       </div>
     </div>

@@ -373,14 +373,13 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
 
       {fileType === "dicom" && selectedImage ? (
         <CornerstoneViewer
+          key={selectedImage.signed_url}
           signedUrl={selectedImage.signed_url!}
           kidneySide={selectedImage.kidney_type || "Kidney"}
           zoom={zoom}
-          onZoomChange={onZoomChange}
           activeTool={activeTool}
           isDragging={isDragging}
           pan={pan} // Pass pan state
-          dragStart={dragStart} // Pass dragStart state
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

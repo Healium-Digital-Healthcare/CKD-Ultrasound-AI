@@ -1,10 +1,7 @@
 "use client"
 
+import { loadCornerstone } from "@/lib/cornerstoneSetup"
 import { useEffect, useRef, useState } from "react"
-
-import cornerstone from "cornerstone-core"
-import cornerstoneWADOImageLoader from "cornerstone-wado-image-loader"
-import dicomParser from "dicom-parser"
 
 interface DicomPreviewProps {
   signedUrl: string
@@ -13,80 +10,84 @@ interface DicomPreviewProps {
 
 export function DicomPreview({ signedUrl, className = "" }: DicomPreviewProps) {
   const dicomRef = useRef<HTMLDivElement>(null)
+  const [cornerstone, setCornerstone] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  
+  // ✅ Load Cornerstone client-side only
   useEffect(() => {
-    if (!signedUrl || !dicomRef.current) return
+    loadCornerstone().then(setCornerstone)
+  }, [])
+
+  // ✅ Load DICOM
+  useEffect(() => {
+    if (!cornerstone || !signedUrl || !dicomRef.current) return
+
+    const element = dicomRef.current
+    let cancelled = false
 
     const loadDicom = async () => {
-      const element = dicomRef.current
-      if (!element) return
-
       setIsLoading(true)
       setError(false)
 
       try {
-        cornerstoneWADOImageLoader.external.cornerstone = cornerstone
-        cornerstoneWADOImageLoader.external.dicomParser = dicomParser
+        try {
+          cornerstone.disable(element)
+        } catch {}
 
-        cornerstoneWADOImageLoader.configure({
-          beforeSend: (xhr: XMLHttpRequest) => {
-            // No credentials needed - token is in the signed URL
-          },
-        })
-
-        cornerstone.registerImageLoader("wadouri", cornerstoneWADOImageLoader.wadouri.loadImage)
-
-        // Small delay for DOM
-        await new Promise((resolve) => setTimeout(resolve, 50))
-
-        // Enable element
+        element.innerHTML = ""
         cornerstone.enable(element)
 
         const imageId = `wadouri:${signedUrl}`
+        const image = await cornerstone.loadAndCacheImage(imageId)
 
-        const image = await cornerstone.loadImage(imageId)
+        if (cancelled) return
+
+        cornerstone.reset(element)
         cornerstone.displayImage(element, image)
+        cornerstone.fitToWindow(element)
+
         setIsLoading(false)
       } catch (err) {
-        console.error("[v0] Error loading DICOM:", err)
+        console.error("[DicomPreview]", err)
         setError(true)
         setIsLoading(false)
-
-        // Cleanup on error
-        if (element) {
-          try {
-            cornerstone.disable(element)
-          } catch (e) {
-            console.warn("[v0] Error disabling element:", e)
-          }
-        }
       }
     }
 
     loadDicom()
 
-    // Cleanup
     return () => {
-      if (dicomRef.current) {
-        try {
-          cornerstone.disable(dicomRef.current)
-        } catch (e) {
-          console.warn("[v0] Cleanup error:", e)
-        }
-      }
+      cancelled = true
+      try {
+        cornerstone.disable(element)
+        element.innerHTML = ""
+      } catch {}
     }
-  }, [signedUrl])
+  }, [cornerstone, signedUrl])
 
   if (error) {
     return (
-      <div className={`bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center ${className}`}>
+      <div
+        className={`bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center ${className}`}
+      >
         <span className="text-xs font-semibold text-red-700">Error</span>
       </div>
     )
   }
 
-  return <div ref={dicomRef} className={`${className}`} />
+  return (
+    <div className={`relative ${className}`}>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
+          <span className="text-[10px] text-gray-200">Loading…</span>
+        </div>
+      )}
+
+      <div
+        ref={dicomRef}
+        className="w-full h-full"
+      />
+    </div>
+  )
 }
