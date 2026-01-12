@@ -173,11 +173,14 @@ export function StudyImageUpload({
     const file = files[0]
 
     if (!isValidFile(file)) {
-      kidney === 'left' ? setLeftFileError("Only PNG, JPG, JPEG images or DICOM (.dcm) files are allowed.") : setRightFileError("Only PNG, JPG, JPEG images or DICOM (.dcm) files are allowed.")
+      const errorMsg = "Only PNG, JPG, JPEG images or DICOM (.dcm) files are allowed."
+      if (kidney === "left") {
+        setLeftFileError(errorMsg)
+      } else {
+        setRightFileError(errorMsg)
+      }
       return
     }
-
-    kidney === 'left' ? setLeftFileError(null) : setRightFileError(null)
 
     const setFile = kidney === "left" ? setLeftKidneyFile : setRightKidneyFile
 
