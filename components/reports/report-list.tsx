@@ -147,7 +147,7 @@ export function ReportListTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
+                        className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
                         onClick={() => onReportClick?.(caseItem.id)}
                       >
                         View
