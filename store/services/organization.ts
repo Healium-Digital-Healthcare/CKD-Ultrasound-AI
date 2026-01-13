@@ -30,11 +30,23 @@ export const organizationApi = createApi({
         params
       })
     }),
+    getTodayStats: builder.query<{
+      total: number
+      ckdDetected: number
+      normal: number
+      range: string
+    }, void>({
+      query: () => ({
+        url: '/organization/dashboard/stats', // your API route
+        method: 'GET',
+      }),
+    }),
   }),
 })
 
 export const {
   useUpdateOrganizationMutation,
   useGetOrganizationQuery,
-  useGetDashboardStatsQuery
+  useGetDashboardStatsQuery,
+  useGetTodayStatsQuery
 } = organizationApi

@@ -25,7 +25,16 @@ export async function GET(request: Request) {
     let query = supabase
       .from("cases")
       .select(`*,
-        patient:patients!inner(name, age, sex)
+        patient:patients!inner(name, age, sex),
+        images: image_analysis (
+          id,
+          image_path,
+          kidney_type,
+          ai_analysis_status,
+          ai_analysis_result,
+          report,
+          report_html
+        )
       `, { count: 'exact' })
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })

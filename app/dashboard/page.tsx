@@ -1,289 +1,234 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Filter, FileText, Users, Activity, TrendingUp } from "lucide-react"
-import { ResponsiveBar } from "@nivo/bar"
-import { ResponsivePie } from "@nivo/pie"
-import { useGetDashboardStatsQuery } from "@/store/services/organization"
-import DashboardSkeleton from "@/components/organization/dashboard-skeleton"
+import { useGetCasesQuery } from "@/store/services/cases"
+import { useGetDashboardStatsQuery, useGetTodayStatsQuery } from "@/store/services/organization"
+import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
+import { CreateStudySheet } from "@/components/cases/create-study-sheet"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { StatsSkeleton } from "@/components/organization/stats-skeleton"
+import { StudiesSkeleton } from "@/components/organization/studies-skeleton"
+import { Pagination } from "@/components/pagination"
 
 export default function DashboardPage() {
-  const [dateRange, setDateRange] = useState("last_30_days")
+  const router = useRouter()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  // API call
-  const { data, isLoading, refetch, isFetching } = useGetDashboardStatsQuery(
-    { params: { date_range: dateRange } },
-    {
-      refetchOnMountOrArgChange: true,
-    },
-  )
+  useEffect(() => {
+    // No changes needed here for the update
+  }, [])
 
-  // Prepare charts data safely
-  const severityData = useMemo(() => {
-    if (!data?.severityData) return []
-    return data.severityData.map((d: any) => ({
-      id: d.name,
-      label: d.name,
-      value: d.value,
-      color: d.color,
-    }))
-  }, [data])
+  const {
+    data: casesData,
+    refetch,
+    isFetching,
+    isLoading,
+  } = useGetCasesQuery({
+    params: { page: currentPage, limit: pageSize, range: "all" },
+  })
 
-  const ckdDistribution = useMemo(() => {
-    if (!data?.ckdDistribution) return []
-    return data.ckdDistribution.map((d: any) => ({
-      x: d.ckdStage,
-      y: d.count,
-    }))
-  }, [data])
+  const { data: todayStats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: refetchStats } = useGetTodayStatsQuery()
 
-  const comparisonData = useMemo(() => {
-    if (!data?.stats) return []
-    return [
-      { name: "Studies", value: data.stats.totalCases, color: "hsl(var(--chart-1))" },
-      { name: "Patients", value: data.stats.totalPatients, color: "hsl(var(--chart-2))" },
-      { name: "Analyses", value: data.stats.totalAnalyses, color: "hsl(var(--chart-3))" },
-    ]
-  }, [data])
+  const cases = casesData?.data ? casesData.data : []
+  const pagination = casesData?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 }
 
-  return isLoading || isFetching ? (
-    <DashboardSkeleton />
-  ) : (
+  const handleCaseClick = (caseId: string) => {
+    setSelectedCaseNumber(caseId)
+    setIsDrawerOpen(true)
+  }
+
+  const handleCreate = () => {
+    setIsCreateDialogOpen(true)
+  }
+
+  const handleRefetch = () => {
+    refetch()
+    refetchStats()
+  }
+
+  return (
     <div className="flex flex-col h-full">
-      <div className="">
-        <div className="px-4 py-4 flex items-center justify-between">
+      {/* Header section */}
+      <div className="px-4 pt-4 pb-3 border-b border-border">
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Monitor your organization&apos;s analytics and insights</p>
+            <h1 className="text-2xl font-bold text-foreground">Daily Screening Summary</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Monitor today&apos;s CKD detection and analysis results</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Select value={dateRange} onValueChange={(value) => setDateRange(value)}>
-              <SelectTrigger className="w-32 h-9 text-sm bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last_7_days">Last 7 days</SelectItem>
-                <SelectItem value="last_30_days">Last 30 days</SelectItem>
-                <SelectItem value="last_90_days">Last 90 days</SelectItem>
-                <SelectItem value="last_year">Last year</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              onClick={() => refetch()}
-              className="gap-2 h-9 bg-green-600 hover:bg-green-700 text-white"
-            >
-              <RefreshCw className="w-4 h-4" />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefetch()}>
+              <RefreshCw className="h-4 w-4" />
               Refresh
+            </Button>
+            <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700 text-white gap-2 h-9 px-4">
+              <Plus className="w-4 h-4" />
+              New Screening
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="px-4 py-4 space-y-6">
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-card border border-border rounded p-4 hover:border-primary/50 transition-colors">
+      {/* Stats section */}
+      {(isStatsLoading || isStatsFetching) ? (
+        <StatsSkeleton />
+      ) : (
+        <div className="px-4 pt-3 pb-2">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-card rounded-lg border p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Studies</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{data?.stats?.totalCases ?? 0}</p>
-                </div>
-                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border rounded p-4 hover:border-primary/50 transition-colors">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Patients</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{data?.stats?.totalPatients ?? 0}</p>
-                </div>
-                <div className="w-8 h-8 rounded bg-chart-2/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 text-chart-2" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border rounded p-4 hover:border-primary/50 transition-colors">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">AI Analyses</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{data?.stats?.totalAnalyses ?? 0}</p>
-                </div>
-                <div className="w-8 h-8 rounded bg-chart-3/10 flex items-center justify-center flex-shrink-0">
-                  <Activity className="w-4 h-4 text-chart-3" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border rounded p-4 hover:border-primary/50 transition-colors">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Avg. eGFR</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{data?.stats?.avgEgfr ?? 0}</p>
-                </div>
-                <div className="w-8 h-8 rounded bg-chart-4/10 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-4 h-4 text-chart-4" />
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Bar Chart */}
-            <div className="bg-card border border-border rounded-lg">
-              <h3 className="text-lg font-semibold text-foreground p-6">Studies, Patients & Analyses</h3>
-              <div style={{ height: 450 }} className="">
-                <ResponsiveBar
-                  data={comparisonData}
-                  keys={["value"]}
-                  indexBy="name"
-                  margin={{ top: 20, right: 40, bottom: 60, left: 60 }}
-                  padding={0.5}
-                  colors={(d) => d.data.color}
-                  borderRadius={2}
-                  borderWidth={0}
-                  motionConfig="gentle"
-                  axisBottom={{
-                    tickSize: 0,
-                    tickPadding: 16,
-                    tickRotation: 0,
-                    legend: "",
-                    legendPosition: "middle",
-                    legendOffset: 60,
-                  }}
-                  axisLeft={{
-                    tickSize: 0,
-                    tickPadding: 16,
-                    tickRotation: 0,
-                  }}
-                  enableLabel={true}
-                  label={(d) => `${d.value}`}
-                  labelSkipWidth={0}
-                  labelSkipHeight={0}
-                  labelTextColor="hsl(var(--foreground))"
-                  tooltip={({ value, data }) => (
-                    <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
-                      <p className="text-sm font-medium text-foreground">{data.name}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{value}</p>
-                    </div>
-                  )}
-                  theme={{
-                    axis: {
-                      domain: { line: { stroke: "transparent" } },
-                      legend: { text: { fontSize: 13, fill: "hsl(var(--foreground))" } },
-                      ticks: { line: { stroke: "transparent" } },
-                    },
-                    grid: { line: { stroke: "hsl(var(--border))", strokeWidth: 1 } },
-                    labels: { text: { fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 700 } },
-                    tooltip: { container: { background: "transparent", border: "none" } },
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Pie Chart - Equal Size */}
-            <div className="bg-card border border-border rounded-lg">
-              <h3 className="text-lg font-semibold text-foreground p-6">Patient Severity Distribution</h3>
-              <div style={{ height: 400 }}>
-                <ResponsivePie
-                  data={severityData}
-                  margin={{ top: 20, right: 40, bottom: 60, left: 60 }}
-                  colors={(d) => d.data.color}
-                  borderWidth={3}
-                  borderColor="hsl(var(--card))"
-                  innerRadius={0.7}
-                  padAngle={0}
-                  enableArcLabels={true}
-                  arcLabelsTextColor="white"
-                  arcLabelsRadiusOffset={0.6}
-                  arcLabelsSkipAngle={10}
-                  enableArcLinkLabels={false}
-                  cornerRadius={0}
-                  animate={true}
-                  motionConfig="wobbly"
-                  tooltip={({ datum }) => (
-                    <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
-                      <p className="text-sm font-medium text-foreground">{datum.label}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{datum.value}</p>
-                    </div>
-                  )}
-                  theme={{
-                    labels: { text: { fontSize: 14, fontWeight: 700 } },
-                    tooltip: { container: { background: "transparent", border: "none" } },
-                  }}
-                  legends={[
-                    {
-                        anchor: 'bottom',
-                        direction: 'row',
-                        translateY: 56,
-                        translateX: 20,
-                        itemWidth: 100,
-                        itemHeight: 18,
-                        symbolShape: 'circle'
-                    }
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="bg-card border border-border rounded-lg">
-            <h3 className="text-lg font-semibold text-foreground p-6">CKD Stage Distribution</h3>
-            <div style={{ height: 450 }}>
-              <ResponsiveBar
-                data={ckdDistribution}
-                keys={["y"]}
-                indexBy="x"
-                margin={{ top: 20, right: 40, bottom: 60, left: 60 }}
-                padding={0.5}
-                colors={["hsl(var(--chart-1))"]}
-                borderRadius={2}
-                borderWidth={0}
-                motionConfig="gentle"
-                axisBottom={{
-                  tickSize: 0,
-                  tickPadding: 16,
-                  tickRotation: 0,
-                }}
-                axisLeft={{
-                  tickSize: 0,
-                  tickPadding: 16,
-                  tickRotation: 0,
-                }}
-                enableLabel={true}
-                label={(d) => `${d.value}`}
-                labelSkipWidth={0}
-                labelSkipHeight={0}
-                labelTextColor="hsl(var(--foreground))"
-                tooltip={({ value, data }) => (
-                  <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
-                    <p className="text-sm font-medium text-foreground">{data.x}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{value}</p>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+                    Today's Screenings
                   </div>
-                )}
-                theme={{
-                  axis: {
-                    domain: { line: { stroke: "transparent" } },
-                    legend: { text: { fontSize: 13, fill: "hsl(var(--foreground))" } },
-                    ticks: { line: { stroke: "transparent" } },
-                  },
-                  grid: { line: { stroke: "hsl(var(--border))", strokeWidth: 1 } },
-                  labels: { text: { fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 700 } },
-                  tooltip: { container: { background: "transparent", border: "none" } },
-                }}
-              />
+                  <div className="text-3xl font-bold text-foreground mt-2">{todayStats?.total}</div>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-blue-500" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-card rounded-lg border p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">CKD Detected</div>
+                  <div className="text-3xl font-bold text-red-600 mt-2">{todayStats?.ckdDetected}</div>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-card rounded-lg border p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Normal</div>
+                  <div className="text-3xl font-bold text-green-600 mt-2">{todayStats?.normal}</div>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      )}
 
+      {/* Studies section */}
+      {(isLoading || isFetching) ? (
+        <StudiesSkeleton />
+      ) : (
+        <div className="flex-1 overflow-auto px-4 py-3">
+          <div className="bg-card rounded-lg border overflow-hidden">
+            <div className="px-6 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">Today's Studies</h2>
+              <div className="text-xs text-muted-foreground">
+                Showing {Math.min(pageSize, cases.length)} of {pagination.total}
+              </div>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="px-6 py-3">Patient</TableHead>
+                  <TableHead className="px-6 py-3">Study ID</TableHead>
+                  <TableHead className="px-6 py-3">Result</TableHead>
+                  <TableHead className="px-6 py-3">eGFR</TableHead>
+                  <TableHead className="px-6 py-3"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {cases?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                      No studies found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  cases.map((caseItem) => {
+                    const egfr = caseItem.images[0]?.ai_analysis_result?.egfr || "-"
+                    const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
+                    const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
 
-      </div>
+                    const resultColor =
+                      ckdRisk === "HIGH"
+                        ? "bg-red-50 text-red-700"
+                        : ckdRisk === "LOW"
+                          ? "bg-green-50 text-green-700"
+                          : "bg-amber-50 text-amber-700"
+
+                    return (
+                      <TableRow key={caseItem.id}>
+                        <TableCell className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-semibold text-xs text-foreground">
+                              {caseItem.patient?.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-6 py-4 font-mono text-sm text-foreground">
+                          {caseItem.case_number}
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${resultColor}`}>
+                            {ckdStage}
+                          </span>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <p className="font-semibold text-sm text-foreground">{egfr}</p>
+                        </TableCell>
+                        <TableCell className="px-6 py-4 text-right">
+                          <Button
+                            onClick={() => handleCaseClick(caseItem.case_number)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"      
+                          >
+                            View →
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
+              </TableBody>
+            </Table>
+
+            
+          <div className="p-4 border-t">
+            <Pagination
+            currentPage={pagination.page}
+            pageSize={pagination.limit}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+            totalEntries={pagination.total}
+            totalPages={pagination.totalPages}
+            />
+          </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      {isCreateDialogOpen && (
+        <CreateStudySheet open={isCreateDialogOpen} onOpenChange={(value) => setIsCreateDialogOpen(value)} />
+      )}
+
+      <CaseDetailDrawer caseNumber={selectedCaseNumber} open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   )
 }
