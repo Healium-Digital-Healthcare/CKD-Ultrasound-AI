@@ -31,7 +31,7 @@ export default function DashboardPage() {
     isFetching,
     isLoading,
   } = useGetCasesQuery({
-    params: { page: currentPage, limit: pageSize, range: "all" },
+    params: { page: currentPage, limit: pageSize, range: "today" },
   })
 
   const { data: todayStats, isLoading: isStatsLoading, isFetching: isStatsFetching, refetch: refetchStats } = useGetTodayStatsQuery()
