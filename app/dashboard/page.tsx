@@ -85,7 +85,7 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                    Today's Screenings
+                    Today&apos;s Screenings
                   </div>
                   <div className="text-3xl font-bold text-foreground mt-2">{todayStats?.total}</div>
                 </div>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-auto px-4 py-3">
           <div className="bg-card rounded-lg border overflow-hidden">
             <div className="px-6 py-3 border-b border-border flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground">Today's Studies</h2>
+              <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
               <div className="text-xs text-muted-foreground">
                 Showing {Math.min(pageSize, cases.length)} of {pagination.total}
               </div>
