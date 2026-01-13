@@ -8,7 +8,7 @@ export function StudiesSkeleton() {
     <div className="flex-1 overflow-auto px-4 py-3">
       <div className="bg-card rounded-lg border overflow-hidden">
         <div className="px-6 py-3 border-b border-border flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Today's Studies</h2>
+          <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
           <Skeleton className="h-4 w-24" />
         </div>
         <Table>
