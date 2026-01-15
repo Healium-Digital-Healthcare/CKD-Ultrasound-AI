@@ -1,91 +1,45 @@
 "use client"
-
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { useLazyGetImageAnalysisQuery, useTriggerReanalysisMutation } from "@/store/services/cases"
-import { Loader2, AlertCircle, Edit2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Loader2, AlertCircle } from "lucide-react"
 import { Badge } from "../ui/badge"
-import { EditFindingsDialog } from "./edit-finding-dialog"
-import { AIAnalysisSkeleton } from "./ai-analysis-skeleton"
+import type { AiAnalysisResult } from "@/types/case"
 import { BiometryTab } from "./biometry-tab"
+import { useState } from "react"
 
-interface AIAnalysisPanelProps {
-  imageId: string | null
+interface CaseAnalysisPanelProps {
+  caseAnalysis: AiAnalysisResult | null | undefined
+  caseAnalysisStatus: "pending" | "completed" | undefined
+  isLoading?: boolean
 }
 
-export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
-  const [fetchAnalysis, { data: imageAnalysisData, isLoading, isFetching }] = useLazyGetImageAnalysisQuery()
-  const [triggerReanalysis, { isLoading: isReanalyzing }] = useTriggerReanalysisMutation()
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
+export function CaseAnalysisPanel({ caseAnalysis, caseAnalysisStatus, isLoading }: CaseAnalysisPanelProps) {
   const [activeTab, setActiveTab] = useState<"assessment" | "biometry">("assessment")
 
-  useEffect(() => {
-    if (imageId) {
-      fetchAnalysis(imageId)
-    }
-  }, [imageId, fetchAnalysis])
-
-  const handleReanalysis = async () => {
-    if (!imageId) return
-    try {
-      await triggerReanalysis(imageId).unwrap()
-      fetchAnalysis(imageId)
-    } catch (error) {
-      console.error("[v0] Failed to trigger reanalysis:", error)
-    }
-  }
-
-  const handleOpenEditDialog = () => {
-    if (!imageAnalysisData?.ai_analysis_result) return
-    setEditDialogOpen(true)
-  }
-
-  if (!imageId) {
+  if (isLoading) {
     return (
-      <div className="border-l border-border/40 flex flex-col flex-shrink-0 h-full backdrop-blur-xl bg-background/60">
-        <div className="h-14 border-b border-border/40 flex items-center px-6 flex-shrink-0">
-          <h2 className="text-sm font-medium text-muted-foreground">Analysis</h2>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <p className="text-sm text-muted-foreground">Select an image</p>
-        </div>
+      <div className="flex-1 flex items-center justify-center p-6">
+        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
       </div>
     )
   }
 
-  if (isLoading || isFetching) {
-    return <AIAnalysisSkeleton />
-  }
-
-  if (!imageAnalysisData?.ai_analysis_result) {
+  if (!caseAnalysis || caseAnalysisStatus !== "completed") {
     return (
-      <div className="border-l border-border/40 flex flex-col flex-shrink-0 h-full backdrop-blur-xl bg-background/60">
-        <div className="h-14 border-b border-border/40 flex items-center justify-between px-6 flex-shrink-0">
-          <h2 className="text-sm font-medium text-muted-foreground">Analysis</h2>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <Button onClick={handleReanalysis} disabled={isReanalyzing} variant="ghost" size="sm">
-            {isReanalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Start Analysis"}
-          </Button>
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-sm text-gray-600">No case analysis available</p>
         </div>
       </div>
     )
   }
-
-  const status = imageAnalysisData.ai_analysis_status
 
   return (
-    <div className="w-[380px] border-l border-border bg-background flex flex-col h-full">
-      <div className="border-b border-border bg-background z-10">
+    <div className="w-full border-l border-border bg-background flex flex-col h-full overflow-hidden">
+      <div className="border-b border-border bg-background z-10 flex-shrink-0">
         <div className="p-4 flex items-center justify-between border-b border-border">
           <div>
-            <h3 className="text-sm font-bold text-foreground">Analysis Results</h3>
+            <h3 className="text-sm font-bold text-foreground">Case Analysis</h3>
           </div>
-          <Button variant="outline" size="sm" onClick={handleOpenEditDialog} className="h-8 bg-transparent">
-            <Edit2 className="h-3.5 w-3.5 mr-1.5" />
-            Edit
-          </Button>
         </div>
         <div className="flex gap-1 px-3 pt-3 pb-0">
           <button
@@ -113,7 +67,7 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {activeTab === "assessment" ? (
           // Assessment Tab Content
           <div className="p-4 space-y-5">
@@ -123,7 +77,7 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
               <div
                 className={cn(
                   "rounded-lg border-2 p-5 text-center",
-                  imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH"
+                  caseAnalysis.ckdRisk === "HIGH"
                     ? "border-red-500/30 bg-red-500/5"
                     : "border-yellow-500/30 bg-yellow-500/5",
                 )}
@@ -131,12 +85,12 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
                 <p
                   className={cn(
                     "text-3xl font-bold tracking-tight",
-                    imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH" ? "text-red-600" : "text-yellow-600",
+                    caseAnalysis.ckdRisk === "HIGH" ? "text-red-600" : "text-yellow-600",
                   )}
                 >
-                  {imageAnalysisData.ai_analysis_result.ckdRisk}
+                  {caseAnalysis.ckdRisk}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1.5">{imageAnalysisData.ai_analysis_result.ckdStage}</p>
+                <p className="text-xs text-muted-foreground mt-1.5">{caseAnalysis.ckdStage}</p>
               </div>
             </div>
 
@@ -147,23 +101,17 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
               </p>
               <div className="rounded-lg border border-border bg-background p-5">
                 <div className="flex items-end gap-2 mb-3">
-                  <p className="text-4xl font-bold text-foreground leading-none">
-                    {imageAnalysisData.ai_analysis_result.egfr}
-                  </p>
+                  <p className="text-4xl font-bold text-foreground leading-none">{caseAnalysis.egfr}</p>
                   <p className="text-sm text-muted-foreground pb-0.5">mL/min/1.73m²</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Confidence</p>
-                    <p className="text-base font-semibold text-foreground">
-                      {imageAnalysisData.ai_analysis_result.confidence}%
-                    </p>
+                    <p className="text-base font-semibold text-foreground">{caseAnalysis.confidence}%</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Range</p>
-                    <p className="text-base font-semibold text-foreground">
-                      {imageAnalysisData.ai_analysis_result.range}
-                    </p>
+                    <p className="text-base font-semibold text-foreground">{caseAnalysis.range}</p>
                   </div>
                 </div>
               </div>
@@ -175,7 +123,7 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
                 Structural Findings
               </p>
               <div className="rounded-lg border border-border bg-background divide-y divide-border">
-                {imageAnalysisData.ai_analysis_result.findings.map((finding: any, idx: number) => (
+                {caseAnalysis.findings.map((finding, idx) => (
                   <div key={idx} className="flex items-center justify-between px-3.5 py-3">
                     <div className="flex items-center gap-2.5">
                       {finding.hasIssue ? (
@@ -211,7 +159,7 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
                 Probable Etiology
               </p>
               <div className="rounded-lg border border-border bg-background p-3 space-y-3">
-                {imageAnalysisData.ai_analysis_result.etiology.map((item: any, idx: number) => (
+                {caseAnalysis.etiology.map((item, idx) => (
                   <div key={idx} className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-foreground">{item.name}</span>
@@ -228,33 +176,21 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
               </div>
             </div>
 
-            {imageAnalysisData.ai_analysis_result.notes && (
+            {caseAnalysis.notes && (
               <div className="space-y-1.5">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Clinical Notes
                 </p>
                 <div className="rounded-lg border border-border bg-muted/30 p-3">
-                  <p className="text-sm text-foreground whitespace-pre-wrap">
-                    {imageAnalysisData.ai_analysis_result.notes}
-                  </p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{caseAnalysis.notes}</p>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <BiometryTab imageAnalysisData={imageAnalysisData} />
+          <BiometryTab imageAnalysisData={null} />
         )}
       </div>
-
-      {editDialogOpen && imageAnalysisData.ai_analysis_result && imageAnalysisData.id && (
-        <EditFindingsDialog
-          data={imageAnalysisData.ai_analysis_result}
-          onOpenChange={(value: boolean) => setEditDialogOpen(value)}
-          imageAnalysisId={imageAnalysisData.id}
-          open={editDialogOpen}
-          onSuccess={() => fetchAnalysis(imageId)}
-        />
-      )}
     </div>
   )
 }

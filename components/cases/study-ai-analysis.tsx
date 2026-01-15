@@ -1,16 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRunAnalysisMutation, useGetCaseByCaseIdQuery } from "@/store/services/cases"
 import { ImageListSkeleton } from "./image-list-skeleton"
 import { ImageViewerSkeleton } from "./image-viewer-skeleton"
-import { AIAnalysisSkeleton } from "./ai-analysis-skeleton"
 import { ImageViewer } from "./image-viewer"
-import { AIAnalysisPanel } from "./ai-analysis-panel"
 import { StudyAIAnalysisProcessing } from "./study-ai-analysis-processing"
 import { StudyAIAnalysisReady } from "./study-ai-analysis-ready"
+import { CaseAnalysisPanel } from "./ai-analysis-panel"
 import type { ImageAnalysis } from "@/types/case"
 import { DicomPreview } from "./dicom-preview"
 
@@ -30,7 +28,7 @@ interface AnalysisStep {
 export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
   const [zoom, setZoom] = useState(75)
-  const [rightWidth, setRightWidth] = useState(384)
+  const [viewMode, setViewMode] = useState<"images" | "analysis">("images")
   const [processingSteps, setProcessingSteps] = useState<AnalysisStep[]>([
     {
       id: "preprocessing",
@@ -79,7 +77,7 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
 
   useEffect(() => {
     onComplete(isAnalyzed)
-  }, [isAnalyzed])
+  }, [isAnalyzed, onComplete])
 
   const handleStartAnalysis = async () => {
     await runAnalysis(caseId)
@@ -108,9 +106,6 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
       <div className="flex h-full overflow-hidden bg-background">
         <ImageListSkeleton />
         <ImageViewerSkeleton />
-        <div className="w-[380px] border-l border-border overflow-y-auto bg-background">
-          <AIAnalysisSkeleton />
-        </div>
       </div>
     )
   }
@@ -132,7 +127,33 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
 
   return (
     <div className="h-full overflow-hidden flex flex-col">
-      {caseData && caseData.analyzed_by_ai && caseData?.images.length > 0 && (
+      <div className="flex gap-1 px-4 pt-3 pb-0 border-b border-border bg-background z-10 flex-shrink-0">
+        <button
+          onClick={() => setViewMode("images")}
+          className={cn(
+            "px-3 py-2 text-sm font-medium border-b-2 rounded-t-lg transition-colors",
+            viewMode === "images"
+              ? "text-emerald-600 border-emerald-500 bg-emerald-50/50"
+              : "text-muted-foreground border-transparent hover:text-foreground",
+          )}
+        >
+          Images
+        </button>
+        <button
+          onClick={() => setViewMode("analysis")}
+          className={cn(
+            "px-3 py-2 text-sm font-medium border-b-2 rounded-t-lg transition-colors",
+            viewMode === "analysis"
+              ? "text-emerald-600 border-emerald-500 bg-emerald-50/50"
+              : "text-muted-foreground border-transparent hover:text-foreground",
+          )}
+        >
+          Analysis
+        </button>
+      </div>
+
+      {/* Images View */}
+      {viewMode === "images" && caseData && caseData.analyzed_by_ai && caseData?.images.length > 0 && (
         <div className="flex-1 flex overflow-hidden">
           <div className="w-48 border-r border-border overflow-y-auto">
             <div className="p-3 border-b border-border sticky top-0 bg-background z-10">
@@ -142,7 +163,7 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
             </div>
             <div className="p-2 space-y-1">
               {caseData.images.map((img: ImageAnalysis, idx: number) => {
-                if(!img.signed_url) return <></>
+                if (!img.signed_url) return <></>
                 const fileType = getFileType(img.signed_url)
 
                 return (
@@ -151,7 +172,9 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
                     onClick={() => setSelectedImage(img)}
                     className={cn(
                       "w-full p-2 rounded border text-left transition-all flex items-center gap-2.5",
-                      selectedImage?.id === img.id ? "bg-primary/10 border-primary" : "hover:bg-muted border-transparent",
+                      selectedImage?.id === img.id
+                        ? "bg-primary/10 border-primary"
+                        : "hover:bg-muted border-transparent",
                     )}
                   >
                     <div
@@ -160,7 +183,7 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
                         selectedImage?.id === img.id ? "border-primary" : "border-border",
                       )}
                     >
-                      { fileType === "dicom" ? (
+                      {fileType === "dicom" ? (
                         <DicomPreview signedUrl={img.signed_url || ""} className="w-full h-full" />
                       ) : (
                         <img
@@ -174,11 +197,6 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
                       <p className="text-xs font-medium text-foreground capitalize">{img.kidney_type} Kidney</p>
                       <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
                     </div>
-                    {img.ai_analysis_status === "completed" && (
-                      <Check
-                        className={cn("h-4 w-4", selectedImage?.id === img.id ? "text-primary" : "text-green-600")}
-                      />
-                    )}
                   </button>
                 )
               })}
@@ -186,12 +204,17 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
           </div>
 
           <ImageViewer onZoomChange={setZoom} zoom={zoom} selectedImage={selectedImage} />
+        </div>
+      )}
 
-          {selectedImage?.id && (
-            <div style={{ width: rightWidth }} className="overflow-y-auto overflow-x-hidden">
-              <AIAnalysisPanel imageId={selectedImage.id} />
-            </div>
-          )}
+      {/* Analysis View */}
+      {viewMode === "analysis" && caseData && (
+        <div className="flex-1 overflow-hidden max-w-2xl mx-auto w-full">
+          <CaseAnalysisPanel
+            caseAnalysis={caseData.ai_analysis_result}
+            caseAnalysisStatus={caseData.ai_analysis_status}
+            isLoading={false}
+          />
         </div>
       )}
     </div>

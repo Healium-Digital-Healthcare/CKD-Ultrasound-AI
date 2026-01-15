@@ -67,7 +67,6 @@ export function CaseListTable({
               <TableHead className="font-semibold text-muted-foreground text-xs">PATIENT INFO</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STUDY ID</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STUDY DATE</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-xs">MODALITY</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STATUS</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs text-right">ACTIONS</TableHead>
             </TableRow>
@@ -106,19 +105,12 @@ export function CaseListTable({
                     })}
                   </TableCell>
                   <TableCell>
-                    <span
-                      className={`inline-block px-2.5 py-1 rounded text-xs font-medium ${getModalityColor(caseItem.modality || "")}`}
-                    >
-                      {caseItem.modality || "N/A"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
                     <div className="flex items-center gap-1.5">
-                      <span className={`h-2 w-2 rounded-full ${getStatusBadge(caseItem.status || "").dot}`}></span>
+                      <span className={`h-2 w-2 rounded-full ${getStatusBadge(caseItem.ai_analysis_status || "").dot}`}></span>
                       <span
-                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(caseItem.status || "").bg}`}
+                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(caseItem.ai_analysis_status || "").bg}`}
                       >
-                        {caseItem.status || "N/A"}
+                        {caseItem.ai_analysis_status || "N/A"}
                       </span>
                     </div>
                   </TableCell>

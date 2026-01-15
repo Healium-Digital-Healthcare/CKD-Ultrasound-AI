@@ -1,32 +1,36 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { useLazyGetImageAnalysisQuery } from "@/store/services/cases"
-import { FileText, Download, Printer, Send } from "lucide-react"
+import { useLazyGetCaseByCaseIdQuery, useLazyGetImageAnalysisQuery } from "@/store/services/cases"
+import { FileText, Download, Printer, Send, AlertCircle } from "lucide-react"
 import { useEffect, useState, useRef } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface ReportPanelProps {
-  imageId: string | null
+  caseId: string | null,
+  onGoBack?: () => void
 }
 
-export function ReportPanel({ imageId }: ReportPanelProps) {
-  const [fetchAnalysis, { data: imageAnalysisData, isLoading, isFetching }] = useLazyGetImageAnalysisQuery()
+export function ReportPanel({ caseId, onGoBack }: ReportPanelProps) {
+  const [fetchCaseDetail, { data: caseDetailData, isLoading, isFetching }] = useLazyGetCaseByCaseIdQuery()
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const printIframeRef = useRef<HTMLIFrameElement>(null)
 
+  
+  const isAnalyzed = caseDetailData?.analyzed_by_ai || false
+
   useEffect(() => {
-    if (imageId) {
-      fetchAnalysis(imageId)
+    if (caseId) {
+      fetchCaseDetail(caseId)
     }
-  }, [imageId, fetchAnalysis])
+  }, [caseId, fetchCaseDetail])
 
   const handleDownloadPDF = async () => {
-    if (!imageId) return
+    if (!caseId) return
 
     try {
       setIsDownloadingPdf(true)
-      const response = await fetch(`/api/image-analysis/${imageId}/download`)
+      const response = await fetch(`/api/cases/case/${caseId}/download`)
 
       if (!response.ok) {
         throw new Error("Failed to generate PDF")
@@ -36,7 +40,7 @@ export function ReportPanel({ imageId }: ReportPanelProps) {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `kidney-report-${imageId}.pdf`
+      a.download = `kidney-report-${caseId}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -50,7 +54,7 @@ export function ReportPanel({ imageId }: ReportPanelProps) {
   }
 
   const handlePrint = () => {
-    if (!printIframeRef.current || !imageAnalysisData?.report_html) return
+    if (!printIframeRef.current || !caseDetailData?.report_html) return
 
     const iframe = printIframeRef.current
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
@@ -58,7 +62,7 @@ export function ReportPanel({ imageId }: ReportPanelProps) {
     if (!iframeDoc) return
 
     iframeDoc.open()
-    iframeDoc.write(imageAnalysisData.report_html)
+    iframeDoc.write(caseDetailData.report_html)
     iframeDoc.close()
 
     // Wait for images to load before printing
@@ -69,10 +73,10 @@ export function ReportPanel({ imageId }: ReportPanelProps) {
   }
 
   const handleSendToEMR = () => {
-    console.log("[v0] Send to EMR for image:", imageId)
+    console.log("Send to EMR for image:", caseId)
   }
 
-  if (!imageId) {
+  if (!caseId) {
     return (
       <div className="flex-1 flex items-center justify-center h-full bg-[#fafafa]">
         <div className="text-center">
@@ -86,8 +90,30 @@ export function ReportPanel({ imageId }: ReportPanelProps) {
   if (isLoading || isFetching) {
     return <ReportPanelSkeleton />
   }
+
+  if (!isAnalyzed && onGoBack) {
+    return (
+      <div className="h-full flex items-center justify-center bg-muted/30">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mb-4">
+            <AlertCircle className="h-8 w-8 text-orange-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Analysis Required</h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            This case hasn&poas;t been analyzed yet. Please go back to Step 3 and complete the AI analysis before generating
+            reports.
+          </p>
+          {onGoBack && (
+            <Button onClick={onGoBack} variant="outline">
+              Go Back to Analysis
+            </Button>
+          )}
+        </div>
+      </div>
+    )
+  }
   
-  const reportHtml = imageAnalysisData?.report_html
+  const reportHtml = caseDetailData?.report_html
 
   if (!reportHtml) {
     return (

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, MoreVertical } from "lucide-react"
+import { Eye, FileText, MoreVertical } from "lucide-react"
 import type { Patient } from "@/types/patient"
 import { cn } from "@/lib/utils"
 import {
@@ -110,9 +110,8 @@ export function PatientListTable({
                 <TableHead className="font-medium text-muted-foreground h-10">PATIENT INFO</TableHead>
                 <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
                 <TableHead className="font-medium text-muted-foreground">LAST SCAN DATE</TableHead>
-                <TableHead className="font-medium text-muted-foreground">MODALITY</TableHead>
-                <TableHead className="font-medium text-muted-foreground text-center">EGFR</TableHead>
                 <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
+                <TableHead className="font-medium text-muted-foreground text-center">EGFR</TableHead>
                 <TableHead className="font-medium text-muted-foreground text-right">ACTIONS</TableHead>
               </TableRow>
             </TableHeader>
@@ -127,9 +126,7 @@ export function PatientListTable({
                   "bg-pink-100",
                 ]
                 const colorIndex = patient.name.charCodeAt(0) % colors.length
-                const avatarBg = colors[colorIndex]
-                const textColor = patient.name.charCodeAt(0) % 2 === 0 ? "text-red-700" : "text-green-700"
-
+                
                 return (
                   <TableRow
                     key={patient.id}
@@ -156,17 +153,14 @@ export function PatientListTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-foreground">#{patient.patient_id}</TableCell>
                     <TableCell className="text-sm text-foreground">
-                      {patient.scanned_on ? new Date(patient.scanned_on).toLocaleDateString() : "-"}
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <FileText className="h-4 w-4 text-green-700" />
+                        <span className="font-mono text-sm">{patient.patient_id}</span>
+                      </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="font-normal text-xs">
-                        {patient.modality || "Unknown"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm font-medium text-center text-foreground">
-                      {(patient.egfr !== undefined && patient.egfr !== null) ? patient.egfr.toFixed(1) : "-"}
+                    <TableCell className="text-sm text-foreground">
+                      {patient.scanned_on ? new Date(patient.scanned_on).toDateString() : "-"}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -175,6 +169,9 @@ export function PatientListTable({
                       >
                         {getStatusLabel(patient.severity)}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm font-medium text-center text-foreground">
+                      {(patient.egfr !== undefined && patient.egfr !== null) ? patient.egfr.toFixed(1) : "-"}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end items-center gap-0">

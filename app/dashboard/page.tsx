@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle } from "lucide-react"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { useGetDashboardStatsQuery, useGetTodayStatsQuery } from "@/store/services/organization"
@@ -97,7 +97,7 @@ export default function DashboardPage() {
             <div className="bg-card rounded-lg border p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">CKD Detected</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">HIGH RISK</div>
                   <div className="text-3xl font-bold text-red-600 mt-2">{todayStats?.ckdDetected}</div>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
@@ -137,7 +137,8 @@ export default function DashboardPage() {
                 <TableRow className="bg-muted/30">
                   <TableHead className="px-6 py-3">Patient</TableHead>
                   <TableHead className="px-6 py-3">Study ID</TableHead>
-                  <TableHead className="px-6 py-3">Result</TableHead>
+                  <TableHead className="px-6 py-3">CKD Stage</TableHead>
+                  <TableHead className="px-6 py-3">Risk</TableHead>
                   <TableHead className="px-6 py-3">eGFR</TableHead>
                   <TableHead className="px-6 py-3"></TableHead>
                 </TableRow>
@@ -151,16 +152,22 @@ export default function DashboardPage() {
                   </TableRow>
                 ) : (
                   cases.map((caseItem) => {
-                    const egfr = caseItem.images[0]?.ai_analysis_result?.egfr || "-"
-                    const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
-                    const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
+                    const egfr = caseItem.ai_analysis_result?.egfr || "-"
+                    const ckdRisk = caseItem.ai_analysis_result?.ckdRisk
+                    const ckdStage = caseItem.ai_analysis_result?.ckdStage || "-"
 
-                    const resultColor =
+                    const ckdStageColor =
                       ckdRisk === "HIGH"
                         ? "bg-red-50 text-red-700"
                         : ckdRisk === "LOW"
                           ? "bg-green-50 text-green-700"
                           : "bg-amber-50 text-amber-700"
+                    const riskColor =
+                      ckdRisk === "HIGH"
+                        ? "text-red-700"
+                        : ckdRisk === "LOW"
+                          ? "text-green-700"
+                          : "text-amber-700"
 
                     return (
                       <TableRow key={caseItem.id}>
@@ -178,11 +185,19 @@ export default function DashboardPage() {
                           </div>
                         </TableCell>
                         <TableCell className="px-6 py-4 font-mono text-sm text-foreground">
-                          {caseItem.case_number}
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <FileText className="h-4 w-4 text-green-700" />
+                            <span className="font-mono text-sm">{caseItem.case_number}</span>
+                          </div>
                         </TableCell>
                         <TableCell className="px-6 py-4">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${resultColor}`}>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${ckdStageColor}`}>
                             {ckdStage}
+                          </span>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <span className={`inline-block py-1 text-xs font-medium ${riskColor}`}>
+                            {ckdRisk}
                           </span>
                         </TableCell>
                         <TableCell className="px-6 py-4">
