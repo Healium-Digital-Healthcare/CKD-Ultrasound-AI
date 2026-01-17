@@ -16,9 +16,9 @@ export function StudiesSkeleton() {
             <TableRow className="bg-muted/30">
               <TableHead className="px-6 py-3">Patient</TableHead>
               <TableHead className="px-6 py-3">Study ID</TableHead>
-              <TableHead className="px-6 py-3">Result</TableHead>
+              <TableHead className="px-6 py-3">CKD Stage</TableHead>
+              <TableHead className="px-6 py-3">Risk</TableHead>
               <TableHead className="px-6 py-3">eGFR</TableHead>
-              <TableHead className="px-6 py-3"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

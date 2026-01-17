@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
-import { useGetDashboardStatsQuery, useGetTodayStatsQuery } from "@/store/services/organization"
+import { useGetTodayStatsQuery } from "@/store/services/organization"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -219,8 +219,6 @@ export default function DashboardPage() {
                 )}
               </TableBody>
             </Table>
-
-            
           <div className="p-4 border-t">
             <Pagination
             currentPage={pagination.page}

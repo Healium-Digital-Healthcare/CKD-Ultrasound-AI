@@ -241,7 +241,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
     try {
       await saveMeasurements({ imageId: selectedImage.id, measurements }).unwrap()
     } catch (error) {
-      console.error("[v0] Error saving measurements:", error)
+      console.error("Error saving measurements:", error)
     }
   }
 
