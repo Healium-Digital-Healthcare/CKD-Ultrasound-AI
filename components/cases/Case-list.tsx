@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye } from "lucide-react"
+import { Eye, FileText } from "lucide-react"
 import type { Case } from "@/types/case"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Pagination } from "../pagination"
@@ -96,7 +96,10 @@ export function CaseListTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-foreground text-sm">#{caseItem.case_number}</TableCell>
+                  <TableCell className="text-foreground text-sm">
+                    <FileText className="h-4 w-4 text-green-700" />
+                    <span className="font-mono text-sm">{caseItem.patient.patient_id}</span>
+                  </TableCell>
                   <TableCell className="text-foreground text-sm">
                     {new Date(caseItem.study_date).toDateString()}
                   </TableCell>
