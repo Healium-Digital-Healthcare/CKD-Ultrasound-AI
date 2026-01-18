@@ -98,7 +98,7 @@ export function CaseListTable({
                   </TableCell>
                   <TableCell className="text-foreground text-sm">
                     <FileText className="h-4 w-4 text-green-700" />
-                    <span className="font-mono text-sm">{caseItem.patient.patient_id}</span>
+                    <span className="font-mono text-sm">{caseItem.case_number}</span>
                   </TableCell>
                   <TableCell className="text-foreground text-sm">
                     {new Date(caseItem.study_date).toDateString()}
