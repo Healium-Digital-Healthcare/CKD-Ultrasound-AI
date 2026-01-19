@@ -24,6 +24,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    
     // ✅ Call RPC
     const { data, error } = await supabase.rpc(
       "get_patient_egfr_timeline",
