@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye } from "lucide-react"
+import { Eye, FileText } from "lucide-react"
 import type { Case } from "@/types/case"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Pagination } from "../pagination"
@@ -67,7 +67,6 @@ export function CaseListTable({
               <TableHead className="font-semibold text-muted-foreground text-xs">PATIENT INFO</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STUDY ID</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STUDY DATE</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-xs">MODALITY</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STATUS</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs text-right">ACTIONS</TableHead>
             </TableRow>
@@ -97,20 +96,14 @@ export function CaseListTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-foreground text-sm">#{caseItem.case_number}</TableCell>
                   <TableCell className="text-foreground text-sm">
-                    {new Date(caseItem.study_date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "2-digit",
-                    })}
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <FileText className="h-4 w-4 text-green-700" />
+                    <span className="font-mono text-sm">{caseItem.case_number}</span>
+                    </div>
                   </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-block px-2.5 py-1 rounded text-xs font-medium ${getModalityColor(caseItem.modality || "")}`}
-                    >
-                      {caseItem.modality || "N/A"}
-                    </span>
+                  <TableCell className="text-foreground text-sm">
+                    {new Date(caseItem.study_date).toDateString()}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">

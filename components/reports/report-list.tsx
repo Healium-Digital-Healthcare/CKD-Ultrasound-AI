@@ -43,7 +43,7 @@ export function ReportListTable({
   const handleDownloadReport = async (caseId: string) => {
     setDownloadingId(caseId)
     try {
-      const response = await fetch(`/api/reports/${caseId}/download`)
+      const response = await fetch(`/api/cases/case/${caseId}/download`)
 
       if (!response.ok) {
         throw new Error("Failed to download report")
@@ -107,7 +107,7 @@ export function ReportListTable({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <FileText className="h-4 w-4" />
+                      <FileText className="h-4 w-4 text-green-700" />
                       <span className="font-mono text-sm">{caseItem.case_number}</span>
                     </div>
                   </TableCell>
@@ -134,14 +134,14 @@ export function ReportListTable({
                       {/* <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 hover:bg-gray-100"
+                        className="h-8 w-8 hover:bg-green-50"
                         disabled={downloadingId === caseItem.id}
                         onClick={() => handleDownloadReport(caseItem.id)}
                       >
                         {downloadingId === caseItem.id ? (
                           <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
                         ) : (
-                          <Download className="h-4 w-4 text-gray-600 hover:text-gray-900" />
+                          <Download className="h-4 w-4 text-green-700" />
                         )}
                       </Button> */}
                       <Button

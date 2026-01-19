@@ -3,14 +3,11 @@
 import { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useGetPatientQuery } from "@/store/services/patients"
-import { useGetCasesQuery } from "@/store/services/cases"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Plus, ChevronDown, ChevronUp } from "lucide-react"
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { PatientOverview } from "@/components/patients/patient-overview"
-import { PatientTimeline } from "@/components/patients/patient-timeline"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
-import type { Case } from "@/types/case"
 import { cn } from "@/lib/utils"
 import { PatientDetailSkeleton } from "@/components/patients/patient-detail-skeleton"
 import { PatientStudiesList } from "@/components/patients/patient-studies"
@@ -70,7 +67,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
 
   const tabs = [
     { id: "overview", label: "Overview" },
-    { id: "studies", label: "Studies/Cases" }
+    { id: "studies", label: "Studies" }
   ]
 
   return (
@@ -149,7 +146,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">CKD Stage</p>
                   <p className="text-base font-semibold text-gray-900">
-                    {patient.ckd_stage ? `Stage ${patient.ckd_stage}` : "N/A"}
+                    {patient.ckd_stage ? `${patient.ckd_stage}` : "N/A"}
                   </p>
                 </div>
                 <div>

@@ -32,7 +32,6 @@ export interface Case {
   images: ImageAnalysis[]
   patient: Patient
   analyzed_by_ai: boolean
-  modality?: string,
   status?: string
 }
 

@@ -5,38 +5,44 @@ import { type NextRequest, NextResponse } from "next/server"
 import { generateDummyHealiumReport, generateHealiumReportHTML } from "@/lib/services/report-generator"
 import { Report } from "@/types/case";
 
-function generateReport(analysis: any, kidneyType: string): any {
-  const findings = analysis?.findings || {}
-  const ckdRisk = analysis?.ckdRisk || "MODERATE"
-  const egfr = analysis?.egfr || 60
-  const ckdStage = analysis?.ckdStage || "Stage 3a"
+const mockAnalysis = {
+  ckdRisk: Math.random() > 0.5 ? "HIGH" : "MODERATE",
+  ckdStage: "Stage 3b",
+  egfr: Math.floor(Math.random() * 30) + 30,
+  confidence: Math.floor(Math.random() * 15) + 85,
+  range: "35-50",
+  imageQuality: "Good",
+  findings: [
+    { name: "Hydronephrosis", severity: "Mild", hasIssue: Math.random() > 0.5 },
+    { name: "Calculi", severity: "None", hasIssue: false },
+    { name: "Cysts", severity: "Moderate", hasIssue: Math.random() > 0.3 },
+    { name: "Cortical thin.", severity: "Mild", hasIssue: true },
+  ],
+  etiology: [
+    { name: "Diabetes", percentage: 68 },
+    { name: "Glomerulonephritis", percentage: 10 },
+    { name: "Hydronephrosis", percentage: 6 },
+    { name: "Hypertension", percentage: 9 },
+    { name: "Polycystic", percentage: 7 },
+  ],
+  notes: "",
+}
 
-  return {
-    findings: {
-      size: egfr < 45 ? "Slightly reduced" : "Normal",
-      echogenicity: ckdRisk === "HIGH" ? "Increased" : "Normal",
-      cortex: findings.cortical_thinning > 0.5 ? "8 mm (reduced)" : "Normal thickness",
-      hydronephrosis: findings.hydronephrosis > 0.5 ? "Mild to moderate" : "None",
-      calculi: findings.calculi > 0.5 ? "Present" : "None",
-      cysts: findings.cysts > 0.5 ? "Present" : "None",
-    },
-    assessment: `The bilateral renal changes are consistent with chronic kidney disease. The ${
-      ckdRisk === "HIGH" ? "increased echogenicity and reduced" : "maintained"
-    } corticomedullary differentiation suggest ${
-      ckdRisk === "HIGH" ? "chronic parenchymal damage" : "early renal changes"
-    }. Estimated GFR of ${egfr} mL/min/1.73m² indicates CKD ${ckdStage}.`,
-    impression: [
-      `Chronic kidney disease, ${ckdStage} (${ckdRisk.toLowerCase()} risk)`,
-      ...(analysis?.etiology || []).slice(0, 2).map((e: any) => `${e.name} - ${e.percentage}% probability`),
-    ],
-    recommendations: [
-      "Nephrology consultation recommended",
-      "Serial monitoring of renal function",
-      "Blood pressure optimization",
-      ...(ckdRisk === "HIGH" ? ["Urgent follow-up within 1 week"] : []),
-    ],
+const mapCkdRiskToSeverity = (ckdRisk: string): string => {
+  switch (ckdRisk) {
+    case "HIGH":
+      return "severe"
+    case "MODERATE":
+      return "moderate"
+    case "LOW":
+      return "normal"
+    case "CRITICAL":
+      return "critical"
+    default:
+      return "moderate"
   }
 }
+
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ case_id: string }> }) {
   try {
@@ -90,30 +96,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Call AI analysis API for each image (mock implementation for now)
     const updatedImages = []
     for (const image of images) {
-      // Mock AI analysis result - in production, call your AI service
-      const mockAnalysis = {
-        ckdRisk: Math.random() > 0.5 ? "HIGH" : "MODERATE",
-        ckdStage: "Stage 3b",
-        egfr: Math.floor(Math.random() * 30) + 30,
-        confidence: Math.floor(Math.random() * 15) + 85,
-        range: "35-50",
-        imageQuality: "Good",
-        findings: [
-          { name: "Hydronephrosis", severity: "Mild", hasIssue: Math.random() > 0.5 },
-          { name: "Calculi", severity: "None", hasIssue: false },
-          { name: "Cysts", severity: "Moderate", hasIssue: Math.random() > 0.3 },
-          { name: "Cortical thin.", severity: "Mild", hasIssue: true },
-        ],
-        etiology: [
-          { name: "Diabetes", percentage: 68 },
-          { name: "Glomerulonephritis", percentage: 10 },
-          { name: "Hydronephrosis", percentage: 6 },
-          { name: "Hypertension", percentage: 9 },
-          { name: "Polycystic", percentage: 7 },
-        ],
-        notes: "",
-      }
-
       const report:Report = {
           generalDetails: {
             patientName: caseDetial.patient.name,
@@ -276,10 +258,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           departmentName: organization.department || "",
       }
       
-      // const report = generateReport(mockAnalysis, image.kidney_type)
-      // const report = generateDummyHealiumReport()
       const reportHTML = generateHealiumReportHTML(report)
-
 
       // Update image with analysis and report
       const { data: updatedImage, error } = await supabase
@@ -306,8 +285,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .update({
         analyzed_by_ai: true,
         updated_at: new Date().toISOString(),
+        status: "completed",
       })
       .eq("id", case_id)
+
+    await supabase
+      .from("patients")
+      .update({
+        egfr: mockAnalysis.egfr,
+        scanned_on: caseDetial.study_date,
+        severity: mapCkdRiskToSeverity(mockAnalysis.ckdRisk),
+        last_updated: new Date().toISOString(),
+        ckd_stage: mockAnalysis.ckdStage,
+      })
+      .eq("id", caseDetial.patient.id)
 
     return NextResponse.json({
       success: true,
