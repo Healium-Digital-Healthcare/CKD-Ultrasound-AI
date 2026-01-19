@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, FileText, Calendar, Clock, TrendingUp, Plus } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Search, RefreshCw, FileText, Calendar, Clock, TrendingUp, Plus } from "lucide-react"
 import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { useEffect } from "react"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"

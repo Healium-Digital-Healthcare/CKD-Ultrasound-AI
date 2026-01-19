@@ -146,7 +146,7 @@ export default function PatientDetailPage({ params }: { params: Promise<{ patien
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">CKD Stage</p>
                   <p className="text-base font-semibold text-gray-900">
-                    {patient.ckd_stage ? `${patient.ckd_stage}` : "N/A"}
+                    {patient.ckd_stage ? `Stage ${patient.ckd_stage}` : "N/A"}
                   </p>
                 </div>
                 <div>

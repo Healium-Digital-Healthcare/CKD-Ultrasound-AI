@@ -275,7 +275,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         scanned_on: caseDetial.study_date,
         severity: mapCkdRiskToSeverity(mockAnalysis.ckdRisk),
         last_updated: new Date().toISOString(),
-        ckd_stage: mockAnalysis.ckdStage,
       })
       .eq("id", caseDetial.patient.id)
 

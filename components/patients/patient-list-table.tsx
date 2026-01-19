@@ -111,7 +111,7 @@ export function PatientListTable({
                 <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
                 <TableHead className="font-medium text-muted-foreground">LAST SCAN DATE</TableHead>
                 <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
-                <TableHead className="font-medium text-muted-foreground">EGFR</TableHead>
+                <TableHead className="font-medium text-muted-foreground text-center">EGFR</TableHead>
                 <TableHead className="font-medium text-muted-foreground text-right">ACTIONS</TableHead>
               </TableRow>
             </TableHeader>
@@ -170,10 +170,8 @@ export function PatientListTable({
                         {getStatusLabel(patient.severity)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-foreground">
-                      {(patient.egfr !== undefined && patient.egfr !== null) ? `${patient.egfr.toFixed(1)} mL/min/1.73m²
-
-` : "-"}
+                    <TableCell className="text-sm font-medium text-center text-foreground">
+                      {(patient.egfr !== undefined && patient.egfr !== null) ? patient.egfr.toFixed(1) : "-"}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end items-center gap-0">
