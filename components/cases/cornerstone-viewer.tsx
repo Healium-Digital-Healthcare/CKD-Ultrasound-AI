@@ -96,7 +96,7 @@ export default function CornerstoneViewer(props: CornerstoneViewerProps) {
 
   return (
     <div
-      className="flex-1 flex rounded-lg items-center justify-center p-6 overflow-hidden relative"
+      className="flex-1 flex items-center justify-center p-6 overflow-hidden relative"
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -123,7 +123,7 @@ export default function CornerstoneViewer(props: CornerstoneViewerProps) {
 
         <div
           ref={dicomRef}
-          className="w-full h-full max-w-[600px] max-h-[600px] rounded-lg overflow-hidden"
+          className="w-full h-full max-w-[600px] max-h-[600px] rounded-lg shadow-2xl overflow-hidden"
         />
       </div>
     </div>

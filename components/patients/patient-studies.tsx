@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye, FileText } from "lucide-react"
+import { Eye } from "lucide-react"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Pagination } from "@/components/pagination"
+import type { Case } from "@/types/case"
 
 interface PatientStudiesListProps {
   patientId: string
@@ -69,6 +70,9 @@ export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesLis
     )
   }
 
+  const startEntry = pagination.total === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  const endEntry = Math.min(currentPage * pageSize, pagination.total)
+
   return (
     <div className="p-8">
       <div className="space-y-4">
@@ -77,7 +81,7 @@ export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesLis
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b">
                 <TableHead className="font-medium text-muted-foreground">Patient</TableHead>
-                <TableHead className="font-medium text-muted-foreground">Study Id</TableHead>
+                <TableHead className="font-medium text-muted-foreground">Case Number</TableHead>
                 <TableHead className="font-medium text-muted-foreground">Scan Date</TableHead>
                 <TableHead className="font-medium text-muted-foreground text-right">Actions</TableHead>
               </TableRow>
@@ -95,19 +99,18 @@ export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesLis
                       <div>
                         <div className="font-medium text-foreground">{caseItem.patient.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {caseItem.patient.patient_id} • {caseItem.patient.age} yrs • {caseItem.patient.sex === 'M' ? 'Male' : 'Female'}
+                          {caseItem.patient.patient_id} • {caseItem.patient.age}y • {caseItem.patient.sex}
                         </div>
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell className="text-foreground">{caseItem.case_number}</TableCell>
                   <TableCell className="text-foreground">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <FileText className="h-4 w-4 text-green-700" />
-                      <span className="font-mono text-sm">{caseItem.case_number}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-foreground">
-                    {new Date(caseItem.study_date).toDateString()}
+                    {new Date(caseItem.study_date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" className="gap-1.5 h-8" onClick={() => onCaseClick(caseItem.case_number)}>

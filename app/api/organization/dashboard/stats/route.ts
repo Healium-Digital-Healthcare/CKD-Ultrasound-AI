@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
       .from("cases")
       .select(`
         id,
-        ai_analysis_result
+        image_analysis (
+          ai_analysis_result
+        )
       `)
       .eq("user_id", user.id)
       .gte("study_date", startOfToday.toISOString())
@@ -37,13 +39,15 @@ export async function GET(request: NextRequest) {
     let normal = 0
 
     for (const c of cases ?? []) {
-      if (c.ai_analysis_result?.ckdRisk === "HIGH") {
-        ckdDetected++
-        break
-      }
-      if (c.ai_analysis_result?.ckdRisk === "LOW") {
-        normal++
-        break
+      for (const img of c.image_analysis ?? []) {
+        if (img.ai_analysis_result?.ckdRisk === "HIGH") {
+          ckdDetected++
+          break
+        }
+        if (img.ai_analysis_result?.ckdRisk === "LOW") {
+          normal++
+          break
+        }
       }
     }
 

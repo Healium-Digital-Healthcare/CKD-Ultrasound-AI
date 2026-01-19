@@ -286,7 +286,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
   }
 
   return (
-    <div className="flex-1 bg-gray-50 flex flex-col w-full h-full min-w-0 overflow-hidden relative">
+    <div className="flex-1 bg-gray-50 flex flex-col min-w-0 overflow-hidden relative">
       <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-white rounded-lg p-1 shadow-lg">
         <Button
           variant="ghost"
@@ -362,7 +362,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => handleZoomChange(Math.min(300, zoom + 25))}
+          onClick={() => handleZoomChange(Math.min(200, zoom + 25))}
           className="w-7 h-7 p-0 text-gray-600 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -388,7 +388,7 @@ export function ImageViewer({ selectedImage, zoom, onZoomChange }: ImageViewerPr
       ) : (
         <div
           ref={containerRef}
-          className="flex-1 flex items-center justify-center p-6 overflow-hidden relative h-full"
+          className="flex-1 flex items-center justify-center p-6 overflow-hidden relative"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

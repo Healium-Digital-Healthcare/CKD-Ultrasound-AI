@@ -105,7 +105,7 @@ export const casesApi = createApi({
         url: `/cases/case/${id}`,
         method: 'GET'
       }),
-      providesTags: (_result, _error, id) => [{ type: "Case", id }],
+      providesTags: ['Case']
     }),
     saveMeasurements: builder.mutation<ImageAnalysis, { imageId: string; measurements: Measurement[] }>({
       query: ({ imageId, measurements }) => ({
@@ -165,7 +165,6 @@ export const {
   useLazyGetCaseImagesQuery,
   useUpdateImageAnalysisMutation,
   useGetCaseByCaseIdQuery,
-  useLazyGetCaseByCaseIdQuery,
   useSaveMeasurementsMutation,
   useGetCaseStatsQuery,
   useGetSignedUrlQuery,

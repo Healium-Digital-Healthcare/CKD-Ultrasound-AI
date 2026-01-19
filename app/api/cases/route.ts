@@ -150,6 +150,26 @@ export async function POST(request: Request) {
       image_path: img.path,
       kidney_type: img.kidney_type,
       ai_analysis_status: "pending",
+      // ai_analysis_result: {
+      //   "egfr": 15.646025657653809,
+      //   "findings": {
+      //     "hydronephrosis": 0.12725524743299177,
+      //     "calculi": 0.47998314065498504,
+      //     "cysts": 0.7984819692456971,
+      //     "increased_echogenicity": 0.1522561100590334,
+      //     "cortical_thinning": 0.06321591692125805,
+      //     "masses": 0.2910889245655117
+      //   },
+      //   "disease": {
+      //     "diabetic_nephropathy": 0.17482882738113403,
+      //     "hypertensive_nephrosclerosis": 0.1456906944513321,
+      //     "glomerulonephritis": 0.21367967128753662,
+      //     "polycystic_kidney_disease": 0.09712712466716766,
+      //     "hydronephrosis_obstruction": 0.19425424933433533,
+      //     "unknown_other": 0.028728783130645752
+      //   },
+      //   "disease_predicted": "glomerulonephritis"
+      // },
       ai_analysis_result: null,
       user_id: user.id,
     }));

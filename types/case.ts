@@ -22,22 +22,18 @@ export interface AIAnalysisResult {
 }
 
 export interface Case {
-  id: string,
-  patient_id: string,
-  case_number: string,
-  study_description: string,
-  study_date: string,
-  total_images: number,
-  selected_images: number,
-  images: ImageAnalysis[],
-  patient: Patient,
-  analyzed_by_ai: boolean,
+  id: string
+  patient_id: string
+  case_number: string
+  study_description: string
+  study_date: string
+  total_images: number
+  selected_images: number
+  images: ImageAnalysis[]
+  patient: Patient
+  analyzed_by_ai: boolean
   modality?: string,
-  status?: string,
-  report?: Report | null,
-  report_html?: string,
-  ai_analysis_status?: "pending" | "completed",
-  ai_analysis_result?: AiAnalysisResult | null
+  status?: string
 }
 
 export type Finding = {

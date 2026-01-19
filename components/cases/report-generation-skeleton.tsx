@@ -5,6 +5,23 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function ReportGenerationSkeleton() {
   return (
     <div className="w-full h-full flex overflow-hidden">
+      {/* Left: Image List Skeleton */}
+      <div className="w-48 border-r border-border overflow-y-auto">
+        <div className="p-3 border-b border-border">
+          <Skeleton className="h-3 w-20" />
+        </div>
+        <div className="p-2 space-y-1">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="flex items-center gap-2.5 p-2">
+              <Skeleton className="w-12 h-12 rounded" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-2.5 w-12" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Right: Report Panel Skeleton */}
       <div className="flex-1 overflow-y-auto bg-background">
