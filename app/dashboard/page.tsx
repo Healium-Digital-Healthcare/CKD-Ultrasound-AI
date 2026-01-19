@@ -189,7 +189,7 @@ export default function DashboardPage() {
                           </span>
                         </TableCell>
                         <TableCell className="px-6 py-4">
-                          <p className="font-semibold text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
+                          <p className="font-medium text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
                         </TableCell>
                         <TableCell className="px-6 py-4 text-right">
                           <Button
