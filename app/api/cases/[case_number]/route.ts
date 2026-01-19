@@ -63,7 +63,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cas
     return NextResponse.json(data)
 
   } catch (error) {
-    console.error("Error fetching case:", error)
+    console.error("[v0] Error fetching case:", error)
     return NextResponse.json({ error: "Failed to fetch case" }, { status: 500 })
   }
 }

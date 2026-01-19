@@ -11,14 +11,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Case ID and image file are required" }, { status: 400 })
     }
 
-    console.log("Starting AI prediction for case:", caseId)
+    console.log("[v0] Starting AI prediction for case:", caseId)
 
     const fastApiFormData = new FormData()
     fastApiFormData.append("file", imageFile)
     fastApiFormData.append("case_id", caseId)
 
     const fastApiUrl = process.env.FASTAPI_URL || "http://localhost:8000"
-    console.log("Calling FastAPI at:", `${fastApiUrl}/predict`)
+    console.log("[v0] Calling FastAPI at:", `${fastApiUrl}/predict`)
 
     const response = await fetch(`${fastApiUrl}/predict`, {
       method: "POST",
@@ -27,12 +27,12 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("FastAPI error:", errorText)
+      console.error("[v0] FastAPI error:", errorText)
       throw new Error(`FastAPI returned ${response.status}: ${errorText}`)
     }
 
     const predictionResult = await response.json()
-    console.log("Received prediction result:", predictionResult)
+    console.log("[v0] Received prediction result:", predictionResult)
 
     const aiAnalysis = {
       egfr: predictionResult.egfr,
@@ -57,11 +57,11 @@ export async function POST(request: Request) {
       .single()
 
     if (updateError) {
-      console.error("Error updating case:", updateError)
+      console.error("[v0] Error updating case:", updateError)
       throw new Error("Failed to update case with AI analysis")
     }
 
-    console.log("Successfully updated case with AI analysis")
+    console.log("[v0] Successfully updated case with AI analysis")
 
     return NextResponse.json({
       success: true,
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error("Error calling prediction API:", error)
+    console.error("[v0] Error calling prediction API:", error)
     return NextResponse.json(
       { error: "Failed to get AI prediction", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },
