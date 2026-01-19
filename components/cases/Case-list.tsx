@@ -98,7 +98,11 @@ export function CaseListTable({
                   </TableCell>
                   <TableCell className="text-foreground text-sm">#{caseItem.case_number}</TableCell>
                   <TableCell className="text-foreground text-sm">
-                    {new Date(caseItem.study_date).toDateString()}
+                    {new Date(caseItem.study_date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "2-digit",
+                    })}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
