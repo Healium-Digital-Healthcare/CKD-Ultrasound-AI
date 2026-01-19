@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Activity } from "lucide-react"
 import Image from "next/image"
-import Link from "next/link"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -116,11 +115,9 @@ export function LoginForm() {
                 <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
-                <Link href="/auth/forgot-password">
-                  <Button variant={'link'} className="text-sm text-primary hover:text-primary/80 font-medium">
-                    Forgot password?
-                  </Button>
-                </Link>
+                {/* <button type="button" className="text-sm text-primary hover:text-primary/80 font-medium">
+                  Forgot password?
+                </button> */}
               </div>
               <div className="relative">
                 <Input

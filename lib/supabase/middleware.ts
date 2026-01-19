@@ -49,7 +49,6 @@ export async function updateSession(request: NextRequest) {
 
   if (
     request.nextUrl.pathname !== "/" &&
-    request.nextUrl.pathname !== "/auth/forgot-password" &&
     !user &&
     !request.nextUrl.pathname.startsWith("/privacy") &&
     !request.nextUrl.pathname.startsWith("/help")
