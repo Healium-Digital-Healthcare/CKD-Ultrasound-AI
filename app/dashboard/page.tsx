@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle } from "lucide-react"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { useGetDashboardStatsQuery, useGetTodayStatsQuery } from "@/store/services/organization"
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                 <TableRow className="bg-muted/30">
                   <TableHead className="px-6 py-3">Patient</TableHead>
                   <TableHead className="px-6 py-3">Study ID</TableHead>
-                  <TableHead className="px-6 py-3">Result</TableHead>
+                  <TableHead className="px-6 py-3">CKD Stage</TableHead>
                   <TableHead className="px-6 py-3">eGFR</TableHead>
                   <TableHead className="px-6 py-3"></TableHead>
                 </TableRow>
@@ -178,7 +178,10 @@ export default function DashboardPage() {
                           </div>
                         </TableCell>
                         <TableCell className="px-6 py-4 font-mono text-sm text-foreground">
-                          {caseItem.case_number}
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <FileText className="h-4 w-4 text-green-700" />
+                            <span className="font-mono text-sm">{caseItem.case_number}</span>
+                          </div>
                         </TableCell>
                         <TableCell className="px-6 py-4">
                           <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${resultColor}`}>
@@ -186,7 +189,7 @@ export default function DashboardPage() {
                           </span>
                         </TableCell>
                         <TableCell className="px-6 py-4">
-                          <p className="font-semibold text-sm text-foreground">{egfr}</p>
+                          <p className="font-semibold text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
                         </TableCell>
                         <TableCell className="px-6 py-4 text-right">
                           <Button
