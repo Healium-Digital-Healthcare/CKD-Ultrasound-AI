@@ -38,16 +38,6 @@ export function CaseListTable({
     return name.substring(0, 2).toUpperCase()
   }
 
-  const getModalityColor = (modality: string) => {
-    const colors: Record<string, string> = {
-      ultrasound: "bg-emerald-100 text-emerald-700",
-      "ct scan": "bg-blue-100 text-blue-700",
-      mri: "bg-purple-100 text-purple-700",
-      xray: "bg-amber-100 text-amber-700",
-    }
-    return colors[modality?.toLowerCase()] || "bg-gray-100 text-gray-700"
-  }
-
   const getStatusBadge = (status: string) => {
     const configs: Record<string, { bg: string; dot: string }> = {
       completed: { bg: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
@@ -55,6 +45,7 @@ export function CaseListTable({
       "in review": { bg: "bg-blue-100 text-blue-700", dot: "bg-blue-500" },
       error: { bg: "bg-red-100 text-red-700", dot: "bg-red-500" },
     }
+
     return configs[status?.toLowerCase()] || { bg: "bg-gray-100 text-gray-700", dot: "bg-gray-500" }
   }
 
@@ -111,7 +102,7 @@ export function CaseListTable({
                       <span
                         className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(caseItem.status || "").bg}`}
                       >
-                        {caseItem.status || "N/A"}
+                        {caseItem.status ? caseItem.status.charAt(0).toUpperCase() + caseItem.status.slice(1) : "N/A"}
                       </span>
                     </div>
                   </TableCell>

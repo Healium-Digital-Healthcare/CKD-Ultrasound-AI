@@ -75,7 +75,7 @@ export function ReportListTable({
               <TableHead className="font-medium text-muted-foreground">Patient Info</TableHead>
               <TableHead className="font-medium text-muted-foreground">Case Number</TableHead>
               <TableHead className="font-medium text-muted-foreground">Report Date</TableHead>
-              <TableHead className="font-medium text-muted-foreground">Type</TableHead>
+              {/* <TableHead className="font-medium text-muted-foreground">Type</TableHead> */}
               <TableHead className="font-medium text-muted-foreground">Status</TableHead>
               <TableHead className="font-medium text-muted-foreground text-right">Actions</TableHead>
             </TableRow>
@@ -118,11 +118,11 @@ export function ReportListTable({
                       day: "numeric",
                     })}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <span className="inline-block px-2.5 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
                       AI Analysis
                     </span>
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     <span className="inline-flex items-center gap-1.5 text-sm text-green-700">
                       <span className="h-2 w-2 rounded-full bg-green-600"></span>

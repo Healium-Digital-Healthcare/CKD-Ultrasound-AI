@@ -51,16 +51,12 @@ const getStatusColor = (severity: Patient["severity"]) => {
 }
 
 const getStatusLabel = (severity: Patient["severity"]) => {
-  if (severity === "normal" || severity === "mild") return "stable"
-  if (severity === "moderate" || severity === "severe") return "recovering"
-  if (severity === "critical") return "critical"
-  return "unknown"
+  if (severity === "normal" || severity === "mild") return "Stable"
+  if (severity === "moderate" || severity === "severe") return "Recovering"
+  if (severity === "critical") return "Critical"
+  return "Unknown"
 }
 
-const getCkdStageLabel = (stage?: number) => {
-  if (!stage) return "-"
-  return `CKD ${stage}`
-}
 
 export function PatientListTable({
   patients,
@@ -116,17 +112,7 @@ export function PatientListTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {patients.map((patient) => {
-                const colors = [
-                  "bg-red-100",
-                  "bg-green-100",
-                  "bg-yellow-100",
-                  "bg-blue-100",
-                  "bg-purple-100",
-                  "bg-pink-100",
-                ]
-                const colorIndex = patient.name.charCodeAt(0) % colors.length
-                
+              {patients.map((patient) => { 
                 return (
                   <TableRow
                     key={patient.id}
@@ -171,9 +157,7 @@ export function PatientListTable({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm font-medium text-foreground">
-                      {(patient.egfr !== undefined && patient.egfr !== null) ? `${patient.egfr.toFixed(1)} mL/min/1.73m²
-
-` : "-"}
+                      {(patient.egfr !== undefined && patient.egfr !== null) ? `${patient.egfr.toFixed(1)} mL/min/1.73m²` : "-"}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end items-center gap-0">

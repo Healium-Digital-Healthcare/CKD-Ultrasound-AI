@@ -130,8 +130,8 @@ function ReportsContent() {
         </div>
 
         <div className="flex-1 overflow-auto px-4 py-4">
-          <div className="bg-background flex items-center justify-between gap-3 p-4 border">
-            <div className="flex items-center gap-2">
+          <div className="bg-background flex items-center justify-end gap-3 p-4 border">
+            {/* <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground">Type:</span>
               {["All", "AI Analysis", "Final", "Draft"].map((type) => (
                 <button
@@ -146,7 +146,7 @@ function ReportsContent() {
                   {type}
                 </button>
               ))}
-            </div>
+            </div> */}
             <div className="flex items-center gap-2">
               <div className="text-sm text-muted-foreground">
                 Showing {cases.length} of {pagination.total} reports
