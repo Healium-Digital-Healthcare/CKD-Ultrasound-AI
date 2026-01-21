@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         .from("patients")
         .select("id, name, patient_id, age, sex")
         .eq("user_id", user.id)
-        .or(`patient_id.ilike.%${query}%,name.ilike.%${query}%`)
+        .or(`patient_id.ilike.${query}%,name.ilike.${query}%`)
         .limit(limit)
 
       if (!patientsError && patients) {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
           patient:patients!inner(name, patient_id)
         `)
         .eq("user_id", user.id)
-        .ilike("case_number", `%${query}%`)
+        .ilike("case_number", `${query}%`)
         .limit(limit)
 
       if (!studiesError && studies) {

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if(search) {
       // OR search (safe)
-      query = query.or(`patient_id.ilike.%${search}%,name.ilike.%${search}%`)
+      query = query.or(`patient_id.ilike.${search}%,name.ilike.${search}%`)
     }
 
     if(status && status !== 'all') {

@@ -74,7 +74,7 @@ export async function GET(request: Request) {
 
     if (search) {
       // AND search (safe)
-      query = query.ilike('case_number', `%${search}%`)
+      query = query.ilike('case_number', `${search}%`)
     }
 
     // filter by patient_id
