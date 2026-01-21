@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const limit = parseInt(searchParams.get("limit") || "20")
     const offset = parseInt(searchParams.get("offset") || "0")
-    const unreadOnly = searchParams.get("unread_only") === "true"
 
     let query = supabase
       .from("notifications")
@@ -23,12 +22,9 @@ export async function GET(request: NextRequest) {
         patient:patients(id, name, patient_id)
       `, { count: "exact" })
       .eq("user_id", user.id)
+      .eq("is_read", false)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1)
-
-    if (unreadOnly) {
-      query = query.eq("is_read", false)
-    }
 
     const { data: notifications, error, count } = await query
 

@@ -16,6 +16,7 @@ import {
   type Notification,
 } from "@/store/services/notifications"
 import { formatDistanceToNow } from "date-fns"
+import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
 
 const getNotificationIcon = (type: Notification["type"]) => {
   switch (type) {
@@ -46,6 +47,8 @@ const getNotificationBg = (type: Notification["type"], isRead: boolean) => {
 
 export default function Notifications() {
   const [open, setOpen] = useState(false)
+  const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
+  const [isCaseDrawerOpen, setIsCaseDrawerOpen] = useState(false)
   
   // Fetch count with polling (lightweight, runs always)
   const { data: countData } = useGetNotificationCountQuery(undefined, {
@@ -55,7 +58,7 @@ export default function Notifications() {
   // Fetch full notifications only when popover is open
   const { data, isLoading } = useGetNotificationsQuery(
     { limit: 20, offset: 0 },
-    { skip: !open } // Only fetch when popover is open
+    { pollingInterval: 30000 } // Poll every 30 seconds
   )
   const [markAsRead] = useMarkAsReadMutation()
   const [markAllAsRead, { isLoading: isMarkingAll }] = useMarkAllAsReadMutation()
@@ -63,8 +66,18 @@ export default function Notifications() {
   const notifications = data?.notifications || []
   const unreadCount = countData?.count || 0
 
-  const handleMarkAsRead = async (id: string) => {
-    await markAsRead(id)
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read
+    if (!notification.is_read) {
+      await markAsRead(notification.id)
+    }
+    
+    // Open case drawer if notification has a case
+    if (notification.case?.case_number) {
+      setSelectedCaseNumber(notification.case.case_number)
+      setIsCaseDrawerOpen(true)
+      setOpen(false) // Close popover
+    }
   }
 
   const handleMarkAllAsRead = async () => {
@@ -125,7 +138,7 @@ export default function Notifications() {
               {notifications.map((notification) => (
                 <button
                   key={notification.id}
-                  onClick={() => handleMarkAsRead(notification.id)}
+                  onClick={() => handleNotificationClick(notification)}
                   className={cn(
                     "w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors relative",
                     getNotificationBg(notification.type, notification.is_read),
@@ -159,6 +172,13 @@ export default function Notifications() {
           </Button>
         </div>
       </PopoverContent>
+
+      {/* Case Detail Drawer */}
+      <CaseDetailDrawer
+        caseNumber={selectedCaseNumber}
+        open={isCaseDrawerOpen}
+        onOpenChange={setIsCaseDrawerOpen}
+      />
     </Popover>
   )
 }

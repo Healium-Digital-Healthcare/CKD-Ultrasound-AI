@@ -10,6 +10,8 @@ export interface Notification {
   patient_id: string | null
   is_read: boolean
   created_at: string
+  case?: { id: string; case_number: string } | null
+  patient?: { id: string; name: string; patient_id: string } | null
 }
 
 interface NotificationsResponse {
