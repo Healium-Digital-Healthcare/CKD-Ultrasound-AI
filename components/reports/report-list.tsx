@@ -73,7 +73,7 @@ export function ReportListTable({
           <TableHeader className="">
             <TableRow className="bg-muted/30 hover:bg-transparent border-b">
               <TableHead className="font-medium text-muted-foreground">Patient Info</TableHead>
-              <TableHead className="font-medium text-muted-foreground">Case Number</TableHead>
+              <TableHead className="font-medium text-muted-foreground">Study Id</TableHead>
               <TableHead className="font-medium text-muted-foreground">Report Date</TableHead>
               {/* <TableHead className="font-medium text-muted-foreground">Type</TableHead> */}
               <TableHead className="font-medium text-muted-foreground">Status</TableHead>

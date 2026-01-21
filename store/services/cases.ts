@@ -146,6 +146,19 @@ export const casesApi = createApi({
         body: { caseId },
       }),
     }),
+    globalSearch: builder.query<
+      {
+        patients: Array<{ id: string; name: string; patient_id: string; age: number; sex: string }>
+        studies: Array<{ id: string; case_number: string; study_date: string; patient: { name: string; patient_id: string } }>
+      },
+      { q: string; type?: "all" | "patients" | "studies"; limit?: number }
+    >({
+      query: ({ q, type = "all", limit = 5 }) => ({
+        url: "/search",
+        method: "GET",
+        params: { q, type, limit },
+      }),
+    }),
   }),
 })
 
@@ -170,5 +183,6 @@ export const {
   useGetSignedUrlQuery,
   useGetUploadUrlMutation,
   useLazyGetSignedUrlQuery,
-  useGetCaseFileSizeQuery
+  useGetCaseFileSizeQuery,
+  useLazyGlobalSearchQuery
 } = casesApi

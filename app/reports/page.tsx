@@ -130,7 +130,7 @@ function ReportsContent() {
         </div>
 
         <div className="flex-1 overflow-auto px-4 py-4">
-          <div className="bg-background flex items-center justify-end gap-3 p-4 border">
+          <div className="bg-background flex items-center justify-between gap-3 p-4 border">
             {/* <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground">Type:</span>
               {["All", "AI Analysis", "Final", "Draft"].map((type) => (
@@ -147,6 +147,18 @@ function ReportsContent() {
                 </button>
               ))}
             </div> */}
+            <div className="relative flex items-center">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+              <Input
+                type="text"
+                value={searchQuery}
+                placeholder={`Search by Study ID`}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                }}
+                className="pl-9 pr-28 h-9 bg-muted/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary text-sm"
+              />
+            </div>
             <div className="flex items-center gap-2">
               <div className="text-sm text-muted-foreground">
                 Showing {cases.length} of {pagination.total} reports
