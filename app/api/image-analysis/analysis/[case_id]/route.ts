@@ -300,6 +300,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       })
       .eq("id", caseDetial.patient.id)
 
+        // Create notifications
+    const hasHighRisk = updatedImages.some(
+      (img: any) => img.ai_analysis_result?.ckdRisk === "HIGH"
+    )
+
+    // Notification: Scan Analysis Complete
+    await supabase.from("notifications").insert({
+      user_id: user.id,
+      type: "scan_complete",
+      title: "Scan Analysis Complete",
+      message: `Analysis for case ${caseDetial.case_number} has been completed. Patient: ${caseDetial.patient.name}`,
+      case_id: case_id,
+      patient_id: caseDetial.patient_id,
+    })
+
+    // Notification: CKD Detected (if HIGH risk)
+    if (hasHighRisk) {
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        type: "ckd_detected",
+        title: "CKD High Risk Detected",
+        message: `High risk CKD detected for patient ${caseDetial.patient.name} (Case: ${caseDetial.case_number}). Immediate attention recommended.`,
+        case_id: case_id,
+        patient_id: caseDetial.patient_id,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       message: "Analysis completed successfully",

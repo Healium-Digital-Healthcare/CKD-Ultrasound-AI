@@ -10,11 +10,21 @@ export async function GET(
 ) {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const { analysisId } = await params
 
     const { data: imageAnalysis, error } = await supabase
       .from("image_analysis")
-      .select("report_html, case_id")
+      .select(`
+        report_html, 
+        case_id,
+        case:cases(case_number, patient_id, patient:patients(name))
+      `)
       .eq("id", analysisId)
       .single()
 
@@ -66,6 +76,19 @@ export async function GET(
     const pdfBuffer = Buffer.from(pdfUint8)
 
     const fileName = `kidney-report-${imageAnalysis.case_id}-${analysisId}.pdf`
+
+    // Create report_generated notification
+    const caseData = imageAnalysis.case as any
+    if (caseData) {
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        type: "report_generated",
+        title: "Report Generated",
+        message: `Report for case ${caseData.case_number} has been generated and downloaded. Patient: ${caseData.patient?.name || "Unknown"}`,
+        case_id: imageAnalysis.case_id,
+        patient_id: caseData.patient_id,
+      })
+    }
 
     return new NextResponse(pdfBuffer, {
       headers: {
