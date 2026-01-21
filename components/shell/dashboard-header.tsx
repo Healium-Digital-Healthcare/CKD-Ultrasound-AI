@@ -90,7 +90,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
               <Input
                 type="text"
                 value={searchQuery}
-                placeholder={`Search ${searchType}...`}
+                placeholder={`Search ${searchType} by ${searchType === "patients" ? "Name or ID" : "Study ID"}`}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
                   if (onSearch) onSearch(e.target.value)
@@ -98,9 +98,6 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
                 onFocus={() => searchQuery.length >= 2 && setIsDropdownOpen(true)}
                 className="pl-9 pr-28 h-9 bg-muted/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary text-sm"
               />
-              {isFetching && (
-                <Loader2 className="absolute right-24 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
-              )}
               
               {/* Search Type Selector - Right Side Inside Input */}
               <div className="absolute right-1 top-1/2 -translate-y-1/2" ref={typeDropdownRef}>

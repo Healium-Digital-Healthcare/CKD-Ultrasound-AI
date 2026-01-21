@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q') || ''
-    const type = searchParams.get('type') || 'all' // 'all' | 'patients' | 'studies'
+    const type = searchParams.get('type') // 'patients' | 'studies'
     const limit = parseInt(searchParams.get('limit') || '5')
 
     if (!query || query.length < 2) {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const results: { patients: any[], studies: any[] } = { patients: [], studies: [] }
 
     // Search patients
-    if (type === 'all' || type === 'patients') {
+    if (type === 'patients') {
       const { data: patients, error: patientsError } = await supabase
         .from("patients")
         .select("id, name, patient_id, age, sex")
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Search studies/cases
-    if (type === 'all' || type === 'studies') {
+    if (type === 'studies') {
       const { data: studies, error: studiesError } = await supabase
         .from("cases")
         .select(`
