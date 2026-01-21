@@ -165,12 +165,6 @@ export default function Notifications() {
         </ScrollArea>
 
         <Separator />
-
-        <div className="p-2">
-          <Button variant="ghost" className="w-full justify-center text-sm h-9" onClick={() => setOpen(false)}>
-            View all notifications
-          </Button>
-        </div>
       </PopoverContent>
 
       {/* Case Detail Drawer */}

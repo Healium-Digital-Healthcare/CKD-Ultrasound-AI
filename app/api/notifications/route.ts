@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20")
     const offset = parseInt(searchParams.get("offset") || "0")
 
-    let query = supabase
+    const { data: notifications, error, count } = await supabase
       .from("notifications")
       .select(`
         *,
@@ -25,8 +25,6 @@ export async function GET(request: NextRequest) {
       .eq("is_read", false)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1)
-
-    const { data: notifications, error, count } = await query
 
     if (error) throw error
 
