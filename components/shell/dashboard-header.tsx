@@ -200,7 +200,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
                   </>
                 ) : (
                   <div className="p-4 text-center text-sm text-muted-foreground">
-                    No results found for "{searchQuery}"
+                    No results found for {searchQuery}
                   </div>
                 )}
               </div>
