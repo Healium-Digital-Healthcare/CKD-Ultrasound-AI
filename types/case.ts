@@ -57,19 +57,6 @@ export type AiAnalysisResult = {
   notes: string;
 };
 
-// export interface Report {
-//   findings: {
-//     size: string
-//     echogenicity: string
-//     cortex: string
-//     hydronephrosis: string
-//     calculi: string
-//     cysts: string
-//   }
-//   assessment: string
-//   impression: string[]
-//   recommendations: string[]
-// }
 
 export type ImageAnalysis = {
   id: string
@@ -85,6 +72,7 @@ export type ImageAnalysis = {
   report: Report | null,
   report_html?: string
   measurements: Measurement[]
+  biometry: Biometry | null
 };
 
 export interface Measurement {
@@ -236,4 +224,19 @@ export interface CaseStats {
   today: number,
   last7Days: number,
   last30Days: number,
+}
+
+export interface KidneyBiometry {
+  length: number | null
+  width: number | null
+  thickness: number | null
+  area: number | null
+  volume: number | null
+  status: "Normal" | "Abnormal" | "Borderline"
+}
+
+export interface Biometry {
+  leftKidney: KidneyBiometry
+  rightKidney: KidneyBiometry
+  totalVolume: number | null
 }

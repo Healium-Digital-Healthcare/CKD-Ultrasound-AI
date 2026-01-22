@@ -3,7 +3,7 @@ import { supabase as serviceSupabase } from "@/lib/supabase";
 import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 import { generateDummyHealiumReport, generateHealiumReportHTML } from "@/lib/services/report-generator"
-import { Report } from "@/types/case";
+import { Biometry, KidneyBiometry, Report } from "@/types/case";
 
 const mockAnalysis = {
   ckdRisk: Math.random() > 0.5 ? "HIGH" : "MODERATE",
@@ -41,6 +41,34 @@ const mapCkdRiskToSeverity = (ckdRisk: string): string => {
     default:
       return "moderate"
   }
+}
+
+function generateBiometry(): Biometry {
+  const generateKidneyBiometry = (isLeft: boolean): KidneyBiometry => {
+    const length = Number((Math.random() * 30 + 100).toFixed(1)) // 100-130mm
+    const width = Number((Math.random() * 15 + 45).toFixed(1)) // 45-60mm
+    const thickness = Number((Math.random() * 10 + 38).toFixed(1)) // 38-48mm
+    const area = Number((length * width * 0.785 / 100).toFixed(1)) // Approximate ellipse area in cm²
+    const volume = Number((length * width * thickness * 0.523 / 1000).toFixed(1)) // Volume in cm³
+    
+    // Determine status based on normal ranges
+    const isLengthNormal = length >= 100 && length <= 125
+    const isWidthNormal = width >= 45 && width <= 60
+    const isVolumeNormal = volume >= 130 && volume <= 200
+    
+    let status: "Normal" | "Abnormal" | "Borderline" = "Normal"
+    if (!isLengthNormal || !isWidthNormal || !isVolumeNormal) {
+      status = Math.random() > 0.5 ? "Abnormal" : "Borderline"
+    }
+    
+    return { length, width, thickness, area, volume, status }
+  }
+  
+  const leftKidney = generateKidneyBiometry(true)
+  const rightKidney = generateKidneyBiometry(false)
+  const totalVolume = Number(((leftKidney.volume || 0) + (rightKidney.volume || 0)).toFixed(1))
+  
+  return { leftKidney, rightKidney, totalVolume }
 }
 
 
@@ -81,7 +109,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if(!caseDetial || caseDetailError) {
       return NextResponse.json({error: "Case not found"}, { status: 400 })
     }
-    
+
     // Get all images for this case
     const { data: images, error: imagesError } = await supabase
       .from("image_analysis")
@@ -260,6 +288,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       
       const reportHTML = generateHealiumReportHTML(report)
 
+      // Generate biometry data
+      const biometry = generateBiometry()
+
       // Update image with analysis and report
       const { data: updatedImage, error } = await supabase
         .from("image_analysis")
@@ -268,6 +299,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           ai_analysis_result: mockAnalysis,
           report: report,
           report_html: reportHTML, // Store generated HTML
+          biometry: biometry,
         })
         .eq("id", image.id)
         .select()

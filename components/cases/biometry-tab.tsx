@@ -1,13 +1,63 @@
 "use client"
 
+import type { Biometry } from "@/types/case"
+
 interface BiometryTabProps {
-  imageAnalysisData: any
+  imageAnalysisData: {
+    biometry?: Biometry | null
+  }
 }
 
 export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
-  const leftVolume = (120.2 * 55.7 * 45.3 * 0.523).toFixed(1)
-  const rightVolume = (108.5 * 53.9 * 42.6 * 0.523).toFixed(1)
-  const totalVolume = (Number.parseFloat(leftVolume) + Number.parseFloat(rightVolume)).toFixed(1)
+  const biometry = imageAnalysisData?.biometry
+  
+  const leftKidney = biometry?.leftKidney || {
+    length: null,
+    width: null,
+    thickness: null,
+    area: null,
+    volume: null,
+    status: "Normal" as const
+  }
+  
+  const rightKidney = biometry?.rightKidney || {
+    length: null,
+    width: null,
+    thickness: null,
+    area: null,
+    volume: null,
+    status: "Normal" as const
+  }
+  
+  const totalVolume = biometry?.totalVolume ?? 0
+  
+  const formatValue = (value: number | null, decimals = 1): string => {
+    return value !== null ? value.toFixed(decimals) : "—"
+  }
+  
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "Normal":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200"
+      case "Abnormal":
+        return "bg-red-50 text-red-700 border-red-200"
+      case "Borderline":
+        return "bg-amber-50 text-amber-700 border-amber-200"
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200"
+    }
+  }
+  
+  const leftVolume = leftKidney?.volume ?? 0;
+  const rightVolume = rightKidney?.volume ?? 0;
+
+  if (!biometry) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <p className="text-sm text-muted-foreground">No biometry data available. Run analysis first.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-white text-gray-900">
@@ -18,8 +68,8 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
             <span className="font-medium text-sm text-gray-900">Left Kidney</span>
           </div>
-          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Normal
+          <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getStatusBadgeClass(leftKidney.status)}`}>
+            {leftKidney.status}
           </span>
         </div>
 
@@ -32,8 +82,8 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
               <line x1="60" y1="15" x2="60" y2="145" stroke="#3b82f6" strokeWidth="1" strokeDasharray="4" />
               <circle cx="60" cy="80" r="3" fill="#ef4444" />
             </svg>
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] text-blue-600">L: 120.2mm</div>
-            <div className="absolute top-1/2 -right-8 -translate-y-1/2 text-[10px] text-amber-600">W: 55.7mm</div>
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] text-blue-600">L: {formatValue(leftKidney.length)}mm</div>
+            <div className="absolute top-1/2 -right-8 -translate-y-1/2 text-[10px] text-amber-600">W: {formatValue(leftKidney.width)}mm</div>
           </div>
         </div>
 
@@ -42,25 +92,25 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Length</p>
             <p className="text-lg font-semibold text-blue-600">
-              120.2 <span className="text-xs text-gray-500">mm</span>
+              {formatValue(leftKidney.length)} <span className="text-xs text-gray-500">mm</span>
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Width</p>
             <p className="text-lg font-semibold text-gray-900">
-              55.7 <span className="text-xs text-gray-500">mm</span>
+              {formatValue(leftKidney.width)} <span className="text-xs text-gray-500">mm</span>
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Thickness</p>
             <p className="text-lg font-semibold text-gray-900">
-              45.3 <span className="text-xs text-gray-500">mm</span>
+              {formatValue(leftKidney.thickness)} <span className="text-xs text-gray-500">mm</span>
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Area</p>
             <p className="text-lg font-semibold text-gray-900">
-              52.6 <span className="text-xs text-gray-500">cm²</span>
+              {formatValue(leftKidney.area)} <span className="text-xs text-gray-500">cm²</span>
             </p>
           </div>
         </div>
@@ -73,8 +123,8 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
             <span className="font-medium text-sm text-gray-900">Right Kidney</span>
           </div>
-          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Normal
+          <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getStatusBadgeClass(rightKidney.status)}`}>
+            {rightKidney.status}
           </span>
         </div>
 
@@ -87,8 +137,8 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
               <line x1="60" y1="20" x2="60" y2="140" stroke="#3b82f6" strokeWidth="1" strokeDasharray="4" />
               <circle cx="60" cy="80" r="3" fill="#ef4444" />
             </svg>
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] text-blue-600">L: 108.5mm</div>
-            <div className="absolute top-1/2 -right-8 -translate-y-1/2 text-[10px] text-amber-600">W: 53.9mm</div>
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] text-blue-600">L: {formatValue(rightKidney.length)}mm</div>
+            <div className="absolute top-1/2 -right-8 -translate-y-1/2 text-[10px] text-amber-600">W: {formatValue(rightKidney.width)}mm</div>
           </div>
         </div>
 
@@ -97,25 +147,25 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Length</p>
             <p className="text-lg font-semibold text-amber-600">
-              108.5 <span className="text-xs text-gray-500">mm</span>
+              {formatValue(rightKidney.length)} <span className="text-xs text-gray-500">mm</span>
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Width</p>
             <p className="text-lg font-semibold text-gray-900">
-              53.9 <span className="text-xs text-gray-500">mm</span>
+              {formatValue(rightKidney.width)} <span className="text-xs text-gray-500">mm</span>
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Thickness</p>
             <p className="text-lg font-semibold text-gray-900">
-              42.6 <span className="text-xs text-gray-500">mm</span>
+              {formatValue(rightKidney.thickness)} <span className="text-xs text-gray-500">mm</span>
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-200">
             <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Area</p>
             <p className="text-lg font-semibold text-gray-900">
-              46.8 <span className="text-xs text-gray-500">cm²</span>
+              {formatValue(rightKidney.area)} <span className="text-xs text-gray-500">cm²</span>
             </p>
           </div>
         </div>
