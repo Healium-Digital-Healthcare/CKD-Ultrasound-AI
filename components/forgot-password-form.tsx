@@ -103,7 +103,7 @@ export function ForgotPasswordForm({
                   Reset email sent successfully
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  We've sent a password reset link to{" "}
+                  We've sent a password reset link to&nbsp;
                   <strong>{form.getValues("email")}</strong>. Please check your
                   inbox and follow the instructions.
                 </p>
@@ -123,7 +123,7 @@ export function ForgotPasswordForm({
               <CardTitle className="text-2xl">Reset Your Password</CardTitle>
             </div>
             <CardDescription className="text-base">
-              Enter your email address and we'll send you a secure link
+              Enter your email address and we&apos;ll send you a secure link
             </CardDescription>
           </CardHeader>
           <CardContent className="relative z-10">
