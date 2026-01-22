@@ -333,7 +333,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       images: updatedImages,
     })
   } catch (error) {
-    console.error("[v0] Error running analysis:", error)
+    console.error("Error running analysis:", error)
     return NextResponse.json(
       { error: "Failed to run analysis", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },

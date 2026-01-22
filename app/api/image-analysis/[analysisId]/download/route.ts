@@ -2,7 +2,54 @@ import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import fs from "fs"
-import puppeteer from "puppeteer"
+import puppeteer, { type Browser } from "puppeteer-core"
+import chromium from "@sparticuz/chromium"
+
+const isProduction = process.env.NODE_ENV === "production"
+
+async function getBrowser(): Promise<Browser> {
+  if (isProduction) {
+    // Use @sparticuz/chromium for Vercel serverless
+    return puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: { width: 1280, height: 720 },
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    })
+  } else {
+    // Use local Chrome for development
+    // Common Chrome paths for different OS
+    const possiblePaths = [
+      // Windows
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
+      // macOS
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      // Linux
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium-browser",
+    ]
+    
+    let executablePath = ""
+    for (const p of possiblePaths) {
+      if (p && fs.existsSync(p)) {
+        executablePath = p
+        break
+      }
+    }
+    
+    if (!executablePath) {
+      throw new Error("Chrome not found. Please install Chrome or set CHROME_PATH environment variable.")
+    }
+    
+    return puppeteer.launch({
+      executablePath,
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    })
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -36,6 +83,7 @@ export async function GET(
       return NextResponse.json({ error: "No report available" }, { status: 404 })
     }
 
+    // Read and embed logo as base64
     const logoPath = path.join(process.cwd(), "public", "logo", "logo.svg")
     const logoSvg = fs.readFileSync(logoPath, "utf-8")
     const logoBase64 = Buffer.from(logoSvg).toString("base64")
@@ -44,20 +92,14 @@ export async function GET(
     // Replace inline SVG with img tag using data URI
     const htmlWithLogo = imageAnalysis.report_html.replace(/src="\/logo\/logo\.svg"/g, `src="${logoDataUri}"`)
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    })
+    // Get browser based on environment
+    const browser = await getBrowser()
 
     const page = await browser.newPage()
 
     await page.setContent(htmlWithLogo, {
       waitUntil: "networkidle0",
     })
-
-    // await page.setContent(imageAnalysis.report_html, {
-    //   waitUntil: "networkidle0",
-    // })
 
     const pdfUint8 = await page.pdf({
       format: "A4",

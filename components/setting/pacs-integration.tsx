@@ -25,7 +25,7 @@ export function PacsIntegrationTab() {
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle")
 
   const handlePacsSave = () => {
-    console.log("[v0] Saving PACS config:", pacsConfig)
+    console.log("Saving PACS config:", pacsConfig)
     alert("PACS configuration saved successfully!")
   }
 

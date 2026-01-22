@@ -32,7 +32,7 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
       await triggerReanalysis(imageId).unwrap()
       fetchAnalysis(imageId)
     } catch (error) {
-      console.error("[v0] Failed to trigger reanalysis:", error)
+      console.error("Failed to trigger reanalysis:", error)
     }
   }
 

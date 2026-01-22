@@ -69,7 +69,7 @@ export function ReportPanel({ imageId }: ReportPanelProps) {
   }
 
   const handleSendToEMR = () => {
-    console.log("[v0] Send to EMR for image:", imageId)
+    console.log("Send to EMR for image:", imageId)
   }
 
   if (!imageId) {

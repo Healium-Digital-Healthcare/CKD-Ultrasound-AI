@@ -26,7 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error("[v0] Error fetching patient:", error)
+    console.error("Error fetching patient:", error)
     return NextResponse.json({ error: "Failed to fetch patient" }, { status: 500 })
   }
 }
@@ -83,7 +83,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[v0] Error deleting patient:", error)
+    console.error("Error deleting patient:", error)
     return NextResponse.json({ error: "Failed to delete patient" }, { status: 500 })
   }
 }
