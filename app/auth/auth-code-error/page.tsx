@@ -24,7 +24,7 @@ export default function AuthCodeErrorPage() {
               <Link href="/auth/forgot-password">Request New Reset Link</Link>
             </Button>
             <Button asChild variant="outline" className="w-full bg-transparent">
-              <Link href="/auth/login">Back to Login</Link>
+              <Link href="/">Back to Login</Link>
             </Button>
           </CardContent>
         </Card>
