@@ -68,7 +68,7 @@ export function PatientOverview({ patientId }: PatientOverviewProps) {
               axisBottom={{
                 tickSize: 5,
                 tickPadding: 8,
-                tickRotation: -45,
+                tickRotation: 0,
                 legend: "Study Date",
                 legendOffset: 50,
                 legendPosition: "middle",
