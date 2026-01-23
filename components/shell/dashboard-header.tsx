@@ -92,8 +92,6 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
 
   const handlePatientClick = (patientId: string) => {
     setIsDropdownOpen(false)
-    setSearchQuery("")
-    updateURL("", searchType)
     router.push(`/patients/${patientId}`)
   }
 
@@ -101,8 +99,6 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
     setSelectedCaseNumber(caseNumber)
     setIsCaseDrawerOpen(true)
     setIsDropdownOpen(false)
-    setSearchQuery("")
-    updateURL("", searchType)
   }
 
   const searchTypeLabels: Record<SearchType, string> = {
