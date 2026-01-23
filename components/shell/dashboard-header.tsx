@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, Suspense } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Search, User, FileText, ChevronDown, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -17,11 +17,12 @@ interface DashboardHeaderProps {
 
 type SearchType = "patients" | "studies"
 
-export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
+function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()// Initialize state from URL params
-
+  const searchParams = useSearchParams()
+  
+  // Initialize state from URL params
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
   const [searchType, setSearchType] = useState<SearchType>(
     (searchParams.get("type") as SearchType) || "patients"
@@ -35,8 +36,6 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
 
   const [triggerSearch, { data: searchResults, isFetching }] = useLazyGlobalSearchQuery()
 
-  // Close dropdowns when clicking outside
-  
   // Update URL with search params
   const updateURL = useCallback((query: string, type: SearchType) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -50,6 +49,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false })
   }, [pathname, router, searchParams])
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -90,16 +90,19 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
     }
   }, [])
 
-
   const handlePatientClick = (patientId: string) => {
-    router.push(`/patients/${patientId}`)
     setIsDropdownOpen(false)
+    setSearchQuery("")
+    updateURL("", searchType)
+    router.push(`/patients/${patientId}`)
   }
 
   const handleStudyClick = (caseNumber: string) => {
     setSelectedCaseNumber(caseNumber)
     setIsCaseDrawerOpen(true)
     setIsDropdownOpen(false)
+    setSearchQuery("")
+    updateURL("", searchType)
   }
 
   const searchTypeLabels: Record<SearchType, string> = {
@@ -122,7 +125,7 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
               <Input
                 type="text"
                 value={searchQuery}
-                placeholder={`Search ${searchType} by ${searchType === "patients" ? "Name or ID" : "Study ID"}`}
+                placeholder={`Search ${searchType}...`}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
                   if (onSearch) onSearch(e.target.value)
@@ -130,6 +133,9 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
                 onFocus={() => searchQuery.length >= 2 && setIsDropdownOpen(true)}
                 className="pl-9 pr-28 h-9 bg-muted/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary text-sm"
               />
+              {isFetching && (
+                <Loader2 className="absolute right-24 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+              )}
               
               {/* Search Type Selector - Right Side Inside Input */}
               <div className="absolute right-1 top-1/2 -translate-y-1/2" ref={typeDropdownRef}>
@@ -150,6 +156,9 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
                         onClick={() => {
                           setSearchType(type)
                           setIsTypeDropdownOpen(false)
+                          if (searchQuery.length >= 2) {
+                            updateURL(searchQuery, type)
+                          }
                         }}
                         className={`w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors first:rounded-t-md last:rounded-b-md ${
                           searchType === type ? "bg-muted font-medium" : ""
@@ -252,5 +261,24 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
         onOpenChange={setIsCaseDrawerOpen}
       />
     </div>
+  )
+}
+
+export default function DashboardHeader(props: DashboardHeaderProps) {
+  return (
+    <Suspense fallback={
+      <nav className="hidden md:flex items-center fixed top-0 right-0 left-0 z-[9999] border-b border-border/40 h-16 ml-64 bg-background/80 backdrop-blur-md">
+        <div className="flex-1 flex items-center justify-between px-6">
+          <div className="h-9 w-64 bg-muted/50 rounded-md animate-pulse" />
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-muted/50 rounded-full animate-pulse" />
+            <div className="h-8 w-px bg-border/50" />
+            <div className="h-8 w-8 bg-muted/50 rounded-full animate-pulse" />
+          </div>
+        </div>
+      </nav>
+    }>
+      <DashboardHeaderContent {...props} />
+    </Suspense>
   )
 }

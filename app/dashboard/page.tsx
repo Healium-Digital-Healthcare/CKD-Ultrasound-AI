@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
-import { useGetDashboardStatsQuery, useGetTodayStatsQuery } from "@/store/services/organization"
+import { useGetTodayStatsQuery } from "@/store/services/organization"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -14,16 +13,12 @@ import { StudiesSkeleton } from "@/components/organization/studies-skeleton"
 import { Pagination } from "@/components/pagination"
 
 export default function DashboardPage() {
-  const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-
-  useEffect(() => {
-    // No changes needed here for the update
-  }, [])
+  
 
   const {
     data: casesData,

@@ -87,7 +87,7 @@ export function Pagination({
             size="icon"
             className="h-8 w-8"
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>

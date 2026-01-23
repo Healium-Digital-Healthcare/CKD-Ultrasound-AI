@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { LayoutDashboard, Users, Scan, Settings, FileTextIcon, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 
-export default function DashboardSidebar() {
+function DashboardSidebarContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState(1)
@@ -163,5 +163,34 @@ export default function DashboardSidebar() {
       {/* Create Study Sheet Component */}
       <CreateStudySheet open={createStudyOpen} onOpenChange={setCreateStudyOpen} />
     </>
+  )
+}
+
+export default function DashboardSidebar() {
+  return (
+    <Suspense fallback={
+      <div className="hidden md:block">
+        <div className="w-64 fixed inset-y-0 left-0 bg-background/80 border-r border-border/40 flex flex-col">
+          <div className="h-20 px-5 flex items-center border-b border-border/40">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-muted/50 animate-pulse" />
+              <div className="flex flex-col gap-2">
+                <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-muted/50 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 py-4 px-3">
+            <div className="space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-10 bg-muted/50 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <DashboardSidebarContent />
+    </Suspense>
   )
 }
