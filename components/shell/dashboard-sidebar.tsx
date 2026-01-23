@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { LayoutDashboard, Users, Scan, Settings, FileTextIcon, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -9,8 +9,22 @@ import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 
 export default function DashboardSidebar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState(1)
   const [createStudyOpen, setCreateStudyOpen] = useState(false)
+
+  // Build href with preserved search params
+  const buildHref = (basePath: string) => {
+    const q = searchParams.get("q")
+    const type = searchParams.get("type")
+    if (q) {
+      const params = new URLSearchParams()
+      params.set("q", q)
+      if (type) params.set("type", type)
+      return `${basePath}?${params.toString()}`
+    }
+    return basePath
+  }
 
   const navigation = [
     {
@@ -97,7 +111,7 @@ export default function DashboardSidebar() {
                   return (
                     <Link
                       key={item.id}
-                      href={item.href}
+                      href={buildHref(item.href)}
                       onClick={() => handleMenuClick(item.id)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium group",
@@ -126,7 +140,7 @@ export default function DashboardSidebar() {
                   return (
                     <Link
                       key={item.id}
-                      href={item.href}
+                      href={buildHref(item.href)}
                       onClick={() => handleMenuClick(item.id)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium group",

@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useRef, useEffect, useCallback } from "react"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Search, User, FileText, ChevronDown, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Notifications from "@/components/notification/Notification"
@@ -19,8 +19,13 @@ type SearchType = "patients" | "studies"
 
 export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
   const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchType, setSearchType] = useState<SearchType>("patients")
+  const pathname = usePathname()
+  const searchParams = useSearchParams()// Initialize state from URL params
+
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
+  const [searchType, setSearchType] = useState<SearchType>(
+    (searchParams.get("type") as SearchType) || "patients"
+  )
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
@@ -31,6 +36,20 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
   const [triggerSearch, { data: searchResults, isFetching }] = useLazyGlobalSearchQuery()
 
   // Close dropdowns when clicking outside
+  
+  // Update URL with search params
+  const updateURL = useCallback((query: string, type: SearchType) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (query) {
+      params.set("q", query)
+      params.set("type", type)
+    } else {
+      params.delete("q")
+      params.delete("type")
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }, [pathname, router, searchParams])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -44,30 +63,43 @@ export default function DashboardHeader({ onSearch }: DashboardHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Debounced search
+  // Debounced search and URL update
   useEffect(() => {
     if (searchQuery.length >= 2) {
       const timer = setTimeout(() => {
         triggerSearch({ q: searchQuery, type: searchType, limit: 5 })
+        updateURL(searchQuery, searchType)
         setIsDropdownOpen(true)
       }, 300)
       return () => clearTimeout(timer)
     } else {
       setIsDropdownOpen(false)
+      if (searchQuery === "") {
+        updateURL("", searchType)
+      }
     }
-  }, [searchQuery, searchType, triggerSearch])
+  }, [searchQuery, searchType, triggerSearch, updateURL])
+
+  // Trigger search on mount if URL has query
+  useEffect(() => {
+    const q = searchParams.get("q")
+    const type = searchParams.get("type") as SearchType
+    if (q && q.length >= 2) {
+      triggerSearch({ q, type: type || "patients", limit: 5 })
+      setIsDropdownOpen(true)
+    }
+  }, [])
+
 
   const handlePatientClick = (patientId: string) => {
     router.push(`/patients/${patientId}`)
     setIsDropdownOpen(false)
-    setSearchQuery("")
   }
 
   const handleStudyClick = (caseNumber: string) => {
     setSelectedCaseNumber(caseNumber)
     setIsCaseDrawerOpen(true)
     setIsDropdownOpen(false)
-    setSearchQuery("")
   }
 
   const searchTypeLabels: Record<SearchType, string> = {
