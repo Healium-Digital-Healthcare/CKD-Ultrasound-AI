@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useRunAnalysisMutation, useGetCaseByCaseIdQuery } from "@/store/services/cases"
+import { useJobProgress } from "@/hooks/use-job-progress"
 import { ImageListSkeleton } from "./image-list-skeleton"
 import { ImageViewerSkeleton } from "./image-viewer-skeleton"
 import { AIAnalysisSkeleton } from "./ai-analysis-skeleton"
@@ -12,10 +13,12 @@ import { AIAnalysisPanel } from "./ai-analysis-panel"
 import { StudyAIAnalysisProcessing } from "./study-ai-analysis-processing"
 import { StudyAIAnalysisReady } from "./study-ai-analysis-ready"
 import type { ImageAnalysis } from "@/types/case"
+import { useAnalyzeMutation } from "@/store/services/ai"
 import { DicomPreview } from "./dicom-preview"
 
 interface StudyAIAnalysisProps {
   caseId: string
+  images: { leftKidney: string[]; rightKidney: string[] }
   onComplete: (value: boolean) => void
   onAnalyzingStateChange?: (analyzing: boolean) => void
 }
@@ -27,28 +30,29 @@ interface AnalysisStep {
   status: "complete" | "processing" | "pending"
 }
 
-export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
+export function StudyAIAnalysis({ caseId, images, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
-  const [zoom, setZoom] = useState(75)
+  const [zoom, setZoom] = useState(100)
   const [rightWidth, setRightWidth] = useState(384)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
   const [processingSteps, setProcessingSteps] = useState<AnalysisStep[]>([
     {
       id: "preprocessing",
       title: "Image preprocessing",
       description: "Normalizing and enhancing image quality",
-      status: "complete",
+      status: "pending",
     },
     {
       id: "segmentation",
       title: "Kidney segmentation",
       description: "Identifying kidney regions in images",
-      status: "complete",
+      status: "pending",
     },
     {
       id: "ckd",
       title: "CKD classification",
       description: "Determining chronic kidney disease stage",
-      status: "processing",
+      status: "pending",
     },
     { id: "egfr", title: "eGFR prediction", description: "Estimating glomerular filtration rate", status: "pending" },
     {
@@ -59,27 +63,17 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
     },
   ])
 
-  const { data: caseData, isLoading: caseDataLoading, isFetching: caseDataFetching } = useGetCaseByCaseIdQuery(caseId)
-  const [runAnalysis, { isLoading: isAnalyzing }] = useRunAnalysisMutation()
+  const { data: caseData, isLoading: caseDataLoading, isFetching: caseDataFetching, refetch: refetchCase } = useGetCaseByCaseIdQuery(caseId)
+  
+  const [runAnalysis, { isLoading: isAnalyzing, data: analyzeData, isSuccess: isAnalyzeSuccess }] = useAnalyzeMutation()
+  
+  const { jobProgress } = useJobProgress({
+    jobId: currentJobId,
+    enabled: !!currentJobId,
+  })
 
   const isAnalyzed = caseData?.analyzed_by_ai || false
-  const isLoading = isAnalyzing || caseDataLoading || caseDataFetching
-
-  useEffect(() => {
-    if (caseData && caseData.images.length > 0) {
-      setSelectedImage(caseData.images[0])
-    }
-  }, [caseData])
-
-  useEffect(() => {
-    if (onAnalyzingStateChange) {
-      onAnalyzingStateChange(isLoading)
-    }
-  }, [isLoading, onAnalyzingStateChange])
-
-  useEffect(() => {
-    onComplete(isAnalyzed)
-  }, [isAnalyzed])
+  const isLoading = caseDataLoading || caseDataFetching
 
   const handleStartAnalysis = async () => {
     await runAnalysis(caseId)
@@ -90,20 +84,98 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
     return cleanPath.toLowerCase().endsWith(".dcm") ? "dicom" : "image"
   }
 
-  if (isLoading && !isAnalyzed) {
-    if (isAnalyzing) {
-      return (
-        <StudyAIAnalysisProcessing
-          patientName={caseData?.patient?.name || "Patient"}
-          patientId={caseData?.patient?.patient_id || ""}
-          patientAge={caseData?.patient?.age || 0}
-          patientSex={caseData?.patient?.sex || "M"}
-          filesCount={caseData?.images?.length || 0}
-          caseId={caseId}
-          steps={processingSteps}
-        />
-      )
+  useEffect(() => {
+    if(isAnalyzeSuccess && analyzeData) {
+      setCurrentJobId(analyzeData.job_id)
+    } 
+  }, [isAnalyzeSuccess])
+
+  useEffect(() => {
+    if (caseData && caseData.images.length > 0) {
+      setSelectedImage(caseData.images[0])
     }
+  }, [caseData])
+
+  useEffect(() => {
+    if (onAnalyzingStateChange) {
+      onAnalyzingStateChange(isAnalyzing)
+    }
+  }, [isAnalyzing])
+
+  useEffect(() => {
+    onComplete(isAnalyzed)
+  }, [isAnalyzed])
+
+  // Update processing steps based on job progress
+  useEffect(() => {
+    if (!jobProgress) return
+
+    const statusMap: { [key: string]: AnalysisStep["status"] } = {
+      queued: "pending",
+      preprocessing: "processing",
+      inferring: "processing",
+      completed: "complete",
+      failed: "pending",
+    }
+
+    const currentStatus = statusMap[jobProgress.status] || "pending"
+    const progressPercent = jobProgress.progress || 0
+
+    // Map progress percentage to step
+    setProcessingSteps((prevSteps) =>
+      prevSteps.map((step, index) => {
+        let status: AnalysisStep["status"] = "pending"
+
+        if (currentStatus === "complete") {
+          status = "complete"
+        } else if (currentStatus === "processing") {
+          // Determine which step is active based on progress
+          if (progressPercent < 30) {
+            status = index === 0 ? "processing" : index < 1 ? "complete" : "pending"
+          } else if (progressPercent < 60) {
+            status = index <= 1 ? "complete" : index === 2 ? "processing" : "pending"
+          } else {
+            status = index <= 2 ? "complete" : index === 3 ? "processing" : "pending"
+          }
+        }
+
+        return { ...step, status }
+      })
+    )
+  }, [jobProgress])
+
+  // Handle job completion
+  useEffect(() => {
+    if (!jobProgress) return
+
+    if (jobProgress.status === "completed") {
+      // Clear the current job ID to stop polling
+      setCurrentJobId(null)
+      // Refetch the case data to get updated analysis results
+      refetchCase()
+    } else if (jobProgress.status === "failed") {
+      setCurrentJobId(null)
+    }
+  }, [jobProgress])
+
+
+  // Show processing screen while job is active
+  if (currentJobId) {
+    return (
+      <StudyAIAnalysisProcessing
+        patientName={caseData?.patient?.name || "Patient"}
+        patientId={caseData?.patient?.patient_id || ""}
+        patientAge={caseData?.patient?.age || 0}
+        patientSex={caseData?.patient?.sex || "M"}
+        filesCount={caseData?.images?.length || 0}
+        caseId={caseId}
+        steps={processingSteps}
+        jobProgress={jobProgress}
+      />
+    )
+  }
+
+  if (isLoading && !isAnalyzed) {
     return (
       <div className="flex h-full overflow-hidden bg-background">
         <ImageListSkeleton />
@@ -118,13 +190,13 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
   if (!isAnalyzed) {
     return (
       <StudyAIAnalysisReady
+        caseId={caseId}
         patientName={caseData?.patient?.name || "Patient"}
         patientId={caseData?.patient?.patient_id || ""}
         patientAge={caseData?.patient?.age || 0}
         patientSex={caseData?.patient?.sex || "M"}
         filesCount={caseData?.images?.length || 0}
         onStart={handleStartAnalysis}
-        caseId={caseId}
         isLoading={isAnalyzing}
       />
     )
@@ -141,47 +213,44 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
               </h3>
             </div>
             <div className="p-2 space-y-1">
-              {caseData.images.map((img: ImageAnalysis, idx: number) => {
-                if(!img.signed_url) return <></>
-                const fileType = getFileType(img.signed_url)
-
+              {caseData.images.map((img: any, idx: number) => {
+                const fileType = getFileType(img.image_path)
                 return (
-                  <button
+                  <div
                     key={img.id}
                     onClick={() => setSelectedImage(img)}
-                    className={cn(
-                      "w-full p-2 rounded border text-left transition-all flex items-center gap-2.5",
-                      selectedImage?.id === img.id ? "bg-primary/10 border-primary" : "hover:bg-muted border-transparent",
-                    )}
+                    className={`rounded-lg border transition-all ${
+                      selectedImage?.id === img.id
+                        ? "bg-primary/10 border-primary/20"
+                        : "bg-white border-gray-200 hover:bg-primary/10 hover:border-primary/20"
+                    }`}
                   >
-                    <div
-                      className={cn(
-                        "w-12 h-12 rounded border overflow-hidden flex-shrink-0",
-                        selectedImage?.id === img.id ? "border-primary" : "border-border",
-                      )}
+                    <button
+                      key={img.id}
+                      className="flex items-center gap-2.5 px-2 py-2"
                     >
-                      { fileType === "dicom" ? (
-                        <DicomPreview signedUrl={img.signed_url || ""} className="w-full h-full" />
-                      ) : (
-                        <img
-                          src={img.signed_url || "/placeholder.svg"}
-                          alt={`${img.kidney_type} ${img.id}`}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground capitalize">{img.kidney_type} Kidney</p>
-                      <p className="text-xs text-muted-foreground">Image {idx + 1}</p>
-                    </div>
-                    {img.ai_analysis_status === "completed" && (
-                      <Check
-                        className={cn("h-4 w-4", selectedImage?.id === img.id ? "text-primary" : "text-green-600")}
-                      />
-                    )}
-                  </button>
+                      <div className={cn("w-12 h-12 rounded border overflow-hidden flex-shrink-0")}>
+                        {fileType === "dicom" ? (
+                          <DicomPreview signedUrl={img.signed_url || ""} className="w-full h-full" />
+                        ) : (
+                          <img
+                            src={img.signed_url || "/placeholder.svg"}
+                            alt={`${img.kidney_type} ${img.id}`}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-xs font-medium text-foreground capitalize">{img.kidney_type} Kidney</p>
+                      </div>
+                    </button>
+                    <p className="p-2 text-xs text-muted-foreground">
+                      {fileType === "dicom" ? "DICOM File" : `Image File`}
+                    </p>
+                  </div>
                 )
-              })}
+              }
+              )}
             </div>
           </div>
 

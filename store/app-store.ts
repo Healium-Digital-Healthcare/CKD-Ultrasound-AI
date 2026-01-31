@@ -4,6 +4,7 @@ import { patientsApi } from "./services/patients"
 import { casesApi } from "./services/cases"
 import { organizationApi } from "./services/organization"
 import { notificationsApi } from "./services/notifications"
+import { AIApi } from "./services/ai"
 
 export const store = configureStore({
   reducer: {
@@ -11,8 +12,9 @@ export const store = configureStore({
     [casesApi.reducerPath]: casesApi.reducer,
     [organizationApi.reducerPath]: organizationApi.reducer,
     [notificationsApi.reducerPath]: notificationsApi.reducer,
+    [AIApi.reducerPath]: AIApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(patientsApi.middleware, casesApi.middleware , organizationApi.middleware, notificationsApi.middleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(patientsApi.middleware, casesApi.middleware , organizationApi.middleware, notificationsApi.middleware, AIApi.middleware),
 })
 
 setupListeners(store.dispatch)

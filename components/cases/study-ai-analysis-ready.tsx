@@ -25,6 +25,7 @@ export function StudyAIAnalysisReady({
   onStart,
   isLoading,
 }: StudyAIAnalysisReadyProps) {
+
   const { data: fileSizeData, isLoading: isSizeFetching } = useGetCaseFileSizeQuery(caseId, {
     skip: !caseId,
   })
@@ -151,7 +152,6 @@ export function StudyAIAnalysisReady({
                 </>
               )}
             </Button>
-
             <p className="text-xs text-gray-400 mt-3">Typical analysis time: 30-60 seconds</p>
           </div>
         </div>
