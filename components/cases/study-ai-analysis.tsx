@@ -18,7 +18,6 @@ import { DicomPreview } from "./dicom-preview"
 
 interface StudyAIAnalysisProps {
   caseId: string
-  images: { leftKidney: string[]; rightKidney: string[] }
   onComplete: (value: boolean) => void
   onAnalyzingStateChange?: (analyzing: boolean) => void
 }
@@ -30,7 +29,7 @@ interface AnalysisStep {
   status: "complete" | "processing" | "pending"
 }
 
-export function StudyAIAnalysis({ caseId, images, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
+export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: StudyAIAnalysisProps) {
   const [selectedImage, setSelectedImage] = useState<ImageAnalysis | null>(null)
   const [zoom, setZoom] = useState(100)
   const [rightWidth, setRightWidth] = useState(384)

@@ -1,13 +1,14 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const { jobId } = params
+    const { jobId } = await params
 
     // Get job progress from database
     const { data, error } = await supabase
