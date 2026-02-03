@@ -16,7 +16,6 @@ export function BiometryTab({ imageAnalysisData, images }: BiometryTabProps) {
   const leftKidneyImage = images?.find(img => img.kidney_type === "left")
   const rightKidneyImage = images?.find(img => img.kidney_type === "right")
   
-  
   const leftKidney = biometry?.leftKidney || {
     length: null,
     width: null,

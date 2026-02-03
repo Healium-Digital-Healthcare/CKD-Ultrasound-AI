@@ -257,7 +257,7 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
 
           {selectedImage?.id && (
             <div style={{ width: rightWidth }} className="overflow-y-auto overflow-x-hidden">
-              <AIAnalysisPanel imageId={selectedImage.id} />
+              <AIAnalysisPanel imageId={selectedImage.id} images={caseData.images}/>
             </div>
           )}
         </div>
