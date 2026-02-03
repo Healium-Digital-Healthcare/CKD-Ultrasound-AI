@@ -138,7 +138,7 @@ export function CaseDetailDrawer({ caseNumber, open, onOpenChange }: CaseDetailD
                 <ResizeHandle onMouseDown={() => setIsResizingRight(true)} />
 
                 <div style={{ width: rightWidth }} className="overflow-y-auto overflow-x-hidden">
-                  <AIAnalysisPanel imageId={selectedImage?.id || null} />
+                  <AIAnalysisPanel imageId={selectedImage?.id || null} images={caseData.images}/>
                 </div>
               </div>
             )}

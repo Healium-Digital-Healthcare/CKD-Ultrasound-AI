@@ -9,12 +9,14 @@ import { Badge } from "../ui/badge"
 import { EditFindingsDialog } from "./edit-finding-dialog"
 import { AIAnalysisSkeleton } from "./ai-analysis-skeleton"
 import { BiometryTab } from "./biometry-tab"
+import { ImageAnalysis } from "@/types/case"
 
 interface AIAnalysisPanelProps {
-  imageId: string | null
+  imageId: string | null,
+  images: ImageAnalysis[]
 }
 
-export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
+export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
   const [fetchAnalysis, { data: imageAnalysisData, isLoading, isFetching }] = useLazyGetImageAnalysisQuery()
   const [triggerReanalysis, { isLoading: isReanalyzing }] = useTriggerReanalysisMutation()
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -72,8 +74,6 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
       </div>
     )
   }
-
-  const status = imageAnalysisData.ai_analysis_status
 
   return (
     <div className="w-[380px] border-l border-border bg-background flex flex-col h-full">
@@ -242,7 +242,7 @@ export function AIAnalysisPanel({ imageId }: AIAnalysisPanelProps) {
             )}
           </div>
         ) : (
-          <BiometryTab imageAnalysisData={imageAnalysisData} />
+          <BiometryTab imageAnalysisData={imageAnalysisData} images={images} />
         )}
       </div>
 

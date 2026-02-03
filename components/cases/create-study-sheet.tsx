@@ -266,6 +266,9 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
                       }
                     : null,
                 }}
+
+
+                
                 isDisabled={isStudyCreationLoading}
                 onUploadingStateChange={handleUploadingStateChange}
                 patient={patientData}

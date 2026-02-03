@@ -1,15 +1,21 @@
 "use client"
 
-import type { Biometry } from "@/types/case"
+import type { Biometry, ImageAnalysis } from "@/types/case"
+import { DicomPreview } from "./dicom-preview"
 
 interface BiometryTabProps {
   imageAnalysisData: {
     biometry?: Biometry | null
-  }
+  },
+  images: ImageAnalysis[]
 }
 
-export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
+export function BiometryTab({ imageAnalysisData, images }: BiometryTabProps) {
   const biometry = imageAnalysisData?.biometry
+  // Get kidney images for visualization
+  const leftKidneyImage = images?.find(img => img.kidney_type === "left")
+  const rightKidneyImage = images?.find(img => img.kidney_type === "right")
+  
   
   const leftKidney = biometry?.leftKidney || {
     length: null,
@@ -47,8 +53,14 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
         return "bg-gray-50 text-gray-700 border-gray-200"
     }
   }
+
+  const getFileType = (path: string) => {
+    const cleanPath = path.split("?")[0]
+    return cleanPath.toLowerCase().endsWith(".dcm") ? "dicom" : "image"
+  }
   
   const leftVolume = leftKidney?.volume ?? 0;
+  
   const rightVolume = rightKidney?.volume ?? 0;
 
   if (!biometry) {
@@ -74,7 +86,21 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
         </div>
 
         {/* Kidney Visualization */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-3 flex items-center justify-center border border-gray-200">
+        <div className="relative bg-gray-50 rounded-lg p-4 mb-3 flex items-center justify-center border border-gray-200">
+          {leftKidneyImage && (
+            <div className="absolute inset-0 w-full h-full rounded-lg">
+              {getFileType(leftKidneyImage.signed_url || "") === "dicom" ? (
+                <DicomPreview signedUrl={leftKidneyImage.signed_url || ""} className="w-full h-full rounded-lg opacity-90" />
+              ) : (
+                <img 
+                  src={leftKidneyImage.signed_url || ''} 
+                  alt="Left kidney ultrasound"
+                  className="absolute inset-0 w-full h-full object-cover opacity-50 rounded-lg"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg" />
+            </div>
+          )}
           <div className="relative">
             <svg width="120" height="160" viewBox="0 0 120 160" className="transform">
               <ellipse cx="60" cy="80" rx="35" ry="65" fill="none" stroke="#10b981" strokeWidth="2" />
@@ -129,7 +155,21 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
         </div>
 
         {/* Kidney Visualization */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-3 flex items-center justify-center border border-gray-200">
+        <div className="relative bg-gray-50 rounded-lg p-4 mb-3 flex items-center justify-center border border-gray-200">
+          {rightKidneyImage && (
+            <div className="absolute rounded-lg inset-0 w-full h-full">
+              {getFileType(rightKidneyImage.signed_url || "") === "dicom" ? (
+                <DicomPreview signedUrl={rightKidneyImage.signed_url || ""} className="w-full h-full rounded-lg opacity-75" />
+              ) : (
+                <img 
+                  src={rightKidneyImage.signed_url || ''} 
+                  alt="Right kidney ultrasound"
+                  className="absolute inset-0 w-full h-full object-cover opacity-50 rounded-lg"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </div>
+          )}
           <div className="relative">
             <svg width="120" height="160" viewBox="0 0 120 160" className="transform">
               <ellipse cx="60" cy="80" rx="33" ry="60" fill="none" stroke="#f59e0b" strokeWidth="2" />
@@ -173,6 +213,7 @@ export function BiometryTab({ imageAnalysisData }: BiometryTabProps) {
 
       {/* Volume Calculations */}
       <div className="p-3 border-t border-gray-200 bg-white">
+
         <div className="flex items-center gap-2 mb-3">
           <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
             <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
