@@ -157,7 +157,6 @@ export function StudyAIAnalysis({ caseId, onComplete, onAnalyzingStateChange }: 
     }
   }, [jobProgress])
 
-
   // Show processing screen while job is active
   if (currentJobId) {
     return (

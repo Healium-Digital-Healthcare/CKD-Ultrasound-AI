@@ -13,7 +13,8 @@ export interface Patient {
   email?: string,
   phone?: string,
   modality?: string,
-  date_of_birth?: string 
+  date_of_birth?: string ,
+  clinical_history?: ClinicalHistory
 }
 
 export interface FetchPatientByPatienIdResponse {
@@ -42,4 +43,13 @@ export interface EgfrTimelinePoint {
   date: string
   egfr: number
   study: string
+}
+
+export interface ClinicalHistory {
+  chiefComplaint?: string
+  diabetesMellitus?: string
+  hypertension?: string
+  familyHistory?: string
+  previousKidneyIssues?: string
+  currentMedications?: string
 }
