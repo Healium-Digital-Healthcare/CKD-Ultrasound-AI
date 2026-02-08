@@ -115,8 +115,9 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
 
       <div className="flex-1 overflow-y-auto">
         {activeTab === "assessment" ? (
+          // Assessment Tab Content
           <div className="p-4 space-y-4">
-            {/* eGFR Prediction */}
+            {/* eGFR Prediction - First Section */}
             <div className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -137,6 +138,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 </p>
                 <p className="text-xs text-muted-foreground">mL/min/1.73m²</p>
               </div>
+              {/* Gradient Slider */}
               <div className="space-y-2">
                 <div className="h-3 rounded-full bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 relative overflow-hidden">
                   <div 
@@ -155,6 +157,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   <span>120+</span>
                 </div>
               </div>
+              {/* Confidence & Range */}
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5 font-semibold">Confidence</p>
@@ -171,7 +174,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
               </div>
             </div>
 
-            {/* CKD Risk Level */}
+            {/* CKD Risk Level - Second Section */}
             <div className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
@@ -198,7 +201,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
               </div>
             </div>
 
-            {/* Probable Etiology */}
+            {/* Probable Etiology - Third Section */}
             <div className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -235,7 +238,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
               </div>
             </div>
 
-            {/* Structural Findings */}
+            {/* Structural Findings - Fourth Section */}
             <div className="rounded-lg border border-border bg-background p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -305,11 +308,11 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
             </div>
 
             {imageAnalysisData.ai_analysis_result.notes && (
-              <div className="space-y-1.5">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Clinical Notes
-                </p>
-                <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <div className="rounded-lg border border-border bg-yellow-50/50 border-yellow-100/50 p-3">
+                <div className="flex gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-yellow-200 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
+                    !
+                  </div>
                   <p className="text-sm text-foreground whitespace-pre-wrap">
                     {imageAnalysisData.ai_analysis_result.notes}
                   </p>
