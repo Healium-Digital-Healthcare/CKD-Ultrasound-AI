@@ -176,7 +176,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
               {imageAnalysisData.ai_analysis_result.egfrNotes && (
                 <div className="rounded-lg border border-yellow-100/50 bg-yellow-50/50 p-3 mt-2">
                   <div className="flex gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-yellow-300 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
+                    <div className="w-5 h-5 rounded-full bg-yellow-300 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700 flex-shrink-0">
                       !
                     </div>
                     <p className="text-sm text-yellow-900">
@@ -292,7 +292,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
               {imageAnalysisData.ai_analysis_result.etiologyNotes && (
                 <div className="rounded-lg border border-green-200 bg-green-50/50 p-3 mt-2">
                   <div className="flex gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 text-xs font-bold text-white">
+                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 text-xs font-bold text-white flex-shrink-0">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
@@ -376,7 +376,7 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
               {imageAnalysisData.ai_analysis_result.findingsNotes && (
                 <div className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 mt-2">
                   <div className="flex gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
+                    <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700 flex-shrink-0">
                       {imageAnalysisData.ai_analysis_result.findings.filter((f: any) => f.hasIssue).length}
                     </div>
                     <p className="text-sm text-yellow-900">
