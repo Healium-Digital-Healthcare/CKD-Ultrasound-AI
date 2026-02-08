@@ -172,19 +172,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   </p>
                 </div>
               </div>
-              {/* eGFR Notes */}
-              {imageAnalysisData.ai_analysis_result.egfrNotes && (
-                <div className="rounded-lg border border-yellow-100/50 bg-yellow-50/50 p-3 mt-2">
-                  <div className="flex gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-yellow-300 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
-                      !
-                    </div>
-                    <p className="text-sm text-yellow-900">
-                      {imageAnalysisData.ai_analysis_result.egfrNotes}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* CKD Risk Level - Second Section */}
@@ -212,45 +199,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 </p>
                 <p className="text-xs text-muted-foreground">{imageAnalysisData.ai_analysis_result.ckdStage}</p>
               </div>
-              {/* CKD Stage Indicator */}
-              <div className="flex gap-1.5 justify-center py-2">
-                {['Stage 1', '2', '3a', '3b', '4-5'].map((stage, idx) => (
-                  <div 
-                    key={idx}
-                    className={cn(
-                      "h-1.5 rounded-full flex-1",
-                      imageAnalysisData.ai_analysis_result.ckdStage?.includes(stage) || 
-                      (imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH" && stage === '3b') ||
-                      (imageAnalysisData.ai_analysis_result.ckdRisk === "MODERATE" && stage === '3a') ||
-                      (imageAnalysisData.ai_analysis_result.ckdRisk === "NORMAL" && stage === 'Stage 1')
-                        ? stage === 'Stage 1' ? "bg-green-500" : stage === '2' ? "bg-lime-400" : stage === '3a' ? "bg-yellow-400" : stage === '3b' ? "bg-orange-500" : "bg-red-600"
-                        : "bg-gray-200"
-                    )}
-                  />
-                ))}
-              </div>
-              {/* Action Recommended */}
-              {imageAnalysisData.ai_analysis_result.ckdAction && (
-                <div className={cn(
-                  "rounded-lg border p-3 mt-2",
-                  imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH"
-                    ? "border-red-200 bg-red-50/50"
-                    : imageAnalysisData.ai_analysis_result.ckdRisk === "MODERATE"
-                    ? "border-yellow-200 bg-yellow-50/50"
-                    : "border-green-200 bg-green-50/50"
-                )}>
-                  <p className={cn(
-                    "text-sm font-semibold",
-                    imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH"
-                      ? "text-red-700"
-                      : imageAnalysisData.ai_analysis_result.ckdRisk === "MODERATE"
-                      ? "text-yellow-700"
-                      : "text-green-700"
-                  )}>
-                    {imageAnalysisData.ai_analysis_result.ckdAction}
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Probable Etiology - Third Section */}
@@ -288,21 +236,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   </div>
                 ))}
               </div>
-              {/* Etiology Notes */}
-              {imageAnalysisData.ai_analysis_result.etiologyNotes && (
-                <div className="rounded-lg border border-green-200 bg-green-50/50 p-3 mt-2">
-                  <div className="flex gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 text-xs font-bold text-white">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-green-900">
-                      {imageAnalysisData.ai_analysis_result.etiologyNotes}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Structural Findings - Fourth Section */}
@@ -372,19 +305,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   </div>
                 ))}
               </div>
-              {/* Findings Notes */}
-              {imageAnalysisData.ai_analysis_result.findingsNotes && (
-                <div className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-3 mt-2">
-                  <div className="flex gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
-                      {imageAnalysisData.ai_analysis_result.findings.filter((f: any) => f.hasIssue).length}
-                    </div>
-                    <p className="text-sm text-yellow-900">
-                      {imageAnalysisData.ai_analysis_result.findingsNotes}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
             {imageAnalysisData.ai_analysis_result.notes && (
