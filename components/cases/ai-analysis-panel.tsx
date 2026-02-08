@@ -172,7 +172,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   </p>
                 </div>
               </div>
-
             </div>
 
             {/* CKD Risk Level - Second Section */}
@@ -200,7 +199,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 </p>
                 <p className="text-xs text-muted-foreground">{imageAnalysisData.ai_analysis_result.ckdStage}</p>
               </div>
-
             </div>
 
             {/* Probable Etiology - Third Section */}
@@ -238,7 +236,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   </div>
                 ))}
               </div>
-
             </div>
 
             {/* Structural Findings - Fourth Section */}
@@ -308,7 +305,6 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                   </div>
                 ))}
               </div>
-
             </div>
 
             {imageAnalysisData.ai_analysis_result.notes && (
