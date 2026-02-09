@@ -16,6 +16,34 @@ interface AIAnalysisPanelProps {
   images: ImageAnalysis[]
 }
 
+// Helper functions to generate notes based on analysis results
+const generateEGFRNotes = (egfr: number, stage: string): string => {
+  if (egfr >= 90) return "Normal kidney function — eGFR is within healthy range. Routine kidney health screening recommended."
+  if (egfr >= 60) return "Mildly reduced — eGFR between 60-89. Monitor kidney function annually and correlate with clinical presentation."
+  if (egfr >= 45) return "Mildly to moderately reduced — eGFR between 45-59 (Stage 3a). Correlate with serum creatinine and clinical history. Consider nephrology referral if rapidly declining."
+  if (egfr >= 30) return "Moderately to severely reduced — eGFR between 30-44 (Stage 3b). Referral to nephrology recommended for further evaluation and management."
+  if (egfr >= 15) return "Severely reduced — eGFR between 15-29 (Stage 4). Urgent nephrology referral required. Prepare for renal replacement therapy planning."
+  return "Kidney failure — eGFR below 15 (Stage 5). Immediate nephrology intervention required. Renal replacement therapy indicated."
+}
+
+const generateCKDAction = (risk: string, stage: string): string => {
+  if (risk === "HIGH") return "Action recommended — Refer to nephrologist for further evaluation and management plan."
+  if (risk === "MODERATE") return "Monitor recommended — Schedule follow-up screening in 3-6 months. Lifestyle modifications advised."
+  return "No action needed — Kidney function within normal range. Routine screening schedule."
+}
+
+const generateEtiologyNotes = (etiology: any[]): string => {
+  if (!etiology || etiology.length === 0) return ""
+  const topDiagnosis = etiology[0]
+  return `Most likely: ${topDiagnosis.name} (${topDiagnosis.percentage}%) — consistent with structural findings and eGFR range`
+}
+
+const generateFindingsNotes = (findings: any[]): string => {
+  const abnormalCount = findings?.filter(f => f.hasIssue).length || 0
+  if (abnormalCount === 0) return "No significant findings — Normal kidney ultrasound appearance."
+  return `${abnormalCount} finding${abnormalCount > 1 ? "s" : ""} detected — ${findings.filter(f => f.hasIssue).map(f => f.name).join(", ")} require clinical correlation`
+}
+
 export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
   const [fetchAnalysis, { data: imageAnalysisData, isLoading, isFetching }] = useLazyGetImageAnalysisQuery()
   const [triggerReanalysis, { isLoading: isReanalyzing }] = useTriggerReanalysisMutation()
@@ -173,18 +201,16 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 </div>
               </div>
               {/* eGFR Notes */}
-              {imageAnalysisData.ai_analysis_result.egfrNotes && (
-                <div className="rounded-lg border border-yellow-200/50 bg-yellow-50/50 p-3 mt-2">
-                  <div className="flex gap-2.5 items-start">
-                    <div className="w-5 h-5 rounded-full bg-yellow-300 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
-                      !
-                    </div>
-                    <p className="text-sm text-yellow-900">
-                      {imageAnalysisData.ai_analysis_result.egfrNotes}
-                    </p>
+              <div className="rounded-lg border border-yellow-200/50 bg-yellow-50/50 p-3 mt-2">
+                <div className="flex gap-2.5 items-start">
+                  <div className="w-5 h-5 rounded-full bg-yellow-300 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
+                    !
                   </div>
+                  <p className="text-sm text-yellow-900">
+                    {generateEGFRNotes(imageAnalysisData.ai_analysis_result.egfr, imageAnalysisData.ai_analysis_result.ckdStage)}
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* CKD Risk Level - Second Section */}
@@ -213,18 +239,16 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 <p className="text-xs text-muted-foreground">{imageAnalysisData.ai_analysis_result.ckdStage}</p>
               </div>
               {/* CKD Action Recommended */}
-              {imageAnalysisData.ai_analysis_result.ckdAction && (
-                <div className={cn(
-                  "rounded-lg border p-3 mt-2 text-sm font-semibold",
-                  imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH"
-                    ? "border-red-200/50 bg-red-50/50 text-red-700"
-                    : imageAnalysisData.ai_analysis_result.ckdRisk === "MODERATE"
-                    ? "border-yellow-200/50 bg-yellow-50/50 text-yellow-700"
-                    : "border-green-200/50 bg-green-50/50 text-green-700"
-                )}>
-                  {imageAnalysisData.ai_analysis_result.ckdAction}
-                </div>
-              )}
+              <div className={cn(
+                "rounded-lg border p-3 mt-2 text-sm font-semibold",
+                imageAnalysisData.ai_analysis_result.ckdRisk === "HIGH"
+                  ? "border-red-200/50 bg-red-50/50 text-red-700"
+                  : imageAnalysisData.ai_analysis_result.ckdRisk === "MODERATE"
+                  ? "border-yellow-200/50 bg-yellow-50/50 text-yellow-700"
+                  : "border-green-200/50 bg-green-50/50 text-green-700"
+              )}>
+                {generateCKDAction(imageAnalysisData.ai_analysis_result.ckdRisk, imageAnalysisData.ai_analysis_result.ckdStage)}
+              </div>
             </div>
 
             {/* Probable Etiology - Third Section */}
@@ -263,16 +287,16 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 ))}
               </div>
               {/* Etiology Notes */}
-              {imageAnalysisData.ai_analysis_result.etiologyNotes && (
+              {generateEtiologyNotes(imageAnalysisData.ai_analysis_result.etiology) && (
                 <div className="rounded-lg border border-green-200/50 bg-green-50/50 p-3 mt-2">
                   <div className="flex gap-2.5 items-start">
-                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 text-xs text-white flex-shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 text-xs text-white">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                     <p className="text-sm text-green-900">
-                      {imageAnalysisData.ai_analysis_result.etiologyNotes}
+                      {generateEtiologyNotes(imageAnalysisData.ai_analysis_result.etiology)}
                     </p>
                   </div>
                 </div>
@@ -347,18 +371,16 @@ export function AIAnalysisPanel({ imageId, images }: AIAnalysisPanelProps) {
                 ))}
               </div>
               {/* Findings Notes */}
-              {imageAnalysisData.ai_analysis_result.findingsNotes && (
-                <div className="rounded-lg border border-yellow-200/50 bg-yellow-50/50 p-3 mt-2">
-                  <div className="flex gap-2.5 items-start">
-                    <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
-                      {imageAnalysisData.ai_analysis_result.findings.filter((f: any) => f.hasIssue).length}
-                    </div>
-                    <p className="text-sm text-yellow-900">
-                      {imageAnalysisData.ai_analysis_result.findingsNotes}
-                    </p>
+              <div className="rounded-lg border border-yellow-200/50 bg-yellow-50/50 p-3 mt-2">
+                <div className="flex gap-2.5 items-start">
+                  <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0 text-xs font-bold text-yellow-700">
+                    {imageAnalysisData.ai_analysis_result.findings.filter((f: any) => f.hasIssue).length}
                   </div>
+                  <p className="text-sm text-yellow-900">
+                    {generateFindingsNotes(imageAnalysisData.ai_analysis_result.findings)}
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
 
             {imageAnalysisData.ai_analysis_result.notes && (
