@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Check, User, Upload, Brain, FileText, ChevronLeft, Loader2 } from "lucide-react"
 
 import { StudyPatientSelection } from "./study-patient-selection"
-import { StudyImageUpload } from "./study-image-upload"
+import { StudyImageUpload, type UploadedFile } from "./study-image-upload"
 import { StudyAIAnalysis } from "./study-ai-analysis"
 import { StudyReportGeneration } from "./study-report-generation"
 import { useCreateCaseMutation } from "@/store/services/cases"
@@ -40,6 +40,13 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
     leftKidney: null,
     rightKidney: null,
   })
+  const [imageUploadState, setImageUploadState] = useState<{
+    leftKidney: UploadedFile | null
+    rightKidney: UploadedFile | null
+  }>({
+    leftKidney: null,
+    rightKidney: null,
+  })
 
   const [analysisData, setAnalysisData] = useState<any>(null)
 
@@ -51,6 +58,7 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
     setCreatedCaseId(null)
     setPatientData(null)
     setImageData({ leftKidney: null, rightKidney: null })
+    setImageUploadState({ leftKidney: null, rightKidney: null })
     setAnalysisData(null)
     onOpenChange(false)
   }
@@ -73,8 +81,15 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
     setIsUploadingImages(isUploading)
   }, [])
 
+  const handleImageStateChange = useCallback(
+    (state: { leftKidney: UploadedFile | null; rightKidney: UploadedFile | null }) => {
+      setImageUploadState(state)
+    },
+    [],
+  )
+
   const handleCreateStudy = async () => {
-    if (!patientData || (!imageData.leftKidney && !imageData.rightKidney)) {
+    if (!patientData || !imageData.leftKidney || !imageData.rightKidney) {
       return
     }
 
@@ -114,7 +129,7 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
   }
 
   const isStep1Valid = patientData !== null
-  const isStep2Valid = imageData.leftKidney !== null || imageData.rightKidney !== null
+  const isStep2Valid = imageData.leftKidney !== null && imageData.rightKidney !== null
   const isStep3Valid = analysisData !== null
 
   const getFooterButtons = () => {
@@ -248,6 +263,8 @@ export function CreateStudySheet({ open, onOpenChange }: CreateStudySheetProps) 
             {currentStep === 2 && (
               <StudyImageUpload
                 onComplete={handleImagesComplete}
+                onStateChange={handleImageStateChange}
+                initialFiles={imageUploadState}
                 initialImages={{
                   leftKidney: imageData.leftKidney
                     ? {
