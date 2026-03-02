@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText } from "lucide-react"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText, TrendingUp, TrendingDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { useGetTodayStatsQuery } from "@/store/services/organization"
@@ -51,63 +51,49 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header section */}
-      <div className="px-4 pt-4 pb-3 border-b border-border">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Daily Screening Summary</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Monitor today&apos;s CKD detection and analysis results</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefetch()}>
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700 text-white gap-2 h-9 px-4">
-              <Plus className="w-4 h-4" />
-              New Screening
-            </Button>
-          </div>
-        </div>
+      <div className="px-6 pt-6 pb-4">
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
       </div>
 
       {/* Stats section */}
       {(isStatsLoading || isStatsFetching) ? (
         <StatsSkeleton />
       ) : (
-        <div className="px-4 pt-3 pb-2">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-card rounded-lg border p-4">
+        <div className="px-6 pb-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                    Today&apos;s Screenings
+                  <div className="text-sm text-gray-600 font-medium">Today&apos;s Screenings</div>
+                  <div className="text-4xl font-bold text-foreground mt-2">{todayStats?.total}</div>
+                  <div className="flex items-center gap-1 mt-3 text-green-600">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-sm font-medium">3.5% Up from yesterday</span>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mt-2">{todayStats?.total}</div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-blue-500" />
                 </div>
               </div>
             </div>
-            <div className="bg-card rounded-lg border p-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">CKD Detected</div>
-                  <div className="text-3xl font-bold text-red-600 mt-2">{todayStats?.ckdDetected}</div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-red-500" />
+                  <div className="text-sm text-gray-600 font-medium">Normal</div>
+                  <div className="text-4xl font-bold text-green-600 mt-2">{todayStats?.normal}</div>
+                  <div className="flex items-center gap-1 mt-3 text-green-600">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-sm font-medium">2% Up from yesterday</span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="bg-card rounded-lg border p-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Normal</div>
-                  <div className="text-3xl font-bold text-green-600 mt-2">{todayStats?.normal}</div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <div className="text-sm text-gray-600 font-medium">CKD Detected</div>
+                  <div className="text-4xl font-bold text-red-600 mt-2">{todayStats?.ckdDetected}</div>
+                  <div className="flex items-center gap-1 mt-3 text-red-600">
+                    <TrendingDown className="h-4 w-4" />
+                    <span className="text-sm font-medium">1.5% Down from yesterday</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -119,28 +105,27 @@ export default function DashboardPage() {
       {(isLoading || isFetching) ? (
         <StudiesSkeleton />
       ) : (
-        <div className="flex-1 overflow-auto px-4 py-3">
-          <div className="bg-card rounded-lg border overflow-hidden">
-            <div className="px-6 py-3 border-b border-border flex items-center justify-between">
+        <div className="flex-1 overflow-auto px-6 pb-6">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
               <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-gray-600">
                 Showing {Math.min(pageSize, cases.length)} of {pagination.total}
               </div>
             </div>
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="px-6 py-3">Patient</TableHead>
-                  <TableHead className="px-6 py-3">Study ID</TableHead>
-                  <TableHead className="px-6 py-3">CKD Stage</TableHead>
-                  <TableHead className="px-6 py-3">eGFR</TableHead>
-                  <TableHead className="px-6 py-3"></TableHead>
+                <TableRow className="bg-blue-900 hover:bg-blue-900">
+                  <TableHead className="px-6 py-3 text-white">Patient</TableHead>
+                  <TableHead className="px-6 py-3 text-white">Study ID</TableHead>
+                  <TableHead className="px-6 py-3 text-white">CKD Stage</TableHead>
+                  <TableHead className="px-6 py-3 text-white">eGFR</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {cases?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                    <TableCell colSpan={4} className="px-6 py-8 text-center text-gray-600">
                       No studies found
                     </TableCell>
                   </TableRow>
@@ -150,51 +135,38 @@ export default function DashboardPage() {
                     const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
                     const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
 
-                    const resultColor =
-                      ckdRisk === "HIGH"
-                        ? "bg-red-50 text-red-700"
-                        : ckdRisk === "LOW"
-                          ? "bg-green-50 text-green-700"
-                          : "bg-amber-50 text-amber-700"
+                    const stageColor = ckdStage && ckdStage.includes("1") ? "bg-green-200" : ckdStage && ckdStage.includes("3") ? "bg-yellow-200" : "bg-red-200"
+                    const stageDotColor = ckdStage && ckdStage.includes("1") ? "bg-green-600" : ckdStage && ckdStage.includes("3") ? "bg-yellow-600" : "bg-red-600"
 
                     return (
-                      <TableRow key={caseItem.id}>
+                      <TableRow key={caseItem.id} className="border-b border-gray-200 hover:bg-gray-50">
                         <TableCell className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-semibold text-xs text-foreground">
+                            <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-xs text-white">
                               {caseItem.patient?.name.charAt(0)}
                             </div>
                             <div>
                               <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-gray-600">
                                 {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
                               </p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="px-6 py-4 font-mono text-sm text-foreground">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="h-4 w-4 text-green-700" />
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <FileText className="h-4 w-4 text-red-500" />
                             <span className="font-mono text-sm">{caseItem.case_number}</span>
                           </div>
                         </TableCell>
                         <TableCell className="px-6 py-4">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${resultColor}`}>
-                            {ckdStage}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${stageDotColor}`}></div>
+                            <span className="text-sm text-foreground">{ckdStage}</span>
+                          </div>
                         </TableCell>
                         <TableCell className="px-6 py-4">
                           <p className="font-medium text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 text-right">
-                          <Button
-                            onClick={() => handleCaseClick(caseItem.case_number)}
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"      
-                          >
-                            View →
-                          </Button>
                         </TableCell>
                       </TableRow>
                     )

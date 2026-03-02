@@ -55,74 +55,65 @@ export default function PatientsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Patient List</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage patient records and view AI analysis status</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefresh()}>
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button size="sm" className="gap-2 bg-green-600 hover:bg-green-700" onClick={handleCreate}>
-              <Plus className="h-4 w-4" />
-              Add Patient
-            </Button>
-          </div>
-        </div>
+      <div className="px-6 pt-6 pb-4">
+        <h1 className="text-3xl font-bold text-foreground">Patients</h1>
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between p-4 border bg-background">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">Status:</span>
-              {["All", "Critical", "Stable", "Recovering"].map((label) => (
-                <Button
-                  key={label}
-                  variant={statusFilter === label.toLowerCase().replace(" ", "") ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 px-3 text-xs"
-                  onClick={() => setStatusFilter(label.toLowerCase().replace(" ", "") as any)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-            <span className="text-sm text-muted-foreground ml-4">
-              Showing {patients.length} of{" "} {pagination.total} patients
-            </span>
-          </div>
-
-          {isError && (
-            <div className="p-6 flex items-center justify-center min-h-[400px] bg-card rounded-lg border">
-              <div className="text-center">
-                <p className="text-destructive mb-4">Error loading patients: {error?.toString()}</p>
-                <Button onClick={handleRefresh}>Try Again</Button>
+        <div className="px-6 py-4">
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700">Status:</span>
+                {["All", "Critical", "Stable", "Recovering"].map((label) => (
+                  <Button
+                    key={label}
+                    variant={statusFilter === label.toLowerCase().replace(" ", "") ? "default" : "outline"}
+                    size="sm"
+                    className={`h-8 px-4 text-sm font-medium ${
+                      statusFilter === label.toLowerCase().replace(" ", "")
+                        ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                    onClick={() => setStatusFilter(label.toLowerCase().replace(" ", "") as any)}
+                  >
+                    {label}
+                  </Button>
+                ))}
               </div>
+              <span className="text-sm text-gray-600 ml-4">
+                Showing {patients.length} of {pagination.total}
+              </span>
             </div>
-          )}
 
-          {(isLoading || isFetching) && <PatientListTableSkeleton />}
+            {isError && (
+              <div className="p-6 flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">Error loading patients: {error?.toString()}</p>
+                  <Button onClick={handleRefresh}>Try Again</Button>
+                </div>
+              </div>
+            )}
 
-          {!isError && !isFetching && !isLoading && (
-            <PatientListTable
-              patients={patients}
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              pageSize={pagination.limit}
-              totalEntries={pagination.total}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size)
-                setCurrentPage(1)
-              }}
-              onRefresh={handleRefresh}
-              onEdit={handleEdit}
-            />
-          )}
+            {(isLoading || isFetching) && <PatientListTableSkeleton />}
+
+            {!isError && !isFetching && !isLoading && (
+              <PatientListTable
+                patients={patients}
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                pageSize={pagination.limit}
+                totalEntries={pagination.total}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size)
+                  setCurrentPage(1)
+                }}
+                onRefresh={handleRefresh}
+                onEdit={handleEdit}
+              />
+            )}
+          </div>
         </div>
       </div>
 

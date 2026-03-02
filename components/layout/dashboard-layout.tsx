@@ -45,9 +45,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           />
 
           {/* Page Content */}
-          <main className=" flex-1 overflow-auto ml-64 bg-[#fafafa] relative">
-            {/* Subtle texture overlay for depth */}
-            <div className="absolute inset-0 opacity-[0.015] pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent_50%)] bg-[length:32px_32px]" />
+          <main className=" flex-1 overflow-auto ml-64 bg-blue-100 relative">
             <div className="relative">{children}</div>
           </main>
         </div>

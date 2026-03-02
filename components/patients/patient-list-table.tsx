@@ -98,17 +98,17 @@ export function PatientListTable({
 
   return (
     <>
-      <div className="space-y-4 bg-background">
-        <div className="overflow-hidden border">
+      <div className="space-y-4 bg-white">
+        <div className="overflow-hidden border-0">
           <Table>
             <TableHeader>
-              <TableRow className="border-b bg-muted/30 hover:bg-transparent">
-                <TableHead className="font-medium text-muted-foreground h-10">PATIENT INFO</TableHead>
-                <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
-                <TableHead className="font-medium text-muted-foreground">LAST SCAN DATE</TableHead>
-                <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
-                <TableHead className="font-medium text-muted-foreground">EGFR</TableHead>
-                <TableHead className="font-medium text-muted-foreground text-right">ACTIONS</TableHead>
+              <TableRow className="border-b bg-blue-900 hover:bg-blue-900">
+                <TableHead className="font-semibold text-white h-10 px-6 py-3">Patient Info.</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">MRN / ID</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Last Scan Date</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">Status</TableHead>
+                <TableHead className="font-semibold text-white px-6 py-3">eGFR</TableHead>
+                <TableHead className="font-semibold text-white text-right px-6 py-3">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -116,13 +116,13 @@ export function PatientListTable({
                 return (
                   <TableRow
                     key={patient.id}
-                    className="border-b hover:bg-muted/50 cursor-pointer h-16"
+                    className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer h-16"
                     onClick={() => handleRowClick(patient.id)}
                   >
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarFallback className="font-medium text-xs">
+                        <Avatar className="h-10 w-10 bg-gray-300">
+                          <AvatarFallback className="font-medium text-xs text-white">
                             {patient.name
                             .split(" ")
                             .map((n) => n[0])
@@ -133,59 +133,43 @@ export function PatientListTable({
                         </Avatar>
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-foreground">{patient.name}</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-gray-600">
                             {patient.age} yrs, {patient.sex === "M" ? "Male" : "Female"}
                           </span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-foreground">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <FileText className="h-4 w-4 text-green-700" />
+                    <TableCell className="text-sm text-foreground px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <FileText className="h-4 w-4 text-red-500" />
                         <span className="font-mono text-sm">{patient.patient_id}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-foreground">
-                      {patient.scanned_on ? new Date(patient.scanned_on).toDateString() : "-"}
+                    <TableCell className="text-sm text-foreground px-6 py-4">
+                      {patient.scanned_on ? new Date(patient.scanned_on).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-6 py-4">
                       <Badge
                         variant="outline"
-                        className={cn("font-normal capitalize", getStatusColor(patient.severity))}
+                        className={cn("font-normal capitalize text-xs", getStatusColor(patient.severity))}
                       >
                         {getStatusLabel(patient.severity)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-foreground">
+                    <TableCell className="text-sm font-medium text-foreground px-6 py-4">
                       {(patient.egfr !== undefined && patient.egfr !== null) ? `${patient.egfr.toFixed(1)} mL/min/1.73m²` : "-"}
                     </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end items-center gap-0">
+                    <TableCell className="text-right px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-end items-center gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
+                          className="h-8 border border-green-600 text-green-600 hover:text-green-700 hover:bg-green-50 gap-1 px-3"
                           onClick={() => handleRowClick(patient.id)}
                         >
                           View
-                          <Eye className="h-3.5 w-3.5" />
+                          <span className="text-lg">📋</span>
                         </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild className="">
-                            <Button variant="ghost" size="icon" className="p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onEdit(patient)}>Edit</DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteClick(patient.id)}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -194,7 +178,7 @@ export function PatientListTable({
             </TableBody>
           </Table>
         </div>
-        <div className="w-full p-2">
+        <div className="w-full p-4">
           <Pagination
             currentPage={currentPage}
             totalEntries={totalEntries}
