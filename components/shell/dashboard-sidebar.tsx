@@ -82,16 +82,16 @@ function DashboardSidebarContent() {
     <>
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <div className="w-64 fixed inset-y-0 left-0 bg-background/80 border-r border-border/40 flex flex-col">
+        <div className="w-64 fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border flex flex-col">
           {/* Logo Section */}
-          <div className="h-20 px-5 flex items-center border-b border-border/40">
+          <div className="h-20 px-5 flex items-center border-b border-sidebar-border">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img src="/logo/logo.svg" className="h-10 w-10" alt="Healium CDK Logo" />
               </div>
               <div className="flex flex-col">
-                <span className="text-foreground font-semibold text-base leading-none mb-1">Healium CDK</span>
-                <span className="text-muted-foreground text-[11px] font-medium tracking-wide leading-none">
+                <span className="text-sidebar-foreground font-semibold text-base leading-none mb-1">Healium CDK</span>
+                <span className="text-sidebar-foreground/60 text-[11px] font-medium tracking-wide leading-none">
                   HEALIUM INTELLISCAN
                 </span>
               </div>
@@ -101,7 +101,7 @@ function DashboardSidebarContent() {
           {/* Main Navigation */}
           <div className="flex-1 py-4 overflow-y-auto">
             <div className="px-3">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3 px-3">
+              <p className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-widest mb-3 px-3">
                 Clinical
               </p>
               <nav className="space-y-2">
@@ -116,8 +116,8 @@ function DashboardSidebarContent() {
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium group",
                         isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-foreground/70 hover:text-foreground hover:bg-accent/50",
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                          : "text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
                       )}
                     >
                       <Icon className={cn("h-[18px] w-[18px] flex-shrink-0", isActive ? "" : "")} />
@@ -129,8 +129,8 @@ function DashboardSidebarContent() {
             </div>
 
             {/* Bottom Navigation */}
-            <div className="mt-auto px-3 pt-4 border-t border-border/40">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3 px-3">
+            <div className="mt-auto px-3 pt-4 border-t border-sidebar-border">
+              <p className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-widest mb-3 px-3">
                 System
               </p>
               <nav className="space-y-0.5">
@@ -145,8 +145,8 @@ function DashboardSidebarContent() {
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium group",
                         isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-foreground/70 hover:text-foreground hover:bg-accent/50",
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                          : "text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent",
                       )}
                     >
                       <Icon className={cn("h-[18px] w-[18px] flex-shrink-0", isActive ? "" : "")} />
@@ -170,20 +170,20 @@ export default function DashboardSidebar() {
   return (
     <Suspense fallback={
       <div className="hidden md:block">
-        <div className="w-64 fixed inset-y-0 left-0 bg-background/80 border-r border-border/40 flex flex-col">
-          <div className="h-20 px-5 flex items-center border-b border-border/40">
+        <div className="w-64 fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border flex flex-col">
+          <div className="h-20 px-5 flex items-center border-b border-sidebar-border">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-muted/50 animate-pulse" />
+              <div className="h-10 w-10 rounded-lg bg-sidebar-accent/50 animate-pulse" />
               <div className="flex flex-col gap-2">
-                <div className="h-4 w-24 bg-muted/50 rounded animate-pulse" />
-                <div className="h-3 w-32 bg-muted/50 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-sidebar-accent/50 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-sidebar-accent/50 rounded animate-pulse" />
               </div>
             </div>
           </div>
           <div className="flex-1 py-4 px-3">
             <div className="space-y-2">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-10 bg-muted/50 rounded-lg animate-pulse" />
+                <div key={i} className="h-10 bg-sidebar-accent/50 rounded-lg animate-pulse" />
               ))}
             </div>
           </div>

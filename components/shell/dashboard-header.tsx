@@ -111,13 +111,13 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
   return (
     <div className="z-50">
       {/* Desktop Header */}
-      <nav className="hidden md:flex items-center z-[9999] border-b border-border/40 h-16 ml-64 bg-background/80 backdrop-blur-md">
+      <nav className="hidden md:flex items-center z-[9999] border-b border-blue-200 h-16 ml-64 bg-blue-50 backdrop-blur-md">
         <div className="flex-1 flex items-center justify-between px-6">
           {/* Left Section - Search */}
           <div className="relative flex-1 max-w-lg" ref={dropdownRef}>
             {/* Search Input with Type Selector Inside */}
             <div className="relative flex items-center">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-400 z-10" />
               <Input
                 type="text"
                 value={searchQuery}
@@ -127,7 +127,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                   if (onSearch) onSearch(e.target.value)
                 }}
                 onFocus={() => searchQuery.length >= 2 && setIsDropdownOpen(true)}
-                className="pl-9 pr-28 h-9 bg-muted/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary text-sm"
+                className="pl-9 pr-28 h-9 bg-white border-blue-200 focus-visible:ring-1 focus-visible:ring-primary text-sm"
               />
               {isFetching && (
                 <Loader2 className="absolute right-24 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
@@ -138,7 +138,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                 <button
                   type="button"
                   onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                  className="flex items-center gap-1 h-7 px-2 bg-muted border border-border/50 rounded text-xs text-muted-foreground hover:bg-muted/80 transition-colors"
+                  className="flex items-center gap-1 h-7 px-2 bg-white border border-blue-200 rounded text-xs text-foreground/70 hover:bg-blue-50 transition-colors"
                 >
                   {searchTypeLabels[searchType]}
                   <ChevronDown className="h-3 w-3" />
@@ -263,7 +263,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
 export default function DashboardHeader(props: DashboardHeaderProps) {
   return (
     <Suspense fallback={
-      <nav className="hidden md:flex items-center fixed top-0 right-0 left-0 z-[9999] border-b border-border/40 h-16 ml-64 bg-background/80 backdrop-blur-md">
+      <nav className="hidden md:flex items-center fixed top-0 right-0 left-0 z-[9999] border-b border-blue-200 h-16 ml-64 bg-blue-50 backdrop-blur-md">
         <div className="flex-1 flex items-center justify-between px-6">
           <div className="h-9 w-64 bg-muted/50 rounded-md animate-pulse" />
           <div className="flex items-center gap-3">

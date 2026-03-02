@@ -39,14 +39,14 @@ const getStatusColor = (severity: Patient["severity"]) => {
   switch (severity) {
     case "normal":
     case "mild":
-      return "bg-green-50 text-green-700 border-green-200"
+      return "bg-success/15 text-success border-success/30"
     case "moderate":
     case "severe":
-      return "bg-orange-50 text-orange-700 border-orange-200"
+      return "bg-warning/15 text-warning border-warning/30"
     case "critical":
-      return "bg-red-50 text-red-700 border-red-200"
+      return "bg-destructive/15 text-destructive border-destructive/30"
     default:
-      return "bg-gray-50 text-gray-600 border-gray-200"
+      return "bg-foreground/10 text-foreground/70 border-foreground/20"
   }
 }
 
@@ -102,7 +102,7 @@ export function PatientListTable({
         <div className="overflow-hidden border-0">
           <Table>
             <TableHeader>
-              <TableRow className="border-b bg-blue-900 hover:bg-blue-900">
+              <TableRow className="border-b bg-blue-800 hover:bg-blue-800">
                 <TableHead className="font-semibold text-white h-10 px-6 py-3">Patient Info.</TableHead>
                 <TableHead className="font-semibold text-white px-6 py-3">MRN / ID</TableHead>
                 <TableHead className="font-semibold text-white px-6 py-3">Last Scan Date</TableHead>
@@ -116,7 +116,7 @@ export function PatientListTable({
                 return (
                   <TableRow
                     key={patient.id}
-                    className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer h-16"
+                    className="border-b border-blue-100 hover:bg-blue-50 cursor-pointer h-16"
                     onClick={() => handleRowClick(patient.id)}
                   >
                     <TableCell className="font-medium px-6 py-4">
@@ -132,16 +132,16 @@ export function PatientListTable({
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-foreground">{patient.name}</span>
-                          <span className="text-xs text-gray-600">
+                          <span className="text-sm font-medium text-primary">{patient.name}</span>
+                          <span className="text-xs text-foreground/60">
                             {patient.age} yrs, {patient.sex === "M" ? "Male" : "Female"}
                           </span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-foreground px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <FileText className="h-4 w-4 text-red-500" />
+                      <div className="flex items-center gap-2 text-foreground/70">
+                        <FileText className="h-4 w-4 text-destructive" />
                         <span className="font-mono text-sm">{patient.patient_id}</span>
                       </div>
                     </TableCell>
@@ -164,7 +164,7 @@ export function PatientListTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 border border-green-600 text-green-600 hover:text-green-700 hover:bg-green-50 gap-1 px-3"
+                          className="h-8 border border-success text-success hover:text-success/90 hover:bg-success/10 gap-1 px-3"
                           onClick={() => handleRowClick(patient.id)}
                         >
                           View

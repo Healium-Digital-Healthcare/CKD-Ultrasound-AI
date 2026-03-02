@@ -61,10 +61,10 @@ export default function PatientsPage() {
 
       <div className="flex-1 overflow-auto">
         <div className="px-6 py-4">
-          <div className="bg-white rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="bg-white rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between p-4 border-b border-blue-200">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-700">Status:</span>
+                <span className="text-sm font-medium text-foreground/70">Status:</span>
                 {["All", "Critical", "Stable", "Recovering"].map((label) => (
                   <Button
                     key={label}
@@ -72,8 +72,8 @@ export default function PatientsPage() {
                     size="sm"
                     className={`h-8 px-4 text-sm font-medium ${
                       statusFilter === label.toLowerCase().replace(" ", "")
-                        ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        ? "bg-primary text-primary-foreground border-primary hover:bg-primary"
+                        : "bg-white text-foreground border-blue-200 hover:bg-blue-50"
                     }`}
                     onClick={() => setStatusFilter(label.toLowerCase().replace(" ", "") as any)}
                   >
@@ -81,7 +81,7 @@ export default function PatientsPage() {
                   </Button>
                 ))}
               </div>
-              <span className="text-sm text-gray-600 ml-4">
+              <span className="text-sm text-foreground/60 ml-4">
                 Showing {patients.length} of {pagination.total}
               </span>
             </div>

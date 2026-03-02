@@ -32,7 +32,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <Provider store={store}>
-      <div className="flex h-screen overflow-hidden bg-neutral-50">
+      <div className="flex h-screen overflow-hidden bg-background">
         {/* Sidebar */}
         <DashboardSidebar />
 
@@ -45,7 +45,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           />
 
           {/* Page Content */}
-          <main className=" flex-1 overflow-auto ml-64 bg-blue-100 relative">
+          <main className=" flex-1 overflow-auto ml-64 bg-background relative">
             <div className="relative">{children}</div>
           </main>
         </div>
