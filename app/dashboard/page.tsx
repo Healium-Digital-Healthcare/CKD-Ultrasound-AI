@@ -106,8 +106,8 @@ export default function DashboardPage() {
         <StudiesSkeleton />
       ) : (
         <div className="flex-1 overflow-auto px-6 pb-6">
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
+          <div className="bg-white rounded-lg border border-blue-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-blue-200 flex items-center justify-between bg-white">
               <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
               <div className="text-xs text-gray-600">
                 Showing {Math.min(pageSize, cases.length)} of {pagination.total}
@@ -115,7 +115,7 @@ export default function DashboardPage() {
             </div>
             <Table>
               <TableHeader>
-                <TableRow className="bg-blue-800 hover:bg-blue-800">
+                <TableRow className="bg-blue-800 hover:bg-blue-800" style={{ backgroundColor: '#1e5a96' }}>
                   <TableHead className="px-6 py-3 text-white font-semibold">Patient</TableHead>
                   <TableHead className="px-6 py-3 text-white font-semibold">Study ID</TableHead>
                   <TableHead className="px-6 py-3 text-white font-semibold">CKD Stage</TableHead>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                     const stageDotColor = ckdStage && ckdStage.includes("1") ? "bg-success" : ckdStage && ckdStage.includes("3a") ? "bg-warning" : ckdStage && ckdStage.includes("2") ? "bg-warning" : "bg-destructive"
 
                     return (
-                      <TableRow key={caseItem.id} className="border-b border-blue-100 hover:bg-blue-50">
+                      <TableRow key={caseItem.id} className="border-b border-cyan-100 hover:bg-cyan-50">
                         <TableCell className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-xs text-white">

@@ -5,49 +5,53 @@
 /* Dark mode selector */
 @layer base {
   :root {
-    /* Core colors */
-    --background: 200 65% 92%;
-    --foreground: 207 41% 18%;
+    /* Core colors - Exact design specification */
+    --background: 195 50% 88%;
+    --foreground: 207 41% 28%;
     --card: 0 0% 100%;
-    --card-foreground: 207 41% 18%;
+    --card-foreground: 207 41% 28%;
     --popover: 0 0% 100%;
-    --popover-foreground: 207 41% 18%;
-    --primary: 200 100% 50%;
+    --popover-foreground: 207 41% 28%;
+    --primary: 205 96% 51%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 207 41% 18%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 207 18% 45%;
-    --accent: 200 100% 50%;
+    --secondary: 195 70% 92%;
+    --secondary-foreground: 207 41% 28%;
+    --muted: 195 40% 92%;
+    --muted-foreground: 207 18% 55%;
+    --accent: 205 96% 51%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 200 30% 88%;
-    --input: 200 30% 88%;
-    --ring: 200 100% 50%;
+    --destructive: 0 91% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 195 45% 85%;
+    --input: 0 0% 100%;
+    --ring: 205 96% 51%;
     --radius: 0.625rem;
 
-    /* Status */
-    --success: 120 100% 35%;
-    --warning: 42 100% 50%;
-    --info: 200 100% 50%;
+    /* Status colors - From design */
+    --success: 134 68% 42%;
+    --warning: 43 96% 56%;
+    --info: 205 96% 51%;
 
     /* Charts */
-    --chart-1: 200 100% 50%;
-    --chart-2: 120 100% 35%;
-    --chart-3: 0 100% 50%;
+    --chart-1: 205 96% 51%;
+    --chart-2: 134 68% 42%;
+    --chart-3: 0 91% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    /* Sidebar */
-    --sidebar: 347 70% 93%;
-    --sidebar-foreground: 207 41% 18%;
-    --sidebar-primary: 200 100% 50%;
+    /* Sidebar - Light pink/rose */
+    --sidebar: 13 58% 91%;
+    --sidebar-foreground: 207 41% 28%;
+    --sidebar-primary: 205 96% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 347 70% 88%;
-    --sidebar-accent-foreground: 207 41% 18%;
-    --sidebar-border: 347 60% 85%;
-    --sidebar-ring: 200 100% 50%;
+    --sidebar-accent: 13 70% 95%;
+    --sidebar-accent-foreground: 207 41% 28%;
+    --sidebar-border: 13 50% 88%;
+    --sidebar-ring: 205 96% 51%;
+
+    /* Header gradient colors */
+    --header-gradient-start: 13 58% 91%;
+    --header-gradient-end: 195 50% 88%;
   }
 
   .dark {
