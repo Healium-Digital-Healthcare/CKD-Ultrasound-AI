@@ -5,29 +5,29 @@
 /* Dark mode selector */
 @layer base {
   :root {
-    /* Core colors - Exact design specification */
-    --background: 195 50% 88%;
-    --foreground: 207 41% 28%;
+    /* Core colors - EXACT from design */
+    --background: 195 55% 87%;
+    --foreground: 207 41% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 207 41% 28%;
+    --card-foreground: 207 41% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 207 41% 28%;
+    --popover-foreground: 207 41% 25%;
     --primary: 205 96% 51%;
     --primary-foreground: 0 0% 100%;
     --secondary: 195 70% 92%;
-    --secondary-foreground: 207 41% 28%;
+    --secondary-foreground: 207 41% 25%;
     --muted: 195 40% 92%;
-    --muted-foreground: 207 18% 55%;
+    --muted-foreground: 207 18% 50%;
     --accent: 205 96% 51%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 91% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 195 45% 85%;
+    --border: 195 55% 84%;
     --input: 0 0% 100%;
     --ring: 205 96% 51%;
     --radius: 0.625rem;
 
-    /* Status colors - From design */
+    /* Status colors - EXACT from design */
     --success: 134 68% 42%;
     --warning: 43 96% 56%;
     --info: 205 96% 51%;
@@ -39,19 +39,25 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    /* Sidebar - Light pink/rose */
-    --sidebar: 13 58% 91%;
-    --sidebar-foreground: 207 41% 28%;
+    /* Sidebar - EXACT light pink #F5D5D0 */
+    --sidebar: 13 55% 92%;
+    --sidebar-foreground: 207 41% 25%;
     --sidebar-primary: 205 96% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 13 70% 95%;
-    --sidebar-accent-foreground: 207 41% 28%;
+    --sidebar-accent: 13 70% 96%;
+    --sidebar-accent-foreground: 207 41% 25%;
     --sidebar-border: 13 50% 88%;
     --sidebar-ring: 205 96% 51%;
 
-    /* Header gradient colors */
-    --header-gradient-start: 13 58% 91%;
-    --header-gradient-end: 195 50% 88%;
+    /* Header gradient colors - EXACT pink to cyan */
+    --header-start: 13 55% 92%;
+    --header-mid: 0 0% 100%;
+    --header-end: 195 55% 87%;
+    
+    /* Table colors */
+    --table-header-bg: 210 67% 35%;
+    --table-row-border: 195 65% 88%;
+    --table-row-hover: 195 70% 94%;
   }
 
   .dark {

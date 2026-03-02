@@ -61,8 +61,8 @@ export default function PatientsPage() {
 
       <div className="flex-1 overflow-auto">
         <div className="px-6 py-4">
-          <div className="bg-white rounded-lg border border-blue-200">
-            <div className="flex items-center justify-between p-4 border-b border-blue-200">
+          <div className="bg-white rounded-lg border border-cyan-200">
+            <div className="flex items-center justify-between p-4 border-b border-cyan-200">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium text-foreground/70">Status:</span>
                 {["All", "Critical", "Stable", "Recovering"].map((label) => (
@@ -73,7 +73,7 @@ export default function PatientsPage() {
                     className={`h-8 px-4 text-sm font-medium ${
                       statusFilter === label.toLowerCase().replace(" ", "")
                         ? "bg-primary text-primary-foreground border-primary hover:bg-primary"
-                        : "bg-white text-foreground border-blue-200 hover:bg-blue-50"
+                        : "bg-white text-foreground border-cyan-200 hover:bg-cyan-50"
                     }`}
                     onClick={() => setStatusFilter(label.toLowerCase().replace(" ", "") as any)}
                   >

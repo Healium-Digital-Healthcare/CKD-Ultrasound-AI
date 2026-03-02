@@ -61,7 +61,7 @@ export default function DashboardPage() {
       ) : (
         <div className="px-6 pb-4">
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg border border-blue-200 p-6 shadow-sm">
+            <div className="bg-white rounded-lg border border-cyan-200 p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm text-foreground/60 font-medium">Today&apos;s Screenings</div>
@@ -73,7 +73,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-blue-200 p-6 shadow-sm">
+            <div className="bg-white rounded-lg border border-cyan-200 p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm text-foreground/60 font-medium">Normal</div>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-blue-200 p-6 shadow-sm">
+            <div className="bg-white rounded-lg border border-cyan-200 p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm text-foreground/60 font-medium">CKD Detected</div>
@@ -106,8 +106,8 @@ export default function DashboardPage() {
         <StudiesSkeleton />
       ) : (
         <div className="flex-1 overflow-auto px-6 pb-6">
-          <div className="bg-white rounded-lg border border-blue-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-blue-200 flex items-center justify-between bg-white">
+          <div className="bg-white rounded-lg border border-cyan-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-cyan-200 flex items-center justify-between bg-white">
               <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
               <div className="text-xs text-gray-600">
                 Showing {Math.min(pageSize, cases.length)} of {pagination.total}
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             </Table>
 
             
-          <div className="p-4 border-t">
+          <div className="p-4 border-t border-cyan-200">
             <Pagination
             currentPage={pagination.page}
             pageSize={pagination.limit}
