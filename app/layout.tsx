@@ -40,7 +40,9 @@ export default function RootLayout({
         >
         </ThemeProvider> */}
         <UserProvider>
-          {children}
+          <div className="relative z-10">
+            {children}
+          </div>
         </UserProvider>
         <Toaster/>
       </body>
