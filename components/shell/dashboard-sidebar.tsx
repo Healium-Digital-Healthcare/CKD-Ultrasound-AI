@@ -234,6 +234,8 @@ function DashboardSidebarContent() {
       <CreateStudySheet open={createStudyOpen} onOpenChange={setCreateStudyOpen} />
     </>
   )
+
+  
 }
 
 export default function DashboardSidebar() {
