@@ -77,9 +77,55 @@
     --input: 217.2 32.6% 17.5%;
   }
 
+  html {
+    position: relative;
+    overflow-x: hidden;
+  }
+
   body {
-    @apply bg-background text-foreground border-border;
+    @apply text-foreground border-border;
     font-feature-settings: "rlig" 1, "calt" 1;
+    position: relative;
+    background: linear-gradient(135deg, #f0f8fc 0%, #e8f4fa 100%);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Ellipse 1 - Blue, high opacity */
+  body::before {
+    box-shadow: 
+      1009.5px 721.62px 0 -111.75px rgba(42, 138, 195, 0.89);
+  }
+
+  /* All ellipses using box-shadow trick */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    background: 
+      radial-gradient(ellipse 247.5px 178.38px at 1009.5px 721.62px, rgba(42, 138, 195, 0.89) 0%, transparent 70%),
+      radial-gradient(ellipse 248px 272px at -147px 194px, rgba(42, 138, 195, 0.28) 0%, transparent 70%),
+      radial-gradient(ellipse 1236px 468px at 555px 30px, rgba(42, 138, 195, 0.37) 0%, transparent 70%),
+      radial-gradient(ellipse 914px 453px at -281px 584px, rgba(42, 138, 195, 0.29) 0%, transparent 70%),
+      radial-gradient(ellipse 828px 318px at 766px 424px, rgba(241, 120, 117, 0.47) 0%, transparent 70%),
+      radial-gradient(ellipse 557px 318px at 59px 0px, rgba(241, 120, 117, 0.44) 0%, transparent 70%),
+      radial-gradient(ellipse 192px 244px at -107px 142px, rgba(42, 138, 195, 0.37) 0%, transparent 70%);
+    filter: blur(100px);
   }
 
   * {
