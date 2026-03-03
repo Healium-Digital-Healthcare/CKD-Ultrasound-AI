@@ -20,13 +20,12 @@ const navigation = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [searchText, setSearchText] = useState("")
-  ll
-
+  
   const getPageTitle = () => {
     const route = navigation.find((item) => item.href === pathname || pathname?.startsWith(item.href + "/"))
     return route?.name || "Dashboard"
   }
-
+  
   const handleSearch = (text: string) => {
     setSearchText(text)
   }
