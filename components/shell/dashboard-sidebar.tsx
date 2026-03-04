@@ -87,7 +87,7 @@ function DashboardSidebarContent() {
     </>
   )
 
-  
+
 }
 
 export default function DashboardSidebar() {
