@@ -102,7 +102,7 @@ export function PatientListTable({
         <div className="overflow-hidden border-0">
           <Table>
             <TableHeader>
-              <TableRow className="border-b bg-blue-800 hover:bg-blue-800" style={{ backgroundColor: '#1e5a96' }}>
+              <TableRow className="bg-primary hover:bg-primary border-0">
                 <TableHead className="font-semibold text-white h-10 px-6 py-3">Patient Info.</TableHead>
                 <TableHead className="font-semibold text-white px-6 py-3">MRN / ID</TableHead>
                 <TableHead className="font-semibold text-white px-6 py-3">Last Scan Date</TableHead>
@@ -116,7 +116,7 @@ export function PatientListTable({
                 return (
                   <TableRow
                     key={patient.id}
-                    className="border-b border-cyan-100 hover:bg-cyan-50 cursor-pointer h-16"
+                    className="border-b border-border hover:bg-muted/50 cursor-pointer h-16"
                     onClick={() => handleRowClick(patient.id)}
                   >
                     <TableCell className="font-medium px-6 py-4">

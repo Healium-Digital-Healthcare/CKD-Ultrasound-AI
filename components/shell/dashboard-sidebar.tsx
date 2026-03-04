@@ -145,10 +145,10 @@ function DashboardSidebarContent() {
                       href={buildHref(item.href)}
                       onClick={() => handleMenuClick(item.id)}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-[13px] font-medium",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-[13px] font-medium",
                         isActive
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                          : "text-primary hover:bg-sidebar-accent",
+                          ? "bg-primary text-white shadow-sm"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                       )}
                     >
                       <Icon className="h-[18px] w-[18px] flex-shrink-0" />
@@ -161,8 +161,8 @@ function DashboardSidebarContent() {
 
             {/* Today's Insights Section */}
             <div className="px-3 mt-6">
-              <p className="text-[12px] font-semibold text-destructive mb-3 px-3">Today&apos;s Insights</p>
-              <div className="bg-white rounded-lg p-3 space-y-3 border border-sidebar-border">
+              <p className="text-[12px] font-semibold text-primary mb-3 px-3">Today&apos;s Insights</p>
+              <div className="bg-white rounded-md p-3 space-y-3 border border-border">
                 {insights.map((insight) => {
                   const Icon = insight.icon
                   return (
@@ -183,17 +183,17 @@ function DashboardSidebarContent() {
             {/* Filter Section */}
             <div className="px-3 mt-6">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[12px] font-medium text-destructive">Filter:</span>
+                <span className="text-[12px] font-medium text-foreground">Filter:</span>
                 <div className="relative">
                   <button
                     onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-                    className="text-[12px] px-2 py-1 border border-cyan-200 rounded bg-white text-foreground hover:bg-cyan-50 flex items-center gap-1"
+                    className="text-[12px] px-2 py-1 border border-border rounded bg-white text-foreground hover:bg-muted flex items-center gap-1"
                   >
                     {selectedFilter}
                     <span className="text-[8px]">▼</span>
                   </button>
                   {filterDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-white border border-cyan-200 rounded shadow-md z-50">
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-border rounded shadow-md z-50">
                       {filterOptions.map((option) => (
                         <button
                           key={option}
@@ -202,7 +202,7 @@ function DashboardSidebarContent() {
                             setFilterDropdownOpen(false)
                           }}
                           className={cn(
-                            "block w-full text-left px-3 py-2 text-[12px] hover:bg-cyan-50",
+                            "block w-full text-left px-3 py-2 text-[12px] hover:bg-muted",
                             selectedFilter === option ? "font-semibold" : ""
                           )}
                         >
@@ -217,12 +217,12 @@ function DashboardSidebarContent() {
           </div>
 
           {/* Bottom Action Buttons */}
-          <div className="px-3 py-4 border-t border-sidebar-border space-y-2">
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2 border-primary text-primary hover:bg-blue-50">
+          <div className="px-3 py-4 border-t border-border space-y-2">
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2 border-primary text-primary hover:bg-primary/10">
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button size="sm" className="w-full justify-start gap-2 bg-primary text-primary-foreground hover:bg-primary">
+            <Button size="sm" className="w-full justify-start gap-2 bg-primary text-white hover:bg-primary/90">
               <Plus className="h-4 w-4" />
               New Screening
             </Button>
