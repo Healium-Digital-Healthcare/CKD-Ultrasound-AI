@@ -69,9 +69,12 @@ function DashboardSidebarContent() {
 
           {/* Bottom Icons */}
           <nav className="flex flex-col gap-4 pb-4">
-            <button className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-all">
+            <Link
+              href="/settings"
+              className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-all"
+            >
               <Settings className="h-5 w-5" />
-            </button>
+            </Link>
             <div className="h-10 w-10 rounded-lg bg-gray-400 flex items-center justify-center text-sidebar-foreground text-xs font-bold">
               U
             </div>

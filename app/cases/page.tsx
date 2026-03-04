@@ -11,6 +11,7 @@ import { CaseListTable } from "@/components/cases/Case-list"
 import { CaseDetailDrawer } from "@/components/cases/case-detail-drawer"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
 import { StatsSkeleton } from "@/components/patients/stats-skeleton"
+import { StatCard } from "@/components/dashboard/stat-card"
 
 const rangeFilters: {value: "all" | "today" | "week" | "month", label: string}[] = [
   {
@@ -107,51 +108,11 @@ export default function CasesPage() {
         {isStatsFetching || isStatsLoading ? (
           <StatsSkeleton />
         ) : (
-          <div className="grid grid-cols-4 gap-3">
-            <div className="bg-card rounded-lg border p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Total Studies</div>
-                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.total}</div>
-                </div>
-                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-card rounded-lg border p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Today</div>
-                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.today}</div>
-                </div>
-                <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-card rounded-lg border p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 7 Days</div>
-                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.last7Days}</div>
-                </div>
-                <div className="w-8 h-8 rounded bg-orange-50 flex items-center justify-center flex-shrink-0">
-                  <Clock className="h-5 w-5 text-muted-foreground text-orange-600" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-card rounded-lg border p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Last 30 Days</div>
-                  <div className="text-2xl font-bold text-foreground mt-1">{stats?.last30Days}</div>
-                </div>
-                <div className="w-8 h-8 rounded bg-purple-50 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-5 w-5 text-muted-foreground text-purple-600" />
-                </div>
-              </div>
-            </div>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            <StatCard label="Total Studies" value={stats?.total || 0} bgColor="green" className="min-w-max flex-1" />
+            <StatCard label="Today" value={stats?.today || 0} bgColor="blue" className="min-w-max flex-1" />
+            <StatCard label="Last 7 Days" value={stats?.last7Days || 0} bgColor="green" className="min-w-max flex-1" />
+            <StatCard label="Last 30 Days" value={stats?.last30Days || 0} bgColor="teal" className="min-w-max flex-1" />
           </div>
         )}
       </div>
