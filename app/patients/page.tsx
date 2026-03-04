@@ -4,11 +4,12 @@ import { useState, useEffect } from "react"
 import { PatientListTable } from "@/components/patients/patient-list-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, RefreshCw, Search } from "lucide-react"
+import { Plus, RefreshCw, Search, Users } from "lucide-react"
 import { useGetPatientsQuery } from "@/store/services/patients"
 import { PatientListTableSkeleton } from "@/components/patients/Patient-table-skeleton"
 import { CreatePatientSheet } from "@/components/patients/create-patient-sheet"
 import { EditPatientSheet } from "@/components/patients/edit-patient-sheet"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export default function PatientsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -61,19 +62,19 @@ export default function PatientsPage() {
 
       <div className="flex-1 overflow-auto">
         <div className="px-6 py-4">
-          <div className="bg-white rounded-lg border border-cyan-200">
-            <div className="flex items-center justify-between p-4 border-b border-cyan-200">
+          <div className="bg-card rounded-lg border border-border flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-muted/20 to-transparent">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-foreground/70">Status:</span>
+                <span className="text-sm font-medium text-muted-foreground">Status:</span>
                 {["All", "Critical", "Stable", "Recovering"].map((label) => (
                   <Button
                     key={label}
                     variant={statusFilter === label.toLowerCase().replace(" ", "") ? "default" : "outline"}
                     size="sm"
-                    className={`h-8 px-4 text-sm font-medium ${
+                    className={`h-8 px-4 text-sm font-medium transition-colors ${
                       statusFilter === label.toLowerCase().replace(" ", "")
                         ? "bg-primary text-primary-foreground border-primary hover:bg-primary"
-                        : "bg-white text-foreground border-cyan-200 hover:bg-cyan-50"
+                        : "bg-background text-foreground border-border hover:bg-muted"
                     }`}
                     onClick={() => setStatusFilter(label.toLowerCase().replace(" ", "") as any)}
                   >
@@ -81,15 +82,15 @@ export default function PatientsPage() {
                   </Button>
                 ))}
               </div>
-              <span className="text-sm text-foreground/60 ml-4">
+              <span className="text-sm text-muted-foreground">
                 Showing {patients.length} of {pagination.total}
               </span>
             </div>
 
             {isError && (
-              <div className="p-6 flex items-center justify-center min-h-[400px]">
+              <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-red-600 mb-4">Error loading patients: {error?.toString()}</p>
+                  <p className="text-destructive mb-4">Error loading patients: {error?.toString()}</p>
                   <Button onClick={handleRefresh}>Try Again</Button>
                 </div>
               </div>
@@ -97,7 +98,17 @@ export default function PatientsPage() {
 
             {(isLoading || isFetching) && <PatientListTableSkeleton />}
 
-            {!isError && !isFetching && !isLoading && (
+            {!isError && !isFetching && !isLoading && patients.length === 0 && (
+              <div className="flex-1 flex items-center justify-center">
+                <EmptyState
+                  icon={Users}
+                  title="No patients yet"
+                  description="Create a new patient to get started with managing patient records."
+                />
+              </div>
+            )}
+
+            {!isError && !isFetching && !isLoading && patients.length > 0 && (
               <PatientListTable
                 patients={patients}
                 currentPage={pagination.page}

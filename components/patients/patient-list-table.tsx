@@ -98,17 +98,17 @@ export function PatientListTable({
 
   return (
     <>
-      <div className="space-y-4 bg-white">
+      <div className="space-y-4 bg-card flex flex-col flex-1">
         <div className="overflow-hidden border-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-white hover:bg-white border-b-2 border-foreground/20">
-                <TableHead className="font-bold text-foreground h-12 px-6 py-3 bg-white">Patient Info.</TableHead>
-                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">MRN / ID</TableHead>
-                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Last Scan Date</TableHead>
-                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Status</TableHead>
-                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">eGFR</TableHead>
-                <TableHead className="font-bold text-foreground text-right px-6 py-3 bg-white">Actions</TableHead>
+              <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent border-b">
+                <TableHead className="font-semibold text-muted-foreground h-12 px-6 py-3">Patient Info</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">MRN / ID</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">Last Scan Date</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">Status</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">eGFR</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-right px-6 py-3">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -116,13 +116,13 @@ export function PatientListTable({
                 return (
                   <TableRow
                     key={patient.id}
-                    className="border-b border-border hover:bg-muted/50 cursor-pointer h-16"
+                    className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer h-16"
                     onClick={() => handleRowClick(patient.id)}
                   >
                     <TableCell className="font-medium px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12 bg-gray-400">
-                          <AvatarFallback className="font-bold text-sm text-white">
+                        <Avatar className="h-12 w-12 bg-muted">
+                          <AvatarFallback className="font-bold text-sm text-foreground bg-muted">
                             {patient.name
                             .split(" ")
                             .map((n) => n[0])
@@ -133,16 +133,16 @@ export function PatientListTable({
                         </Avatar>
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-foreground">{patient.name}</span>
-                          <span className="text-xs text-foreground/60">
+                          <span className="text-xs text-muted-foreground">
                             {patient.email || `${patient.age} yrs`}
                           </span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-foreground px-6 py-4">
-                      <div className="flex items-center gap-2 text-foreground/70">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <FileText className="h-4 w-4 text-destructive" />
-                        <span className="font-mono text-sm">{patient.patient_id}</span>
+                        <span className="font-mono text-sm text-foreground">{patient.patient_id}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-foreground px-6 py-4">
@@ -162,13 +162,13 @@ export function PatientListTable({
                     <TableCell className="text-right px-6 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end items-center gap-2">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="h-8 border border-success text-success hover:text-success/90 hover:bg-success/10 gap-1 px-3"
+                          className="h-8 border-border text-foreground hover:bg-muted gap-1 px-3"
                           onClick={() => handleRowClick(patient.id)}
                         >
+                          <Eye className="h-4 w-4" />
                           View
-                          <span className="text-lg">📋</span>
                         </Button>
                       </div>
                     </TableCell>
@@ -178,7 +178,7 @@ export function PatientListTable({
             </TableBody>
           </Table>
         </div>
-        <div className="w-full p-4">
+        <div className="w-full p-4 border-t border-border mt-auto">
           <Pagination
             currentPage={currentPage}
             totalEntries={totalEntries}
