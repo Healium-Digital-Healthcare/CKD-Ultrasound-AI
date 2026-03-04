@@ -111,7 +111,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
   return (
     <div className="z-50">
       {/* Desktop Header */}
-      <nav className="hidden md:flex items-center z-[9999] border-b border-border h-16 ml-64 bg-white">
+      <nav className="hidden md:flex items-center z-[9999] border-b border-border h-16 ml-20 bg-white">
         <div className="flex-1 flex items-center justify-between px-6">
           {/* Left Section - Search */}
           <div className="relative flex-1 max-w-lg" ref={dropdownRef}>
@@ -263,7 +263,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
 export default function DashboardHeader(props: DashboardHeaderProps) {
   return (
     <Suspense fallback={
-      <nav className="hidden md:flex items-center fixed top-0 right-0 left-0 z-[9999] border-b border-border h-16 ml-64 bg-white">
+      <nav className="hidden md:flex items-center fixed top-0 right-0 left-0 z-[9999] border-b border-border h-16 ml-20 bg-white">
         <div className="flex-1 flex items-center justify-between px-6">
           <div className="h-9 w-64 bg-muted/50 rounded-md animate-pulse" />
           <div className="flex items-center gap-3">

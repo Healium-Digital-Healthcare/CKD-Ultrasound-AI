@@ -10,50 +10,13 @@ import { Button } from "@/components/ui/button"
 
 function DashboardSidebarContent() {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState(1)
-  const [createStudyOpen, setCreateStudyOpen] = useState(false)
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
-  const [selectedFilter, setSelectedFilter] = useState("Today's")
-
-  // Build href with preserved search params
-  const buildHref = (basePath: string) => {
-    const q = searchParams.get("q")
-    const type = searchParams.get("type")
-    if (q) {
-      const params = new URLSearchParams()
-      params.set("q", q)
-      if (type) params.set("type", type)
-      return `${basePath}?${params.toString()}`
-    }
-    return basePath
-  }
 
   const navigation = [
-    {
-      id: 1,
-      name: "Dashboard",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      id: 2,
-      name: "Patients",
-      href: "/patients",
-      icon: Users,
-    },
-    {
-      id: 3,
-      name: "Study List",
-      href: "/cases",
-      icon: Scan,
-    },
-    {
-      id: 4,
-      name: "Reports",
-      href: "/reports",
-      icon: FileTextIcon,
-    },
+    { id: 1, href: "/dashboard", icon: LayoutDashboard },
+    { id: 2, href: "/patients", icon: Users },
+    { id: 3, href: "/cases", icon: Scan },
+    { id: 4, href: "/reports", icon: FileTextIcon },
   ]
 
   useEffect(() => {
@@ -68,170 +31,56 @@ function DashboardSidebarContent() {
     }
   }, [pathname])
 
-  const handleMenuClick = (id: number) => {
-    setActiveTab(id)
-  }
-
-  const insights = [
-    {
-      id: 1,
-      label: "High-risk",
-      value: "2 patient",
-      icon: AlertCircle,
-      color: "text-destructive",
-      dotColor: "bg-destructive",
-    },
-    {
-      id: 2,
-      label: "Average eGFR",
-      value: "71 mL/min/1.73m²",
-      icon: BarChart3,
-      color: "text-primary",
-      dotColor: "bg-primary",
-    },
-    {
-      id: 3,
-      label: "Follow-ups needed",
-      value: "4 patients",
-      icon: Clock,
-      color: "text-warning",
-      dotColor: "bg-warning",
-    },
-    {
-      id: 4,
-      label: "Most common stage",
-      value: "Stage 1-3",
-      icon: CheckCircle2,
-      color: "text-purple-600",
-      dotColor: "bg-purple-600",
-    },
-  ]
-
-  const filterOptions = ["All", "Today's", "This week", "This month"]
-
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar - Icon Only */}
       <div className="hidden md:block">
-        <div className="w-64 fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border flex flex-col">
-          {/* Logo Section */}
-          <div className="h-20 px-5 flex items-center border-b border-sidebar-border">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-white">
-                <img src="/logo/logo.svg" className="h-10 w-10" alt="Healium CDK Logo" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sidebar-foreground font-semibold text-base leading-none mb-1">Healium CDK</span>
-                <span className="text-sidebar-foreground/60 text-[11px] font-medium tracking-wide leading-none">
-                  HEALIUM INTELLISCAN
-                </span>
-              </div>
-            </div>
+        <div className="w-20 fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 gap-6">
+          {/* Logo */}
+          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary">
+            <img src="/logo/logo.svg" className="h-6 w-6" alt="Logo" />
           </div>
 
-          {/* Main Navigation */}
-          <div className="flex-1 overflow-y-auto py-4">
-            <div className="px-3">
-              <p className="text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-widest mb-3 px-3">
-                Clinical
-              </p>
-              <nav className="space-y-2">
-                {navigation.map((item) => {
-                  const Icon = item.icon
-                  const isActive = item.id === activeTab
-                  return (
-                    <Link
-                      key={item.id}
-                      href={buildHref(item.href)}
-                      onClick={() => handleMenuClick(item.id)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-[13px] font-medium",
-                        isActive
-                          ? "bg-primary text-white shadow-sm"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50",
-                      )}
-                    >
-                      <Icon className="h-[18px] w-[18px] flex-shrink-0" />
-                      <span className="flex-1">{item.name}</span>
-                    </Link>
-                  )
-                })}
-              </nav>
-            </div>
-
-            {/* Today's Insights Section */}
-            <div className="px-3 mt-6">
-              <p className="text-[12px] font-semibold text-primary mb-3 px-3">Today&apos;s Insights</p>
-              <div className="bg-white rounded-md p-3 space-y-3 border border-border">
-                {insights.map((insight) => {
-                  const Icon = insight.icon
-                  return (
-                    <div key={insight.id} className="flex items-start gap-2">
-                      <div className={cn("mt-0.5 p-1 rounded", insight.dotColor)}>
-                        <Icon className={cn("h-3 w-3", insight.color === "text-destructive" ? "text-white" : insight.color === "text-warning" ? "text-white" : "text-white")} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-foreground/70">{insight.label}</p>
-                        <p className="text-[11px] font-semibold text-foreground">{insight.value}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Filter Section */}
-            <div className="px-3 mt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[12px] font-medium text-foreground">Filter:</span>
-                <div className="relative">
-                  <button
-                    onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
-                    className="text-[12px] px-2 py-1 border border-border rounded bg-white text-foreground hover:bg-muted flex items-center gap-1"
-                  >
-                    {selectedFilter}
-                    <span className="text-[8px]">▼</span>
-                  </button>
-                  {filterDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-white border border-border rounded shadow-md z-50">
-                      {filterOptions.map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            setSelectedFilter(option)
-                            setFilterDropdownOpen(false)
-                          }}
-                          className={cn(
-                            "block w-full text-left px-3 py-2 text-[12px] hover:bg-muted",
-                            selectedFilter === option ? "font-semibold" : ""
-                          )}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
+          {/* Navigation Icons */}
+          <nav className="flex flex-col gap-4">
+            {navigation.map((item) => {
+              const Icon = item.icon
+              const isActive = item.id === activeTab
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-primary text-white"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent"
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
+                  title={`Nav ${item.id}`}
+                >
+                  <Icon className="h-5 w-5" />
+                </Link>
+              )
+            })}
+          </nav>
 
-          {/* Bottom Action Buttons */}
-          <div className="px-3 py-4 border-t border-border space-y-2">
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2 border-primary text-primary hover:bg-primary/10">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button size="sm" className="w-full justify-start gap-2 bg-primary text-white hover:bg-primary/90">
-              <Plus className="h-4 w-4" />
-              New Screening
-            </Button>
-          </div>
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Bottom Icons */}
+          <nav className="flex flex-col gap-4 pb-4">
+            <button className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-all">
+              <Settings className="h-5 w-5" />
+            </button>
+            <div className="h-10 w-10 rounded-lg bg-gray-400 flex items-center justify-center text-sidebar-foreground text-xs font-bold">
+              U
+            </div>
+          </nav>
         </div>
       </div>
 
       {/* Create Study Sheet Component */}
-      <CreateStudySheet open={createStudyOpen} onOpenChange={setCreateStudyOpen} />
+      <CreateStudySheet open={false} onOpenChange={() => {}} />
     </>
   )
 

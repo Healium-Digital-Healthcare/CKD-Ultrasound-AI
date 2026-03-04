@@ -39,14 +39,14 @@ const getStatusColor = (severity: Patient["severity"]) => {
   switch (severity) {
     case "normal":
     case "mild":
-      return "bg-success/15 text-success border-success/30"
+      return "bg-green-100 text-green-700 border border-green-300"
     case "moderate":
     case "severe":
-      return "bg-warning/15 text-warning border-warning/30"
+      return "bg-orange-100 text-orange-700 border border-orange-300"
     case "critical":
-      return "bg-destructive/15 text-destructive border-destructive/30"
+      return "bg-red-100 text-red-700 border border-red-300"
     default:
-      return "bg-foreground/10 text-foreground/70 border-foreground/20"
+      return "bg-gray-100 text-gray-700 border border-gray-300"
   }
 }
 
@@ -102,13 +102,13 @@ export function PatientListTable({
         <div className="overflow-hidden border-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-primary hover:bg-primary border-0">
-                <TableHead className="font-semibold text-white h-10 px-6 py-3">Patient Info.</TableHead>
-                <TableHead className="font-semibold text-white px-6 py-3">MRN / ID</TableHead>
-                <TableHead className="font-semibold text-white px-6 py-3">Last Scan Date</TableHead>
-                <TableHead className="font-semibold text-white px-6 py-3">Status</TableHead>
-                <TableHead className="font-semibold text-white px-6 py-3">eGFR</TableHead>
-                <TableHead className="font-semibold text-white text-right px-6 py-3">Actions</TableHead>
+              <TableRow className="bg-white hover:bg-white border-b-2 border-foreground/20">
+                <TableHead className="font-bold text-foreground h-12 px-6 py-3 bg-white">Patient Info.</TableHead>
+                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">MRN / ID</TableHead>
+                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Last Scan Date</TableHead>
+                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Status</TableHead>
+                <TableHead className="font-bold text-foreground px-6 py-3 bg-white">eGFR</TableHead>
+                <TableHead className="font-bold text-foreground text-right px-6 py-3 bg-white">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -121,8 +121,8 @@ export function PatientListTable({
                   >
                     <TableCell className="font-medium px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 bg-gray-300">
-                          <AvatarFallback className="font-medium text-xs text-white">
+                        <Avatar className="h-12 w-12 bg-gray-400">
+                          <AvatarFallback className="font-bold text-sm text-white">
                             {patient.name
                             .split(" ")
                             .map((n) => n[0])
@@ -132,9 +132,9 @@ export function PatientListTable({
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-primary">{patient.name}</span>
+                          <span className="text-sm font-medium text-foreground">{patient.name}</span>
                           <span className="text-xs text-foreground/60">
-                            {patient.age} yrs, {patient.sex === "M" ? "Male" : "Female"}
+                            {patient.email || `${patient.age} yrs`}
                           </span>
                         </div>
                       </div>
@@ -151,7 +151,7 @@ export function PatientListTable({
                     <TableCell className="px-6 py-4">
                       <Badge
                         variant="outline"
-                        className={cn("font-normal capitalize text-xs", getStatusColor(patient.severity))}
+                        className={cn("font-medium capitalize text-xs rounded-full px-3 py-1", getStatusColor(patient.severity))}
                       >
                         {getStatusLabel(patient.severity)}
                       </Badge>
