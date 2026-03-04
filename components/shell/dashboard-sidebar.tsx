@@ -37,8 +37,8 @@ function DashboardSidebarContent() {
       <div className="hidden md:block">
         <div className="w-20 fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 gap-6">
           {/* Logo */}
-          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary">
-            <img src="/logo/logo.svg" className="h-6 w-6" alt="Logo" />
+          <div className="flex items-center justify-center h-10 w-10 rounded-lg">
+            <img src="/logo/logo.svg" className="h-8 w-8" alt="Logo" />
           </div>
 
           {/* Navigation Icons */}
