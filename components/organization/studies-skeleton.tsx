@@ -6,24 +6,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export function StudiesSkeleton() {
   return (
     <div className="flex-1 overflow-auto px-4 py-3">
-      <div className="bg-card rounded-lg border overflow-hidden">
-        <div className="px-6 py-3 border-b border-border flex items-center justify-between">
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        <div className="px-6 py-3 border-b border-border flex items-center justify-between bg-gradient-to-r from-muted/20 to-transparent">
           <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
           <Skeleton className="h-4 w-24" />
         </div>
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/30">
-              <TableHead className="px-6 py-3">Patient</TableHead>
-              <TableHead className="px-6 py-3">Study ID</TableHead>
-              <TableHead className="px-6 py-3">CKD Stage</TableHead>
-              <TableHead className="px-6 py-3">eGFR</TableHead>
+            <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent">
+              <TableHead className="px-6 py-3 font-semibold text-muted-foreground">Patient</TableHead>
+              <TableHead className="px-6 py-3 font-semibold text-muted-foreground">Study ID</TableHead>
+              <TableHead className="px-6 py-3 font-semibold text-muted-foreground">CKD Stage</TableHead>
+              <TableHead className="px-6 py-3 font-semibold text-muted-foreground">eGFR</TableHead>
               <TableHead className="px-6 py-3"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 10 }).map((_, i) => (
-              <TableRow key={i}>
+              <TableRow key={i} className="hover:bg-muted/30 transition-colors">
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-full" />

@@ -4,10 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export function CaseListTableSkeleton() {
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden bg-card border">
+      <div className="overflow-hidden bg-card border border-border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-b bg-muted/30">
+            <TableRow className="hover:bg-transparent border-b bg-gradient-to-r from-muted/40 to-transparent">
               <TableHead className="font-semibold text-muted-foreground text-xs">PATIENT INFO</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STUDY ID</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-xs">STUDY DATE</TableHead>
@@ -18,7 +18,7 @@ export function CaseListTableSkeleton() {
           </TableHeader>
           <TableBody>
             {Array.from({ length: 7 }).map((_, i) => (
-              <TableRow key={i} className="hover:bg-muted/40 border-b">
+              <TableRow key={i} className="hover:bg-muted/30 border-b transition-colors">
                 {/* Patient info skeleton */}
                 <TableCell className="text-foreground">
                   <div className="flex items-center gap-3">
