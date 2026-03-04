@@ -11,6 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatsSkeleton } from "@/components/organization/stats-skeleton"
 import { StudiesSkeleton } from "@/components/organization/studies-skeleton"
 import { Pagination } from "@/components/pagination"
+import { StatCard } from "@/components/dashboard/stat-card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
 export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -55,48 +59,17 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
       </div>
 
-      {/* Stats section */}
+      {/* Stats section - Colored cards row */}
       {(isStatsLoading || isStatsFetching) ? (
         <StatsSkeleton />
       ) : (
         <div className="px-6 pb-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg border border-cyan-200 p-6 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm text-foreground/60 font-medium">Today&apos;s Screenings</div>
-                  <div className="text-4xl font-bold text-primary mt-2">{todayStats?.total}</div>
-                  <div className="flex items-center gap-1 mt-3 text-success">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm font-medium">3.5% Up from yesterday</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg border border-cyan-200 p-6 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm text-foreground/60 font-medium">Normal</div>
-                  <div className="text-4xl font-bold text-success mt-2">{todayStats?.normal}</div>
-                  <div className="flex items-center gap-1 mt-3 text-destructive">
-                    <TrendingDown className="h-4 w-4" />
-                    <span className="text-sm font-medium">1.5% Down from yesterday</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg border border-cyan-200 p-6 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-sm text-foreground/60 font-medium">CKD Detected</div>
-                  <div className="text-4xl font-bold text-destructive mt-2">{todayStats?.ckdDetected}</div>
-                  <div className="flex items-center gap-1 mt-3 text-success">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm font-medium">2% Up from yesterday</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            <StatCard label="0-6 Months" value={todayStats?.total || 0} bgColor="green" className="min-w-max flex-1" />
+            <StatCard label="6-9 Months" value={todayStats?.normal || 0} bgColor="blue" className="min-w-max flex-1" />
+            <StatCard label="9-12 Months" value={todayStats?.ckdDetected || 0} bgColor="green" className="min-w-max flex-1" />
+            <StatCard label="12-18 Months" value={42} bgColor="teal" className="min-w-max flex-1" />
+            <StatCard label="18-36 Months" value={76} bgColor="green" className="min-w-max flex-1" />
           </div>
         </div>
       )}
@@ -115,11 +88,11 @@ export default function DashboardPage() {
             </div>
             <Table>
               <TableHeader>
-                <TableRow className="bg-blue-800 hover:bg-blue-800" style={{ backgroundColor: '#1e5a96' }}>
-                  <TableHead className="px-6 py-3 text-white font-semibold">Patient</TableHead>
-                  <TableHead className="px-6 py-3 text-white font-semibold">Study ID</TableHead>
-                  <TableHead className="px-6 py-3 text-white font-semibold">CKD Stage</TableHead>
-                  <TableHead className="px-6 py-3 text-white font-semibold">eGFR</TableHead>
+                <TableRow className="bg-white hover:bg-white border-b-2 border-foreground/20">
+                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">Patient</TableHead>
+                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">Study ID</TableHead>
+                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">CKD Stage</TableHead>
+                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">eGFR</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -138,14 +111,16 @@ export default function DashboardPage() {
                     const stageDotColor = ckdStage && ckdStage.includes("1") ? "bg-success" : ckdStage && ckdStage.includes("3a") ? "bg-warning" : ckdStage && ckdStage.includes("2") ? "bg-warning" : "bg-destructive"
 
                     return (
-                      <TableRow key={caseItem.id} className="border-b border-cyan-100 hover:bg-cyan-50">
+                      <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/50">
                         <TableCell className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center font-semibold text-xs text-white">
-                              {caseItem.patient?.name.charAt(0)}
-                            </div>
+                            <Avatar className="h-10 w-10 bg-gray-400">
+                              <AvatarFallback className="font-bold text-sm text-white">
+                                {caseItem.patient?.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
-                              <p className="font-medium text-sm text-primary">{caseItem.patient?.name}</p>
+                              <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
                               <p className="text-xs text-foreground/60">
                                 {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
                               </p>
