@@ -6,10 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function PatientListTableSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden bg-card border">
+      <div className="overflow-hidden bg-card border border-border rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow className="border-b bg-muted/30 hover:bg-transparent">
+            <TableRow className="border-b bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent">
               <TableHead className="font-semibold text-muted-foreground h-10">PATIENT INFO</TableHead>
               <TableHead className="font-semibold text-muted-foreground">MRN / ID</TableHead>
               <TableHead className="font-semibold text-muted-foreground">LAST SCAN DATE</TableHead>
@@ -21,7 +21,7 @@ export function PatientListTableSkeleton() {
           </TableHeader>
           <TableBody>
             {Array.from({ length: 6 }).map((_, index) => (
-              <TableRow key={index} className="border-b hover:bg-muted/50 h-16">
+              <TableRow key={index} className="border-b hover:bg-muted/30 transition-colors h-16">
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-10 w-10 rounded-full" />

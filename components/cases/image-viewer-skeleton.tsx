@@ -38,8 +38,8 @@ export function ImageViewerSkeleton() {
       </div>
 
       {/* Image Display Area */}
-      <div className="flex-1 flex items-center justify-center bg-muted/30 p-6">
-        <Skeleton className="w-[500px] h-[500px]" />
+      <div className="flex-1 flex items-center justify-center bg-background p-6">
+        <Skeleton className="w-[500px] h-[500px] rounded-lg" />
       </div>
     </div>
   )

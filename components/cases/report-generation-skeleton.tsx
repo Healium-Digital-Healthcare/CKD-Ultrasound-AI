@@ -4,10 +4,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function ReportGenerationSkeleton() {
   return (
-    <div className="w-full h-full flex overflow-hidden">
+    <div className="w-full h-full flex overflow-hidden bg-background">
       {/* Left: Image List Skeleton */}
-      <div className="w-48 border-r border-border overflow-y-auto">
-        <div className="p-3 border-b border-border">
+      <div className="w-48 border-r border-border overflow-y-auto bg-background">
+        <div className="p-3 border-b border-border bg-gradient-to-r from-muted/20 to-transparent">
           <Skeleton className="h-3 w-20" />
         </div>
         <div className="p-2 space-y-1">

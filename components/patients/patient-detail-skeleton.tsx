@@ -4,9 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function PatientDetailSkeleton() {
   return (
-    <div className="h-full bg-gray-50 flex flex-col">
+    <div className="h-full bg-background flex flex-col">
       {/* Header Skeleton */}
-      <div className="bg-white border-b border-gray-200 flex-shrink-0">
+      <div className="bg-card border-b border-border flex-shrink-0">
         <div className="px-8 py-6">
           <div className="flex items-center justify-between mb-6">
             <Skeleton className="h-9 w-32" />
@@ -26,7 +26,7 @@ export function PatientDetailSkeleton() {
             <Skeleton className="h-9 w-28" />
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-6">
+          <div className="bg-muted/20 rounded-lg p-4 border border-border mb-6">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
               {[...Array(5)].map((_, i) => (
                 <div key={i}>
@@ -37,7 +37,7 @@ export function PatientDetailSkeleton() {
             </div>
           </div>
 
-          <div className="border-b border-gray-200">
+          <div className="border-b border-border">
             <nav className="flex gap-8 -mb-px">
               {[...Array(3)].map((_, i) => (
                 <Skeleton key={i} className="h-6 w-24 mb-4" />
@@ -51,7 +51,7 @@ export function PatientDetailSkeleton() {
       <div className="flex-1 overflow-auto p-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div key={i} className="bg-card rounded-lg border border-border p-6 shadow-premium">
               <Skeleton className="h-4 w-24 mb-3" />
               <Skeleton className="h-8 w-16 mb-2" />
               <Skeleton className="h-3 w-20" />
@@ -59,7 +59,7 @@ export function PatientDetailSkeleton() {
           ))}
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-card rounded-lg border border-border p-6 shadow-premium">
           <Skeleton className="h-7 w-48 mb-6" />
           <Skeleton className="h-[400px] w-full" />
         </div>
