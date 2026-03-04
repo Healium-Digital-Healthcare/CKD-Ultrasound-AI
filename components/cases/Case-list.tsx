@@ -54,12 +54,12 @@ export function CaseListTable({
       <div className=" overflow-hidden bg-card border">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-b bg-muted/30">
-              <TableHead className="font-semibold text-muted-foreground text-xs">PATIENT INFO</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-xs">STUDY ID</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-xs">STUDY DATE</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-xs">STATUS</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-xs text-right">ACTIONS</TableHead>
+            <TableRow className="bg-white hover:bg-white border-b-2 border-foreground/20">
+              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Patient Info</TableHead>
+              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Study ID</TableHead>
+              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Study Date</TableHead>
+              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Status</TableHead>
+              <TableHead className="font-bold text-foreground text-right px-6 py-3 bg-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -71,11 +71,11 @@ export function CaseListTable({
               </TableRow>
             ) : (
               cases.map((caseItem) => (
-                <TableRow key={caseItem.id} className="hover:bg-muted/40 border-b">
-                  <TableCell className="text-foreground">
+                <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/50">
+                  <TableCell className="text-foreground px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarFallback className="font-medium text-xs">
+                      <Avatar className="h-10 w-10 bg-gray-400">
+                        <AvatarFallback className="font-bold text-sm text-white">
                           {getInitials(caseItem.patient.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -87,14 +87,14 @@ export function CaseListTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-foreground text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                    <FileText className="h-4 w-4 text-green-700" />
+                  <TableCell className="text-foreground text-sm px-6 py-4">
+                    <div className="flex items-center gap-2 text-foreground/70">
+                    <FileText className="h-4 w-4 text-destructive" />
                     <span className="font-mono text-sm">{caseItem.case_number}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-foreground text-sm">
-                    {new Date(caseItem.study_date).toDateString()}
+                  <TableCell className="text-foreground text-sm px-6 py-4">
+                    {new Date(caseItem.study_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
