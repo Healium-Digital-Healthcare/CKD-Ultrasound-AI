@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText, TrendingUp, TrendingDown } from "lucide-react"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText, TrendingUp, TrendingDown, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { useGetTodayStatsQuery } from "@/store/services/organization"
@@ -14,6 +14,7 @@ import { Pagination } from "@/components/pagination"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/ui/empty-state"
 import { cn } from "@/lib/utils"
 
 export default function DashboardPage() {
@@ -79,90 +80,92 @@ export default function DashboardPage() {
         <StudiesSkeleton />
       ) : (
         <div className="flex-1 overflow-auto px-6 pb-6">
-          <div className="bg-white rounded-lg border border-cyan-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-cyan-200 flex items-center justify-between bg-white">
+          <div className="bg-card rounded-lg border border-border overflow-hidden flex flex-col h-full">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-muted/20 to-transparent">
               <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Showing {Math.min(pageSize, cases.length)} of {pagination.total}
               </div>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-white hover:bg-white border-b-2 border-foreground/20">
-                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">Patient</TableHead>
-                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">Study ID</TableHead>
-                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">CKD Stage</TableHead>
-                  <TableHead className="px-6 py-3 font-bold text-foreground bg-white">eGFR</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cases?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="px-6 py-8 text-center text-gray-600">
-                      No studies found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  cases.map((caseItem) => {
-                    const egfr = caseItem.images[0]?.ai_analysis_result?.egfr || "-"
-                    const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
-                    const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
+            {cases?.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center">
+                <EmptyState
+                  icon={Inbox}
+                  title="No studies today"
+                  description="Check back later or create a new study to get started."
+                />
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent">
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">Patient</TableHead>
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">Study ID</TableHead>
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">CKD Stage</TableHead>
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">eGFR</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cases.map((caseItem) => {
+                      const egfr = caseItem.images[0]?.ai_analysis_result?.egfr || "-"
+                      const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
+                      const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
 
-                    const stageDotColor = ckdStage && ckdStage.includes("1") ? "bg-success" : ckdStage && ckdStage.includes("3a") ? "bg-warning" : ckdStage && ckdStage.includes("2") ? "bg-warning" : "bg-destructive"
+                      const stageDotColor = ckdStage && ckdStage.includes("1") ? "bg-success" : ckdStage && ckdStage.includes("3a") ? "bg-warning" : ckdStage && ckdStage.includes("2") ? "bg-warning" : "bg-destructive"
 
-                    return (
-                      <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/50">
-                        <TableCell className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 bg-gray-400">
-                              <AvatarFallback className="font-bold text-sm text-white">
-                                {caseItem.patient?.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
-                              <p className="text-xs text-foreground/60">
-                                {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
-                              </p>
+                      return (
+                        <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => handleCaseClick(caseItem.case_number)}>
+                          <TableCell className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10 bg-muted">
+                                <AvatarFallback className="font-bold text-sm text-foreground">
+                                  {caseItem.patient?.name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 font-mono text-sm text-foreground">
-                          <div className="flex items-center gap-2 text-foreground/70">
-                            <FileText className="h-4 w-4 text-destructive" />
-                            <span className="font-mono text-sm">{caseItem.case_number}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${stageDotColor}`}></div>
-                            <span className="text-sm text-foreground">{ckdStage}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <p className="font-medium text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                )}
-              </TableBody>
-            </Table>
-
-            
-          <div className="p-4 border-t border-cyan-200">
-            <Pagination
-            currentPage={pagination.page}
-            pageSize={pagination.limit}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size)
-              setCurrentPage(1)
-            }}
-            totalEntries={pagination.total}
-            totalPages={pagination.totalPages}
-            />
-          </div>
+                          </TableCell>
+                          <TableCell className="px-6 py-4 font-mono text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <FileText className="h-4 w-4 text-destructive" />
+                              <span className="font-mono text-sm text-foreground">{caseItem.case_number}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${stageDotColor}`}></div>
+                              <span className="text-sm text-foreground">{ckdStage}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-6 py-4">
+                            <p className="font-medium text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+                <div className="p-4 border-t border-border">
+                  <Pagination
+                    currentPage={pagination.page}
+                    pageSize={pagination.limit}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size)
+                      setCurrentPage(1)
+                    }}
+                    totalEntries={pagination.total}
+                    totalPages={pagination.totalPages}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

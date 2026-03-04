@@ -2,10 +2,11 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye, FileText } from "lucide-react"
+import { Eye, FileText, Inbox } from "lucide-react"
 import type { Case } from "@/types/case"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Pagination } from "../pagination"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface CaseListTableProps {
   cases: Case[]
@@ -50,78 +51,82 @@ export function CaseListTable({
   }
 
   return (
-    <div className="space-y-4 bg-background">
-      <div className=" overflow-hidden bg-card border">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-white hover:bg-white border-b-2 border-foreground/20">
-              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Patient Info</TableHead>
-              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Study ID</TableHead>
-              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Study Date</TableHead>
-              <TableHead className="font-bold text-foreground px-6 py-3 bg-white">Status</TableHead>
-              <TableHead className="font-bold text-foreground text-right px-6 py-3 bg-white">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {cases.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                  No cases found
-                </TableCell>
-              </TableRow>
-            ) : (
-              cases.map((caseItem) => (
-                <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/50">
-                  <TableCell className="text-foreground px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 bg-gray-400">
-                        <AvatarFallback className="font-bold text-sm text-white">
-                          {getInitials(caseItem.patient.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium text-sm text-foreground">{caseItem.patient.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {caseItem.patient.age} yrs, {caseItem.patient.sex === "M" ? "Male" : "Female"}
+    <div className="space-y-4 bg-background flex flex-col flex-1">
+      <div className="overflow-hidden bg-card border border-border rounded-lg flex flex-col flex-1">
+        {cases.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <EmptyState
+              icon={Inbox}
+              title="No cases yet"
+              description="Create a new case to get started with managing studies and analysis."
+            />
+          </div>
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent border-b">
+                  <TableHead className="font-semibold text-muted-foreground px-6 py-3">Patient Info</TableHead>
+                  <TableHead className="font-semibold text-muted-foreground px-6 py-3">Study ID</TableHead>
+                  <TableHead className="font-semibold text-muted-foreground px-6 py-3">Study Date</TableHead>
+                  <TableHead className="font-semibold text-muted-foreground px-6 py-3">Status</TableHead>
+                  <TableHead className="font-semibold text-muted-foreground text-right px-6 py-3">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {cases.map((caseItem) => (
+                  <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => onCaseClick?.(caseItem.case_number)}>
+                    <TableCell className="text-foreground px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 bg-muted">
+                          <AvatarFallback className="font-bold text-sm text-foreground">
+                            {getInitials(caseItem.patient.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-sm text-foreground">{caseItem.patient.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {caseItem.patient.age} yrs, {caseItem.patient.sex === "M" ? "Male" : "Female"}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-foreground text-sm px-6 py-4">
-                    <div className="flex items-center gap-2 text-foreground/70">
-                    <FileText className="h-4 w-4 text-destructive" />
-                    <span className="font-mono text-sm">{caseItem.case_number}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-foreground text-sm px-6 py-4">
-                    {new Date(caseItem.study_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <span className={`h-2 w-2 rounded-full ${getStatusBadge(caseItem.status || "").dot}`}></span>
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(caseItem.status || "").bg}`}
+                    </TableCell>
+                    <TableCell className="text-foreground text-sm px-6 py-4">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <FileText className="h-4 w-4 text-destructive" />
+                        <span className="font-mono text-sm text-foreground">{caseItem.case_number}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-foreground text-sm px-6 py-4">
+                      {new Date(caseItem.study_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`h-2 w-2 rounded-full ${getStatusBadge(caseItem.status || "").dot}`}></span>
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getStatusBadge(caseItem.status || "").bg}`}
+                        >
+                          {caseItem.status ? caseItem.status.charAt(0).toUpperCase() + caseItem.status.slice(1) : "N/A"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 border-border text-foreground hover:bg-muted gap-1"
+                        onClick={() => onCaseClick?.(caseItem.case_number)}
                       >
-                        {caseItem.status ? caseItem.status.charAt(0).toUpperCase() + caseItem.status.slice(1) : "N/A"}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
-                      onClick={() => onCaseClick?.(caseItem.case_number)}
-                    >
-                      View
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                        <Eye className="h-3.5 w-3.5" />
+                        View
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
       </div>
 
       <div className="w-full p-2">
