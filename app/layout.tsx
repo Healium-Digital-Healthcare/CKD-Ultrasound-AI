@@ -4,8 +4,6 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/lib/contexts/UserContext";
 import { Toaster } from "@/components/ui/sonner";
-import { BackgroundEllipses } from "@/components/background-ellipses";
-
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
@@ -33,7 +31,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
-        <BackgroundEllipses />
         {/* <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -42,9 +39,7 @@ export default function RootLayout({
         >
         </ThemeProvider> */}
         <UserProvider>
-          <div className="relative z-10">
-            {children}
-          </div>
+          {children}
         </UserProvider>
         <Toaster/>
       </body>
