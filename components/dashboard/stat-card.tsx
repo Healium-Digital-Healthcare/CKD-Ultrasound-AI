@@ -1,11 +1,13 @@
 import React from "react"
 import { cn } from "@/lib/utils"
+import { LucideIcon } from "lucide-react"
 
 interface StatCardProps {
   label: string
   value: number | string
   bgColor: "green" | "blue" | "teal" | "cyan"
   className?: string
+  icon?: LucideIcon
 }
 
 const colorMap = {
@@ -15,7 +17,7 @@ const colorMap = {
   cyan: "bg-cyan-400",
 }
 
-export function StatCard({ label, value, bgColor, className }: StatCardProps) {
+export function StatCard({ label, value, bgColor, className, icon: Icon }: StatCardProps) {
   return (
     <div className={cn(
       "rounded-lg p-6 text-white relative overflow-hidden shadow-md",
@@ -39,9 +41,16 @@ export function StatCard({ label, value, bgColor, className }: StatCardProps) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10">
-        <p className="text-sm font-medium text-white/90">{label}</p>
-        <p className="text-4xl font-bold text-white mt-2">{value}</p>
+      <div className="relative z-10 flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-white/90">{label}</p>
+          <p className="text-4xl font-bold text-white mt-2">{value}</p>
+        </div>
+        {Icon && (
+          <div className="flex-shrink-0 ml-4 opacity-80">
+            <Icon className="h-8 w-8 text-white" />
+          </div>
+        )}
       </div>
     </div>
   )
