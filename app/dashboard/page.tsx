@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText, TrendingUp, TrendingDown, Inbox } from "lucide-react"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText, TrendingUp, TrendingDown, Inbox, Activity, Users, Heart, Stethoscope } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { useGetTodayStatsQuery } from "@/store/services/organization"
@@ -55,9 +55,33 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header section */}
+      {/* Header section with title and action buttons */}
       <div className="px-6 pt-6 pb-4">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">Welcome to your CKD analysis dashboard</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2 border-border text-foreground hover:bg-muted"
+              onClick={handleRefetch}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              className="h-9 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={handleCreate}
+            >
+              <Plus className="h-4 w-4" />
+              New Screening
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Stats section - Colored cards row */}
@@ -65,12 +89,31 @@ export default function DashboardPage() {
         <StatsSkeleton />
       ) : (
         <div className="px-6 pb-4">
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            <StatCard label="0-6 Months" value={todayStats?.total || 0} bgColor="green" className="min-w-max flex-1" />
-            <StatCard label="6-9 Months" value={todayStats?.normal || 0} bgColor="blue" className="min-w-max flex-1" />
-            <StatCard label="9-12 Months" value={todayStats?.ckdDetected || 0} bgColor="green" className="min-w-max flex-1" />
-            <StatCard label="12-18 Months" value={42} bgColor="teal" className="min-w-max flex-1" />
-            <StatCard label="18-36 Months" value={76} bgColor="green" className="min-w-max flex-1" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard 
+              label="Today Screenings" 
+              value={todayStats?.total || 0} 
+              bgColor="blue" 
+              icon={Activity}
+            />
+            <StatCard 
+              label="CKD Detected" 
+              value={todayStats?.ckdDetected || 0} 
+              bgColor="teal" 
+              icon={AlertCircle}
+            />
+            <StatCard 
+              label="Normal" 
+              value={todayStats?.normal || 0} 
+              bgColor="green" 
+              icon={CheckCircle}
+            />
+            <StatCard 
+              label="Total Patients" 
+              value={todayStats?.totalPatients || 0} 
+              bgColor="cyan" 
+              icon={Users}
+            />
           </div>
         </div>
       )}
