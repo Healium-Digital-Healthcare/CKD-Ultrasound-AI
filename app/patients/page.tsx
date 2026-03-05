@@ -57,11 +57,46 @@ export default function PatientsPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="px-6 pt-6 pb-4">
-        <h1 className="text-3xl font-bold text-foreground">Patients</h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Patients</h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage patient records and medical information</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2 border-border text-foreground hover:bg-muted"
+              onClick={handleRefresh}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              className="h-9 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={handleCreate}
+            >
+              <Plus className="h-4 w-4" />
+              Add Patient
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 space-y-4">
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, email, or MRN..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-9 border-border bg-background text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+
           <div className="bg-card rounded-lg border border-border flex flex-col h-full">
             <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-muted/20 to-transparent">
               <div className="flex items-center gap-3">

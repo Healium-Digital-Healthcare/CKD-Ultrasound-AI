@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, FileText, MoreVertical } from "lucide-react"
+import { Eye, FileText, MoreVertical, Edit2, Trash2 } from "lucide-react"
 import type { Patient } from "@/types/patient"
 import { cn } from "@/lib/utils"
 import {
@@ -32,7 +32,7 @@ interface PatientListTableProps {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onRefresh?: () => void
-  onEdit: (patient: Patient) => void
+  onEdit?: (patient: Patient) => void
 }
 
 const getStatusColor = (severity: Patient["severity"]) => {
@@ -170,6 +170,33 @@ export function PatientListTable({
                           <Eye className="h-4 w-4" />
                           View
                         </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-muted"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                            <DropdownMenuItem
+                              onClick={() => onEdit?.(patient)}
+                              className="gap-2 cursor-pointer text-foreground hover:bg-muted focus:bg-muted"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                              <span>Edit Patient</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteClick(patient.id)}
+                              className="gap-2 cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span>Delete Patient</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
