@@ -24,7 +24,6 @@ export default function DashboardPage() {
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   
-
   const {
     data: casesData,
     refetch,
