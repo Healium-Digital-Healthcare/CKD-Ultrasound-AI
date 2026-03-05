@@ -59,7 +59,6 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">Welcome to your CKD analysis dashboard</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -108,8 +107,8 @@ export default function DashboardPage() {
               icon={CheckCircle}
             />
             <StatCard 
-              label="Total Patients" 
-              value={todayStats?.totalPatients || 0} 
+              label="New Patients" 
+              value={todayStats?.newPatients || 0} 
               bgColor="cyan" 
               icon={Users}
             />

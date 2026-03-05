@@ -1,6 +1,4 @@
 import { createClient } from "@/lib/supabase/server"
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -35,6 +33,15 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
+    const { count: newPatients, error: patientsError } = await supabase
+      .from("patients")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", startOfToday.toISOString())
+      .lt("created_at", startOfTomorrow.toISOString())
+
+    if (patientsError) throw patientsError
+
     let ckdDetected = 0
     let normal = 0
 
@@ -55,6 +62,7 @@ export async function GET(request: NextRequest) {
       total: cases?.length ?? 0,
       ckdDetected,
       normal,
+      newPatients: newPatients ?? 0,
       range: "today",
     })
   } catch (error) {

@@ -13,10 +13,11 @@ function DashboardSidebarContent() {
   const [activeTab, setActiveTab] = useState(1)
 
   const navigation = [
-    { id: 1, href: "/dashboard", icon: LayoutDashboard },
-    { id: 2, href: "/patients", icon: Users },
-    { id: 3, href: "/cases", icon: Scan },
-    { id: 4, href: "/reports", icon: FileTextIcon },
+    { id: 1, href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { id: 2, href: "/patients", icon: Users, label: "Patients" },
+    { id: 3, href: "/cases", icon: Scan, label: "Studies" },
+    { id: 4, href: "/reports", icon: FileTextIcon, label: "Reports" },
+    { id: 5, href: "/settings", icon: Settings, label: "Settings" },
   ]
 
   useEffect(() => {
@@ -56,28 +57,12 @@ function DashboardSidebarContent() {
                       ? "bg-primary text-white"
                       : "text-sidebar-foreground hover:bg-sidebar-accent"
                   )}
-                  title={`Nav ${item.id}`}
+                  title={item.label}
                 >
                   <Icon className="h-5 w-5" />
                 </Link>
               )
             })}
-          </nav>
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Bottom Icons */}
-          <nav className="flex flex-col gap-4 pb-4">
-            <Link
-              href="/settings"
-              className="flex items-center justify-center h-10 w-10 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-all"
-            >
-              <Settings className="h-5 w-5" />
-            </Link>
-            <div className="h-10 w-10 rounded-lg bg-gray-400 flex items-center justify-center text-sidebar-foreground text-xs font-bold">
-              U
-            </div>
           </nav>
         </div>
       </div>
