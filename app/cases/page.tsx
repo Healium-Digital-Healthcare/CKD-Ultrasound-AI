@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, RefreshCw, FileText, Calendar, Clock, TrendingUp, Plus } from "lucide-react"
+import { Search, RefreshCw, Plus, FileText, Calendar, Clock, TrendingUp } from "lucide-react"
 import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { useEffect } from "react"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
@@ -109,10 +109,10 @@ export default function CasesPage() {
           <StatsSkeleton />
         ) : (
           <div className="flex gap-3 overflow-x-auto pb-2">
-            <StatCard label="Total Studies" value={stats?.total || 0} bgColor="green" className="min-w-max flex-1" />
-            <StatCard label="Today" value={stats?.today || 0} bgColor="blue" className="min-w-max flex-1" />
-            <StatCard label="Last 7 Days" value={stats?.last7Days || 0} bgColor="green" className="min-w-max flex-1" />
-            <StatCard label="Last 30 Days" value={stats?.last30Days || 0} bgColor="teal" className="min-w-max flex-1" />
+            <StatCard label="Total Studies" value={stats?.total || 0} bgColor="green" className="min-w-max flex-1" icon={FileText} />
+            <StatCard label="Today" value={stats?.today || 0} bgColor="blue" className="min-w-max flex-1" icon={Calendar} />
+            <StatCard label="Last 7 Days" value={stats?.last7Days || 0} bgColor="green" className="min-w-max flex-1" icon={Clock} />
+            <StatCard label="Last 30 Days" value={stats?.last30Days || 0} bgColor="teal" className="min-w-max flex-1" icon={TrendingUp} />
           </div>
         )}
       </div>

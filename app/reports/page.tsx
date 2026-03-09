@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Filter, Download, RefreshCw, BarChart3, FileText, Calendar, Clock, TrendingUp } from "lucide-react"
+import { Search, Download, RefreshCw, FileText, Calendar, Clock, TrendingUp } from "lucide-react"
 import { useGetCasesQuery, useGetCaseStatsQuery } from "@/store/services/cases"
 import { CaseListTableSkeleton } from "@/components/cases/Case-table-skeleton"
 import { ReportListTable } from "@/components/reports/report-list"
@@ -82,10 +82,10 @@ function ReportsContent() {
             <StatsSkeleton />
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-2">
-              <StatCard label="Total Reports" value={stats?.total || 0} bgColor="green" className="min-w-max flex-1" />
-              <StatCard label="Today" value={stats?.today || 0} bgColor="blue" className="min-w-max flex-1" />
-              <StatCard label="Last 7 Days" value={stats?.last7Days || 0} bgColor="green" className="min-w-max flex-1" />
-              <StatCard label="Last 30 Days" value={stats?.last30Days || 0} bgColor="teal" className="min-w-max flex-1" />
+              <StatCard label="Total Reports" value={stats?.total || 0} bgColor="green" className="min-w-max flex-1" icon={FileText} />
+              <StatCard label="Today" value={stats?.today || 0} bgColor="blue" className="min-w-max flex-1" icon={Calendar} />
+              <StatCard label="Last 7 Days" value={stats?.last7Days || 0} bgColor="green" className="min-w-max flex-1" icon={Clock} />
+              <StatCard label="Last 30 Days" value={stats?.last30Days || 0} bgColor="teal" className="min-w-max flex-1" icon={TrendingUp} />
             </div>
           )}
         </div>

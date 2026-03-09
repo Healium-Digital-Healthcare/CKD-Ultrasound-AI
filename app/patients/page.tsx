@@ -63,11 +63,11 @@ export default function PatientsPage() {
             <p className="text-sm text-muted-foreground mt-1">Manage patient records and medical information</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 gap-2 border-border text-foreground hover:bg-muted"
-              onClick={handleRefresh}
+            <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2 h-9 bg-transparent" 
+            onClick={() => handleRefresh()}
             >
               <RefreshCw className="h-4 w-4" />
               Refresh
@@ -87,7 +87,7 @@ export default function PatientsPage() {
       <div className="flex-1 overflow-auto">
         <div className="px-6 py-4 space-y-4">
           {/* Search bar */}
-          <div className="relative">
+          <div className="relative w-full md:max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by name, email, or MRN..."

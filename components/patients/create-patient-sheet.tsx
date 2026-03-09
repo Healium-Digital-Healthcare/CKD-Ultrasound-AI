@@ -181,7 +181,7 @@ export function CreatePatientSheet({ open, onOpenChange }: CreatePatientSheetPro
               type="button"
               onClick={() => onOpenChange(false)}
               variant="outline"
-              className="px-6 border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="px-6 border-gray-300 text-gray-700 hover:bg-primary/10 hover:text-primary"
               disabled={isLoading}
             >
               Cancel

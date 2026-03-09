@@ -162,9 +162,9 @@ export function PatientListTable({
                     <TableCell className="text-right px-6 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end items-center gap-2">
                         <Button
-                          variant="outline"
+                          variant="default"
                           size="sm"
-                          className="h-8 border-border text-foreground hover:bg-muted gap-1 px-3"
+                          className="h-8 gap-1 px-3"
                           onClick={() => handleRowClick(patient.id)}
                         >
                           <Eye className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function PatientListTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-muted"
+                              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
                             >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -183,7 +183,7 @@ export function PatientListTable({
                           <DropdownMenuContent align="end" className="w-48 bg-card border-border">
                             <DropdownMenuItem
                               onClick={() => onEdit?.(patient)}
-                              className="gap-2 cursor-pointer text-foreground hover:bg-muted focus:bg-muted"
+                              className="gap-2 cursor-pointer text-foreground hover:bg-primary/10 focus:bg-primary/10 focus:text-foreground"
                             >
                               <Edit2 className="h-4 w-4" />
                               <span>Edit Patient</span>

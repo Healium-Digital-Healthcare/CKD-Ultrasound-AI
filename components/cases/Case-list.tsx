@@ -112,9 +112,9 @@ export function CaseListTable({
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
-                        className="h-8 border-border text-foreground hover:bg-muted gap-1"
+                        className="h-8 gap-1"
                         onClick={() => onCaseClick?.(caseItem.case_number)}
                       >
                         <Eye className="h-3.5 w-3.5" />
