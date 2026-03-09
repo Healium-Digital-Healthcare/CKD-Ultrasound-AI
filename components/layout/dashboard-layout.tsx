@@ -20,22 +20,22 @@ const navigation = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [searchText, setSearchText] = useState("")
-
+  
   const getPageTitle = () => {
     const route = navigation.find((item) => item.href === pathname || pathname?.startsWith(item.href + "/"))
     return route?.name || "Dashboard"
   }
-
+  
   const handleSearch = (text: string) => {
     setSearchText(text)
   }
 
   return (
     <Provider store={store}>
-      <div className="flex h-screen overflow-hidden bg-neutral-50">
+      <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
         <DashboardSidebar />
-
+        
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
@@ -43,11 +43,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             headerTitle={getPageTitle()}
             onSearch={handleSearch}
           />
-
+          
           {/* Page Content */}
-          <main className=" flex-1 overflow-auto ml-64 bg-[#fafafa] relative">
-            {/* Subtle texture overlay for depth */}
-            <div className="absolute inset-0 opacity-[0.015] pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1),transparent_50%)] bg-[length:32px_32px]" />
+          <main className=" flex-1 overflow-auto ml-20 relative">
             <div className="relative">{children}</div>
           </main>
         </div>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, FileText, MoreVertical } from "lucide-react"
+import { Eye, FileText, MoreVertical, Edit2, Trash2 } from "lucide-react"
 import type { Patient } from "@/types/patient"
 import { cn } from "@/lib/utils"
 import {
@@ -32,21 +32,21 @@ interface PatientListTableProps {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onRefresh?: () => void
-  onEdit: (patient: Patient) => void
+  onEdit?: (patient: Patient) => void
 }
 
 const getStatusColor = (severity: Patient["severity"]) => {
   switch (severity) {
     case "normal":
     case "mild":
-      return "bg-green-50 text-green-700 border-green-200"
+      return "bg-green-100 text-green-700 border border-green-300"
     case "moderate":
     case "severe":
-      return "bg-orange-50 text-orange-700 border-orange-200"
+      return "bg-orange-100 text-orange-700 border border-orange-300"
     case "critical":
-      return "bg-red-50 text-red-700 border-red-200"
+      return "bg-red-100 text-red-700 border border-red-300"
     default:
-      return "bg-gray-50 text-gray-600 border-gray-200"
+      return "bg-gray-100 text-gray-700 border border-gray-300"
   }
 }
 
@@ -98,17 +98,17 @@ export function PatientListTable({
 
   return (
     <>
-      <div className="space-y-4 bg-background">
-        <div className="overflow-hidden border">
+      <div className="space-y-4 bg-card flex flex-col flex-1">
+        <div className="overflow-hidden border-0">
           <Table>
             <TableHeader>
-              <TableRow className="border-b bg-muted/30 hover:bg-transparent">
-                <TableHead className="font-medium text-muted-foreground h-10">PATIENT INFO</TableHead>
-                <TableHead className="font-medium text-muted-foreground">MRN / ID</TableHead>
-                <TableHead className="font-medium text-muted-foreground">LAST SCAN DATE</TableHead>
-                <TableHead className="font-medium text-muted-foreground">STATUS</TableHead>
-                <TableHead className="font-medium text-muted-foreground">EGFR</TableHead>
-                <TableHead className="font-medium text-muted-foreground text-right">ACTIONS</TableHead>
+              <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent border-b">
+                <TableHead className="font-semibold text-muted-foreground h-12 px-6 py-3">Patient Info</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">MRN / ID</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">Last Scan Date</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">Status</TableHead>
+                <TableHead className="font-semibold text-muted-foreground px-6 py-3">eGFR</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-right px-6 py-3">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -116,13 +116,13 @@ export function PatientListTable({
                 return (
                   <TableRow
                     key={patient.id}
-                    className="border-b hover:bg-muted/50 cursor-pointer h-16"
+                    className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer h-16"
                     onClick={() => handleRowClick(patient.id)}
                   >
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarFallback className="font-medium text-xs">
+                        <Avatar className="h-12 w-12 bg-muted">
+                          <AvatarFallback className="font-bold text-sm text-foreground bg-muted">
                             {patient.name
                             .split(" ")
                             .map((n) => n[0])
@@ -134,55 +134,66 @@ export function PatientListTable({
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-foreground">{patient.name}</span>
                           <span className="text-xs text-muted-foreground">
-                            {patient.age} yrs, {patient.sex === "M" ? "Male" : "Female"}
+                            {patient.email || `${patient.age} yrs`}
                           </span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-foreground">
+                    <TableCell className="text-sm text-foreground px-6 py-4">
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <FileText className="h-4 w-4 text-green-700" />
-                        <span className="font-mono text-sm">{patient.patient_id}</span>
+                        <FileText className="h-4 w-4 text-destructive" />
+                        <span className="font-mono text-sm text-foreground">{patient.patient_id}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-foreground">
-                      {patient.scanned_on ? new Date(patient.scanned_on).toDateString() : "-"}
+                    <TableCell className="text-sm text-foreground px-6 py-4">
+                      {patient.scanned_on ? new Date(patient.scanned_on).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-6 py-4">
                       <Badge
                         variant="outline"
-                        className={cn("font-normal capitalize", getStatusColor(patient.severity))}
+                        className={cn("font-medium capitalize text-xs rounded-full px-3 py-1", getStatusColor(patient.severity))}
                       >
                         {getStatusLabel(patient.severity)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-foreground">
+                    <TableCell className="text-sm font-medium text-foreground px-6 py-4">
                       {(patient.egfr !== undefined && patient.egfr !== null) ? `${patient.egfr.toFixed(1)} mL/min/1.73m²` : "-"}
                     </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end items-center gap-0">
+                    <TableCell className="text-right px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-end items-center gap-2">
                         <Button
-                          variant="ghost"
+                          variant="default"
                           size="sm"
-                          className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"
+                          className="h-8 gap-1 px-3"
                           onClick={() => handleRowClick(patient.id)}
                         >
+                          <Eye className="h-4 w-4" />
                           View
-                          <Eye className="h-3.5 w-3.5" />
                         </Button>
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild className="">
-                            <Button variant="ghost" size="icon" className="p-0">
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onEdit(patient)}>Edit</DropdownMenuItem>
+                          <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                            <DropdownMenuItem
+                              onClick={() => onEdit?.(patient)}
+                              className="gap-2 cursor-pointer text-foreground hover:bg-primary/10 focus:bg-primary/10 focus:text-foreground"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                              <span>Edit Patient</span>
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteClick(patient.id)}
-                              className="text-red-600 focus:text-red-600"
+                              className="gap-2 cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive"
                             >
-                              Delete
+                              <Trash2 className="h-4 w-4" />
+                              <span>Delete Patient</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -194,7 +205,7 @@ export function PatientListTable({
             </TableBody>
           </Table>
         </div>
-        <div className="w-full p-2">
+        <div className="w-full p-4 border-t border-border mt-auto">
           <Pagination
             currentPage={currentPage}
             totalEntries={totalEntries}

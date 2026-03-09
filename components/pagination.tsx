@@ -71,7 +71,7 @@ export function Pagination({
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="h-8 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-8 rounded-md border border-cyan-200 bg-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value={5}>5</option>
             <option value={10}>10</option>
@@ -85,7 +85,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 border-cyan-200 hover:bg-cyan-50"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
           >
@@ -106,8 +106,8 @@ export function Pagination({
                 onClick={() => onPageChange(item)}
                 className={
                   item === currentPage
-                    ? "h-8 w-8 rounded-md bg-green-600 text-white hover:bg-green-700"
-                    : "h-8 w-8 rounded-md border text-black border-input bg-background hover:bg-muted"
+                    ? "h-8 w-8 rounded-md bg-primary text-primary-foreground hover:bg-primary"
+                    : "h-8 w-8 rounded-md border text-foreground border-cyan-200 bg-white hover:bg-cyan-50"
                 }
               >
                 {item}
@@ -118,7 +118,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 border-cyan-200 hover:bg-cyan-50"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >

@@ -34,6 +34,7 @@ export const organizationApi = createApi({
       total: number
       ckdDetected: number
       normal: number
+      newPatients: number
       range: string
     }, void>({
       query: () => ({

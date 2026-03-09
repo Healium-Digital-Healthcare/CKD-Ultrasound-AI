@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function AIAnalysisSkeleton() {
   return (
     <div className="w-[380px] border-l border-border overflow-y-auto bg-background">
-      <div className="p-4 border-b border-border flex items-center justify-between sticky top-0 bg-background z-10">
+      <div className="p-4 border-b border-border flex items-center justify-between sticky top-0 bg-gradient-to-r from-muted/20 to-transparent z-10">
         <div>
           <Skeleton className="h-[14px] w-28 mb-1" />
           <Skeleton className="h-3 w-24" />

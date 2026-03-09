@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Eye, FileText } from "lucide-react"
+import { Eye, FileText, Inbox } from "lucide-react"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Pagination } from "@/components/pagination"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface PatientStudiesListProps {
   patientId: string
@@ -61,9 +62,12 @@ export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesLis
   if (cases.length === 0) {
     return (
       <div className="p-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-16 text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No studies found</h3>
-          <p className="text-sm text-gray-600">This patient doesn&apos;t have any studies yet.</p>
+        <div className="bg-card rounded-lg border border-border h-full flex items-center justify-center min-h-[400px]">
+          <EmptyState
+            icon={Inbox}
+            title="No studies for this patient"
+            description="This patient doesn't have any studies yet. Create a new study to get started."
+          />
         </div>
       </div>
     )
@@ -72,19 +76,19 @@ export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesLis
   return (
     <div className="p-8">
       <div className="space-y-4">
-        <div className="rounded-lg overflow-hidden bg-card border">
+        <div className="rounded-lg overflow-hidden bg-card border border-border">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-b">
-                <TableHead className="font-medium text-muted-foreground">Patient</TableHead>
-                <TableHead className="font-medium text-muted-foreground">Study Id</TableHead>
-                <TableHead className="font-medium text-muted-foreground">Scan Date</TableHead>
-                <TableHead className="font-medium text-muted-foreground text-right">Actions</TableHead>
+              <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent border-b">
+                <TableHead className="font-semibold text-muted-foreground">Patient</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Study ID</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Scan Date</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {cases.map((caseItem) => (
-                <TableRow key={caseItem.id} className="hover:bg-muted/50">
+                <TableRow key={caseItem.id} className="hover:bg-muted/30 transition-colors border-b border-border">
                   <TableCell className="text-foreground">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 bg-muted">
@@ -102,17 +106,17 @@ export function PatientStudiesList({ patientId, onCaseClick }: PatientStudiesLis
                   </TableCell>
                   <TableCell className="text-foreground">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <FileText className="h-4 w-4 text-green-700" />
-                      <span className="font-mono text-sm">{caseItem.case_number}</span>
+                      <FileText className="h-4 w-4 text-destructive" />
+                      <span className="font-mono text-sm text-foreground">{caseItem.case_number}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-foreground">
-                    {new Date(caseItem.study_date).toDateString()}
+                    {new Date(caseItem.study_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" className="gap-1.5 h-8" onClick={() => onCaseClick(caseItem.case_number)}>
-                      Viewer
                       <Eye className="h-3.5 w-3.5" />
+                      Viewer
                     </Button>
                   </TableCell>
                 </TableRow>

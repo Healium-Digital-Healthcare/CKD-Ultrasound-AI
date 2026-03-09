@@ -4,7 +4,6 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/lib/contexts/UserContext";
 import { Toaster } from "@/components/ui/sonner";
-
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";

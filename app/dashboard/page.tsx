@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText } from "lucide-react"
+import { Plus, RefreshCw, Calendar, AlertCircle, CheckCircle, FileText, TrendingUp, TrendingDown, Inbox, Activity, Users, Heart, Stethoscope } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGetCasesQuery } from "@/store/services/cases"
 import { useGetTodayStatsQuery } from "@/store/services/organization"
@@ -11,6 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatsSkeleton } from "@/components/organization/stats-skeleton"
 import { StudiesSkeleton } from "@/components/organization/studies-skeleton"
 import { Pagination } from "@/components/pagination"
+import { StatCard } from "@/components/dashboard/stat-card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/ui/empty-state"
+import { cn } from "@/lib/utils"
 
 export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -19,7 +24,6 @@ export default function DashboardPage() {
   const [selectedCaseNumber, setSelectedCaseNumber] = useState<string | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   
-
   const {
     data: casesData,
     refetch,
@@ -50,67 +54,64 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header section */}
-      <div className="px-4 pt-4 pb-3 border-b border-border">
-        <div className="flex items-start justify-between">
+      {/* Header section with title and action buttons */}
+      <div className="px-6 pt-6 pb-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Daily Screening Summary</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Monitor today&apos;s CKD detection and analysis results</p>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2 h-9 bg-transparent" onClick={() => handleRefetch()}>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2 border-border text-foreground hover:bg-muted"
+              onClick={handleRefetch}
+            >
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
-            <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700 text-white gap-2 h-9 px-4">
-              <Plus className="w-4 h-4" />
+            <Button
+              size="sm"
+              className="h-9 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={handleCreate}
+            >
+              <Plus className="h-4 w-4" />
               New Screening
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Stats section */}
+      {/* Stats section - Colored cards row */}
       {(isStatsLoading || isStatsFetching) ? (
         <StatsSkeleton />
       ) : (
-        <div className="px-4 pt-3 pb-2">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-                    Today&apos;s Screenings
-                  </div>
-                  <div className="text-3xl font-bold text-foreground mt-2">{todayStats?.total}</div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-blue-500" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">CKD Detected</div>
-                  <div className="text-3xl font-bold text-red-600 mt-2">{todayStats?.ckdDetected}</div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-red-500" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-card rounded-lg border p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Normal</div>
-                  <div className="text-3xl font-bold text-green-600 mt-2">{todayStats?.normal}</div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                </div>
-              </div>
-            </div>
+        <div className="px-6 pb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard 
+              label="Today Screenings" 
+              value={todayStats?.total || 0} 
+              bgColor="blue" 
+              icon={Activity}
+            />
+            <StatCard 
+              label="CKD Detected" 
+              value={todayStats?.ckdDetected || 0} 
+              bgColor="teal" 
+              icon={AlertCircle}
+            />
+            <StatCard 
+              label="Normal" 
+              value={todayStats?.normal || 0} 
+              bgColor="green" 
+              icon={CheckCircle}
+            />
+            <StatCard 
+              label="New Patients" 
+              value={todayStats?.newPatients || 0} 
+              bgColor="cyan" 
+              icon={Users}
+            />
           </div>
         </div>
       )}
@@ -119,104 +120,93 @@ export default function DashboardPage() {
       {(isLoading || isFetching) ? (
         <StudiesSkeleton />
       ) : (
-        <div className="flex-1 overflow-auto px-4 py-3">
-          <div className="bg-card rounded-lg border overflow-hidden">
-            <div className="px-6 py-3 border-b border-border flex items-center justify-between">
+        <div className="flex-1 overflow-auto px-6 pb-6">
+          <div className="bg-card rounded-lg border border-border overflow-hidden flex flex-col h-full">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-muted/20 to-transparent">
               <h2 className="text-sm font-semibold text-foreground">Today&apos;s Studies</h2>
               <div className="text-xs text-muted-foreground">
                 Showing {Math.min(pageSize, cases.length)} of {pagination.total}
               </div>
             </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="px-6 py-3">Patient</TableHead>
-                  <TableHead className="px-6 py-3">Study ID</TableHead>
-                  <TableHead className="px-6 py-3">CKD Stage</TableHead>
-                  <TableHead className="px-6 py-3">eGFR</TableHead>
-                  <TableHead className="px-6 py-3"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cases?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                      No studies found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  cases.map((caseItem) => {
-                    const egfr = caseItem.images[0]?.ai_analysis_result?.egfr || "-"
-                    const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
-                    const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
+            {cases?.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center">
+                <EmptyState
+                  icon={Inbox}
+                  title="No studies today"
+                  description="Check back later or create a new study to get started."
+                />
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gradient-to-r from-muted/40 to-transparent hover:bg-transparent">
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">Patient</TableHead>
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">Study ID</TableHead>
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">CKD Stage</TableHead>
+                      <TableHead className="px-6 py-3 font-semibold text-muted-foreground">eGFR</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cases.map((caseItem) => {
+                      const egfr = caseItem.images[0]?.ai_analysis_result?.egfr || "-"
+                      const ckdRisk = caseItem.images[0]?.ai_analysis_result?.ckdRisk
+                      const ckdStage = caseItem.images[0]?.ai_analysis_result?.ckdStage || "-"
 
-                    const resultColor =
-                      ckdRisk === "HIGH"
-                        ? "bg-red-50 text-red-700"
-                        : ckdRisk === "LOW"
-                          ? "bg-green-50 text-green-700"
-                          : "bg-amber-50 text-amber-700"
+                      const stageDotColor = ckdStage && ckdStage.includes("1") ? "bg-success" : ckdStage && ckdStage.includes("3a") ? "bg-warning" : ckdStage && ckdStage.includes("2") ? "bg-warning" : "bg-destructive"
 
-                    return (
-                      <TableRow key={caseItem.id}>
-                        <TableCell className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-semibold text-xs text-foreground">
-                              {caseItem.patient?.name.charAt(0)}
+                      return (
+                        <TableRow key={caseItem.id} className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => handleCaseClick(caseItem.case_number)}>
+                          <TableCell className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10 bg-muted">
+                                <AvatarFallback className="font-bold text-sm text-foreground">
+                                  {caseItem.patient?.name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium text-sm text-foreground">{caseItem.patient?.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {caseItem.patient?.age} yrs • {caseItem.patient?.sex === "M" ? "Male" : "Female"}
-                              </p>
+                          </TableCell>
+                          <TableCell className="px-6 py-4 font-mono text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <FileText className="h-4 w-4 text-destructive" />
+                              <span className="font-mono text-sm text-foreground">{caseItem.case_number}</span>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 font-mono text-sm text-foreground">
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <FileText className="h-4 w-4 text-green-700" />
-                            <span className="font-mono text-sm">{caseItem.case_number}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${resultColor}`}>
-                            {ckdStage}
-                          </span>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <p className="font-medium text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 text-right">
-                          <Button
-                            onClick={() => handleCaseClick(caseItem.case_number)}
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 border text-green-600 hover:text-green-700 hover:bg-green-50 gap-1"      
-                          >
-                            View →
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                )}
-              </TableBody>
-            </Table>
-
-            
-          <div className="p-4 border-t">
-            <Pagination
-            currentPage={pagination.page}
-            pageSize={pagination.limit}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size)
-              setCurrentPage(1)
-            }}
-            totalEntries={pagination.total}
-            totalPages={pagination.totalPages}
-            />
-          </div>
+                          </TableCell>
+                          <TableCell className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${stageDotColor}`}></div>
+                              <span className="text-sm text-foreground">{ckdStage}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-6 py-4">
+                            <p className="font-medium text-sm text-foreground">{`${egfr} mL/min/1.73m²`}</p>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+                <div className="p-4 border-t border-border">
+                  <Pagination
+                    currentPage={pagination.page}
+                    pageSize={pagination.limit}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size)
+                      setCurrentPage(1)
+                    }}
+                    totalEntries={pagination.total}
+                    totalPages={pagination.totalPages}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
