@@ -107,7 +107,7 @@ export function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 text-base"
+                className="h-12 border border-gray-300 text-base"
               />
             </div>
 
@@ -131,7 +131,7 @@ export function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 text-base pr-12"
+                  className="h-12 border border-gray-300 text-base pr-12"
                 />
                 <button
                   type="button"
