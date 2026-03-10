@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import fs from "fs"
-import puppeteer, { type Browser } from "puppeteer-core"
+import puppeteer, { type Browser } from "puppeteer"
 import chromium from "@sparticuz/chromium"
 
 const isProduction = process.env.NODE_ENV === "production"
