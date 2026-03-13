@@ -49,31 +49,30 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }:
   )
 }
 
-function renderBarValueLabel() {
-  return ({ x, y, width, value }: any) => {
-    const barX = Number(x ?? 0)
-    const barY = Number(y ?? 0)
-    const barWidth = Number(width ?? 0)
-    const numericValue = Number(value ?? 0)
-    if (numericValue <= 0) {
-      return null
-    }
+function BarValueLabel({ x, y, width, value }: any) {
+  const barX = Number(x ?? 0)
+  const barY = Number(y ?? 0)
+  const barWidth = Number(width ?? 0)
+  const numericValue = Number(value ?? 0)
 
-    const labelText = `${numericValue}`
-    const labelWidth = 30
-    const labelHeight = 20
-    const offsetX = barWidth / 2 - labelWidth / 2
-    const offsetY = -22
-
-    return (
-      <g transform={`translate(${barX + offsetX}, ${barY + offsetY})`}>
-        <rect width={labelWidth} height={labelHeight} rx={8} ry={8} fill="#ffffff" stroke="#d9e6f1" />
-        <text x={labelWidth / 2} y={labelHeight / 2 + 4} textAnchor="middle" fill="#6b7885" fontSize={11} fontWeight={600}>
-          {labelText}
-        </text>
-      </g>
-    )
+  if (numericValue <= 0) {
+    return null
   }
+
+  const labelText = `${numericValue}`
+  const labelWidth = 30
+  const labelHeight = 20
+  const offsetX = barWidth / 2 - labelWidth / 2
+  const offsetY = -22
+
+  return (
+    <g transform={`translate(${barX + offsetX}, ${barY + offsetY})`}>
+      <rect width={labelWidth} height={labelHeight} rx={8} ry={8} fill="#ffffff" stroke="#d9e6f1" />
+      <text x={labelWidth / 2} y={labelHeight / 2 + 4} textAnchor="middle" fill="#6b7885" fontSize={11} fontWeight={600}>
+        {labelText}
+      </text>
+    </g>
+  )
 }
 
 interface MetricCardProps {
@@ -140,11 +139,11 @@ export default function DashboardPage() {
   const { data: trendCasesData } = useGetCasesQuery({ params: { page: 1, limit: 10000, range: "week" } })
   const { data: patientsData } = useGetPatientsQuery({ params: { page: 1, limit: 1 } })
 
-  const screeningCases = screeningCasesData?.data || []
-  const ckdCases = ckdCasesData?.data || []
-  const genderCases = genderCasesData?.data || []
-  const stageCases = stageCasesData?.data || []
-  const trendCases = trendCasesData?.data || []
+  const screeningCases = useMemo(() => screeningCasesData?.data ?? [], [screeningCasesData])
+  const ckdCases = useMemo(() => ckdCasesData?.data ?? [], [ckdCasesData])
+  const genderCases = useMemo(() => genderCasesData?.data ?? [], [genderCasesData])
+  const stageCases = useMemo(() => stageCasesData?.data ?? [], [stageCasesData])
+  const trendCases = useMemo(() => trendCasesData?.data ?? [], [trendCasesData])
 
   const weeklyScreenings = useMemo(() => {
     if (screeningRange === "week") {
@@ -366,13 +365,9 @@ export default function DashboardPage() {
   const pendingToday = dayMetrics.today.pending
 
   const barMax = weeklyScreenings[0]?.max || 10
-  const highlightDay = weeklyScreenings.reduce(
-    (acc, item) => (item.value > acc.value ? item : acc),
-    { day: weeklyScreenings[0]?.day || "", value: 0, max: barMax }
-  )
 
   return (
-    <div className="min-h-full bg-[radial-gradient(circle_at_15%_0%,#e5f1fb_0%,#d9eafb_35%,#d1e4f5_100%)] px-6 py-6">
+    <div className="min-h-full bg-white px-6 py-6">
       <div className="max-w-[1600px] mx-auto space-y-5">
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <MetricCard
@@ -469,7 +464,7 @@ export default function DashboardPage() {
                   />
                   <ReferenceLine y={0} stroke="#d2e2ef" />
                   <Bar dataKey="value" fill="#2f8ec4" radius={[8, 8, 8, 8]} barSize={46} background={{ fill: "#f1f1f1", radius: 8 }}>
-                    <LabelList dataKey="value" content={renderBarValueLabel()} />
+                    <LabelList dataKey="value" content={<BarValueLabel />} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
