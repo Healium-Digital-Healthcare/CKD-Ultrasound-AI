@@ -367,7 +367,7 @@ export default function DashboardPage() {
   const barMax = weeklyScreenings[0]?.max || 10
 
   return (
-    <div className="min-h-full bg-white px-6 py-6">
+    <div className="min-h-full bg-[radial-gradient(circle_at_15%_0%,#e5f1fb_0%,#d9eafb_35%,#d1e4f5_100%)] px-6 py-6">
       <div className="max-w-[1600px] mx-auto space-y-5">
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <MetricCard
