@@ -111,26 +111,31 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
   return (
     <div className="z-50">
       {/* Desktop Header */}
-      <nav className="hidden md:flex items-center z-[9999] border-b border-border h-16 ml-20 bg-white">
+      <nav className="hidden md:flex items-center z-[9999] border-b border-[#c9dcec] h-16 ml-20 bg-gradient-to-r from-[#d8ebfa] via-[#d4e8f8] to-[#cfdef0]">
         <div className="flex-1 flex items-center justify-between px-6">
-          {/* Left Section - Search */}
-          <div className="relative flex-1 max-w-lg" ref={dropdownRef}>
-            {/* Search Input with Type Selector Inside */}
-            <div className="relative flex items-center">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+          <div className="min-w-[320px]">
+            <p className="text-lg leading-tight font-bold text-[#0e679f]">Good Morning, Dr. Neeraj</p>
+            <p className="text-xs text-[#6b7f91]">Your progress today is Awesome.</p>
+          </div>
+
+          <div className="flex items-center gap-4 shrink-0">
+            {/* Search Section */}
+            <div className="relative w-[420px]" ref={dropdownRef}>
+              <div className="relative flex items-center">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#2c84bf] z-10" />
               <Input
                 type="text"
                 value={searchQuery}
-                placeholder={`Search ${searchType}...`}
+                placeholder="Search here..."
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
                   if (onSearch) onSearch(e.target.value)
                 }}
                 onFocus={() => searchQuery.length >= 2 && setIsDropdownOpen(true)}
-                className="pl-9 pr-28 h-9 bg-white border-border focus-visible:ring-1 focus-visible:ring-primary text-sm"
+                className="pl-9 pr-28 h-10 bg-[#eaf2f9] border-[#c4d8e8] rounded-full focus-visible:ring-1 focus-visible:ring-[#2e84be] text-sm text-[#7b8593]"
               />
               {isFetching && (
-                <Loader2 className="absolute right-24 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+                <Loader2 className="absolute right-20 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6b7f91] animate-spin" />
               )}
               
               {/* Search Type Selector - Right Side Inside Input */}
@@ -138,13 +143,13 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                 <button
                   type="button"
                   onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                  className="flex items-center gap-1 h-7 px-2 bg-white border border-border rounded text-xs text-foreground/70 hover:bg-muted transition-colors"
+                  className="flex items-center gap-1 h-8 px-3 bg-[#eef3f8] border border-[#c4d8e8] rounded-full text-xs text-[#4f6679] hover:bg-white transition-colors"
                 >
                   {searchTypeLabels[searchType]}
                   <ChevronDown className="h-3 w-3" />
                 </button>
                 {isTypeDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-28 bg-card border border-border rounded-md shadow-xl z-[9999]">
+                  <div className="absolute top-full right-0 mt-1 w-28 bg-white border border-[#c4d8e8] rounded-md shadow-xl z-[9999]">
                     {(["patients", "studies"] as SearchType[]).map((type) => (
                       <button
                         key={type}
@@ -156,8 +161,8 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                             updateURL(searchQuery, type)
                           }
                         }}
-                        className={`w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors first:rounded-t-md last:rounded-b-md ${
-                          searchType === type ? "bg-muted font-medium" : ""
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-[#edf5fb] transition-colors first:rounded-t-md last:rounded-b-md ${
+                          searchType === type ? "bg-[#edf5fb] font-medium" : ""
                         }`}
                       >
                         {searchTypeLabels[type]}
@@ -170,9 +175,9 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
 
             {/* Search Results Dropdown */}
             {isDropdownOpen && searchQuery.length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-md shadow-xl z-[9999] max-h-[400px] overflow-auto">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#c4d8e8] rounded-md shadow-xl z-[9999] max-h-[400px] overflow-auto">
                 {isFetching ? (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
+                  <div className="p-4 text-center text-sm text-[#6b7f91]">
                     <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
                     Searching...
                   </div>
@@ -181,7 +186,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                     {/* Patients Section */}
                     {searchResults.patients.length > 0 && searchType === "patients" && (
                       <div>
-                        <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b">
+                        <div className="px-3 py-2 bg-[#edf5fb] text-xs font-semibold text-[#6b7f91] uppercase tracking-wide border-b">
                           Patients
                         </div>
                         {searchResults.patients.map((patient) => (
@@ -189,14 +194,14 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                             key={patient.id}
                             type="button"
                             onClick={() => handlePatientClick(patient.id)}
-                            className="w-full px-3 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0"
+                            className="w-full px-3 py-3 flex items-center gap-3 hover:bg-[#edf5fb] transition-colors border-b border-[#d7e6f2] last:border-b-0"
                           >
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                              <User className="h-4 w-4 text-blue-600" />
+                            <div className="w-8 h-8 rounded-full bg-[#deedf8] flex items-center justify-center">
+                              <User className="h-4 w-4 text-[#2e84be]" />
                             </div>
                             <div className="flex-1 text-left">
                               <p className="text-sm font-medium text-foreground">{patient.name}</p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-[#6b7f91]">
                                 ID: {patient.patient_id} | {patient.age} yrs | {patient.sex === "M" ? "Male" : "Female"}
                               </p>
                             </div>
@@ -208,7 +213,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                     {/* Studies Section */}
                     {searchResults.studies.length > 0 && searchType === "studies" && (
                       <div>
-                        <div className="px-3 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b">
+                        <div className="px-3 py-2 bg-[#edf5fb] text-xs font-semibold text-[#6b7f91] uppercase tracking-wide border-b">
                           Studies
                         </div>
                         {searchResults.studies.map((study) => (
@@ -216,14 +221,14 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                             key={study.id}
                             type="button"
                             onClick={() => handleStudyClick(study.case_number)}
-                            className="w-full px-3 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors border-b border-border/50 last:border-b-0"
+                            className="w-full px-3 py-3 flex items-center gap-3 hover:bg-[#edf5fb] transition-colors border-b border-[#d7e6f2] last:border-b-0"
                           >
-                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                              <FileText className="h-4 w-4 text-green-600" />
+                            <div className="w-8 h-8 rounded-full bg-[#deedf8] flex items-center justify-center">
+                              <FileText className="h-4 w-4 text-[#2e84be]" />
                             </div>
                             <div className="flex-1 text-left">
                               <p className="text-sm font-medium text-foreground font-mono">{study.case_number}</p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-[#6b7f91]">
                                 Patient: {study.patient?.name} | {new Date(study.study_date).toLocaleDateString()}
                               </p>
                             </div>
@@ -233,7 +238,7 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
                     )}
                   </>
                 ) : (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
+                  <div className="p-4 text-center text-sm text-[#6b7f91]">
                     No results found for {searchQuery}
                   </div>
                 )}
@@ -241,11 +246,11 @@ function DashboardHeaderContent({ onSearch }: DashboardHeaderProps) {
             )}
           </div>
 
-          {/* Right Section - Actions and User */}
-          <div className="flex items-center gap-3">
-            <Notifications />
-            <div className="h-8 w-px bg-border/50" />
-            <UserMenu />
+            {/* Notification and Account */}
+            <div className="flex items-center gap-3">
+              <Notifications />
+              <UserMenu />
+            </div>
           </div>
         </div>
       </nav>

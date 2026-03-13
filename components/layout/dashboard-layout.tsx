@@ -45,7 +45,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           />
           
           {/* Page Content */}
-          <main className=" flex-1 overflow-auto ml-20 relative">
+          <main className="flex-1 overflow-auto ml-20 relative">
             <div className="relative">{children}</div>
           </main>
         </div>
