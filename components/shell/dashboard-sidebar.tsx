@@ -3,10 +3,9 @@
 import { useState, useEffect, Suspense } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Users, Scan, Settings, FileTextIcon, Plus, RefreshCw, AlertCircle, BarChart3, CheckCircle2, Clock, Calendar } from "lucide-react"
+import { LayoutDashboard, Users, Scan, Settings, FileTextIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CreateStudySheet } from "@/components/cases/create-study-sheet"
-import { Button } from "@/components/ui/button"
 
 function DashboardSidebarContent() {
   const pathname = usePathname()
@@ -36,14 +35,14 @@ function DashboardSidebarContent() {
     <>
       {/* Desktop Sidebar - Icon Only */}
       <div className="hidden md:block">
-        <div className="w-20 fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 gap-6">
+        <div className="w-20 fixed inset-y-0 left-0 bg-gradient-to-b from-[#d9ecfb] to-[#d0e7f8] border-r border-[#c4ddf1] flex flex-col items-center py-4 gap-6">
           {/* Logo */}
           <div className="flex items-center justify-center h-10 w-10 rounded-lg">
             <img src="/logo/logo.svg" className="h-8 w-8" alt="Logo" />
           </div>
 
           {/* Navigation Icons */}
-          <nav className="flex flex-col gap-4">
+          <nav className="flex flex-col gap-4 mt-2">
             {navigation.map((item) => {
               const Icon = item.icon
               const isActive = item.id === activeTab
@@ -52,10 +51,10 @@ function DashboardSidebarContent() {
                   key={item.id}
                   href={item.href}
                   className={cn(
-                    "flex items-center justify-center h-10 w-10 rounded-lg transition-all duration-200",
+                    "flex items-center justify-center h-11 w-11 rounded-full border transition-all duration-200 shadow-sm",
                     isActive
-                      ? "bg-primary text-white"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
+                      ? "bg-white text-[#1873ad] border-[#b8d6ea]"
+                      : "bg-[#e8f4ff] text-[#6e7f8e] border-[#c9deef] hover:bg-white"
                   )}
                   title={item.label}
                 >

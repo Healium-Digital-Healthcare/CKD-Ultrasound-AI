@@ -68,10 +68,14 @@ export default function UserMenu() {
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-50">
-            <Avatar className="h-9 w-9 ring-2 ring-gray-100">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-full border border-[#c4d8e8] bg-[#eaf2f9] hover:bg-white"
+          >
+            <Avatar className="h-8 w-8 ring-0">
               <AvatarImage src="/placeholder-user.jpg" alt={getUserDisplayName()} />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-green-600 text-white text-sm font-medium">
+              <AvatarFallback className="bg-gradient-to-br from-[#1d80b7] to-[#3ea0d1] text-white text-xs font-medium">
                 {getUserInitials()}
               </AvatarFallback>
             </Avatar>
